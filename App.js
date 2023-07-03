@@ -230,11 +230,11 @@ const RegenerateScreen = ({ route, navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {dream && (
         <>
-          <Subheading style={styles.subLabel}>Dream Title:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Title</Subheading>
           <Text style={styles.dreamTitle}>{dream.title}</Text>
-          <Subheading style={styles.subLabel}>Dream Date:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Date</Subheading>
           <Text style={styles.dreamDate}>{dream.date}</Text>
-          <Subheading style={styles.subLabel}>Dream Entry:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
           <Text style={styles.dreamEntry}>{dream.entry}</Text>
         </>
       )}
@@ -253,7 +253,7 @@ const RegenerateScreen = ({ route, navigation }) => {
             </Button>
           ) : (
             <>
-              <Subheading style={styles.analysisLabel}>Dream Analysis:</Subheading>
+              <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
               <Text style={styles.analysisResult}>{analysisResult}</Text>
               <View style={styles.imageContainer}>
                 <Image source={{ uri: imageData.url }} style={styles.image} />
@@ -378,11 +378,11 @@ const DetailsScreen = ({ route, navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {dream && (
         <>
-          <Subheading style={styles.subLabel}>Dream Title:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Title</Subheading>
           <Text style={styles.dreamTitle}>{dream.title}</Text>
-          <Subheading style={styles.subLabel}>Dream Date:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Date</Subheading>
           <Text style={styles.dreamDate}>{dream.date}</Text>
-          <Subheading style={styles.subLabel}>Dream Entry:</Subheading>
+          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
           <Text style={styles.dreamEntry}>{dream.entry}</Text>
         </>
       )}
@@ -390,7 +390,7 @@ const DetailsScreen = ({ route, navigation }) => {
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
         <>
-          <Subheading style={styles.analysisLabel}>Dream Analysis:</Subheading>
+          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
           <Text style={styles.analysisResult}>{analysisResult}</Text>
           {imageData && (
             <View style={styles.imageContainer}>
@@ -478,19 +478,19 @@ const NewDreamScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Dream Title:</Text>
+      <Text style={styles.label}>Dream Title</Text>
       <TextInput
         style={styles.input}
         value={title}
         onChangeText={(text) => setTitle(text)}
       />
-      <Text style={styles.label}>Dream Date:</Text>
+      <Text style={styles.label}>Dream Date</Text>
       <TextInput
         style={styles.input}
         value={date}
         onChangeText={(text) => setDate(text)}
       />
-      <Text style={styles.label}>Dream Entry:</Text>
+      <Text style={styles.label}>Dream Entry</Text>
       <TextInput
         style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
         value={entry}
@@ -575,7 +575,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginTop: 0,
-    marginBottom: 10,
+    marginBottom: 5,
     color: '#00ADB5',
   },
   input: {
@@ -586,6 +586,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#FFFFFF',
     backgroundColor: '#272B3B',
+    fontSize: 16,
   },
   tallerInput: {
     height: 369, // Adjust the height as desired
@@ -619,11 +620,11 @@ const styles = StyleSheet.create({
   analysisLabel: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
     color: '#00ADB5',
   },
   analysisResult: {
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 20,
     color: '#A0AEC0',
   },
@@ -667,19 +668,19 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   dreamTitle: {
-    fontSize: 16,
-    marginBottom: 10,
+    fontSize: 18,
+    marginBottom: 20,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },
   dreamDate: {
-    fontSize: 14,
-    marginBottom: 10,
+    fontSize: 16,
+    marginBottom: 20,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },  
   dreamEntry: {
-    fontSize: 14,
+    fontSize: 16,
     marginBottom: 20,
     color: '#A0AEC0',
   },
