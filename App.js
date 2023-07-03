@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Button, Card, Title, Subheading, Divider, List } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -39,7 +40,7 @@ const App = () => {
           component={DreamsScreenStack}
           options={{
             tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="heart" color={color} size={size} />
+              <MaterialCommunityIcons name="cloud" color={color} size={size} />
             ),
           }}
         />
@@ -104,16 +105,14 @@ const DreamsScreen = ({ navigation }) => {
       ) : (
         <>
           {dreams.length > 0 ? (
-            <>
-              <Subheading style={styles.subLabel}>Saved Dreams:</Subheading>
-              <FlatList
-                data={dreams}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={renderDreamItem}
-                style={styles.list}
-                contentContainerStyle={{ paddingBottom: 20 }}
-              />
-            </>
+            <FlatList
+              data={dreams}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={renderDreamItem}
+              style={styles.list}
+              contentContainerStyle={{ paddingBottom: 20 }}
+              showsVerticalScrollIndicator={false}
+            />
           ) : (
             <View style={styles.emptyStateContainer}>
               <MaterialCommunityIcons name="emoticon-sad-outline" size={120} color="#FFFFFF" style={styles.emptyStateImage} />
@@ -131,7 +130,7 @@ const DreamsScreen = ({ navigation }) => {
         </>
       )}
     </View>
-  );
+  );  
 };
 
 const RegenerateScreen = ({ route, navigation }) => {
@@ -205,7 +204,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   const handleOverwriteSave = async () => {
     try {
@@ -216,7 +215,7 @@ const RegenerateScreen = ({ route, navigation }) => {
         },
         body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
-  
+
       if (response.ok) {
         Alert.alert('Success', 'Analysis and image overwritten successfully!');
       } else {
@@ -226,7 +225,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -302,7 +301,7 @@ const DetailsScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   const handleGenerateDream = async () => {
     setIsLoading(true);
@@ -317,7 +316,7 @@ const DetailsScreen = ({ route, navigation }) => {
       setIsLoading(false);
     }
   };
-  
+
   const fetchDreamAnalysis = async () => {
     try {
       const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/analysis`);
@@ -333,7 +332,7 @@ const DetailsScreen = ({ route, navigation }) => {
       throw error; // Throw the error so it can be caught in handleGenerateDream
     }
   };
-  
+
   const fetchDreamImage = async () => {
     try {
       const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/image`);
@@ -359,7 +358,7 @@ const DetailsScreen = ({ route, navigation }) => {
         },
         body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
-  
+
       if (response.ok) {
         Alert.alert('Success', 'Analysis and image saved successfully!');
         setDream({
@@ -374,7 +373,7 @@ const DetailsScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -479,7 +478,7 @@ const NewDreamScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.label}>Dream Title:</Text>
       <TextInput
         style={styles.input}
@@ -494,7 +493,7 @@ const NewDreamScreen = () => {
       />
       <Text style={styles.label}>Dream Entry:</Text>
       <TextInput
-        style={styles.input}
+        style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
         value={entry}
         onChangeText={(text) => setEntry(text)}
         multiline
@@ -507,7 +506,7 @@ const NewDreamScreen = () => {
       >
         Save Dream
       </Button>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -563,39 +562,49 @@ const navigationTheme = {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    backgroundColor: '#0C0E17',
-    padding: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 10,
   },
   label: {
     fontSize: 16,
+    fontWeight: 'bold',
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: '#00ADB5',
   },
   subLabel: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: 0,
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: '#00ADB5',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+    borderColor: '#123',
+    borderRadius: 15,
     padding: 10,
     marginBottom: 20,
     color: '#FFFFFF',
     backgroundColor: '#272B3B',
+  },
+  tallerInput: {
+    height: 333, // Adjust the height as desired
   },
   list: {
     marginBottom: 20,
   },
   dreamItem: {
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 4,
+    borderColor: '#123',
+    borderRadius: 15,
     marginBottom: 10,
     backgroundColor: '#272B3B',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 5,
   },
   dreamItemText: {
     color: '#FFFFFF',
@@ -624,13 +633,20 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   image: {
-    width: 200,
-    height: 200,
+    width: 333,
+    height: 333,
     resizeMode: 'contain',
+    borderRadius: 33,
   },
   generateButton: {
     marginBottom: 10,
     backgroundColor: '#00ADB5',
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   generateButtonText: {
     color: '#FFFFFF',
@@ -638,7 +654,13 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     marginBottom: 10,
-    backgroundColor: '#6B7280',
+    backgroundColor: '#00ADB5',
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
   },
   saveButtonText: {
     color: '#FFFFFF',
@@ -675,6 +697,26 @@ const styles = StyleSheet.create({
   },
   emptyStateButton: {
     backgroundColor: '#00ADB5',
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  overwriteButton: {
+    marginBottom: 10,
+    backgroundColor: '#7851A9',
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  overwriteButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
   },
 });
 
