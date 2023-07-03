@@ -3,9 +3,8 @@ import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpa
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Button, Card, Title, Subheading, Divider, List } from 'react-native-paper';
+import { Button, Card, Title, Subheading } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -567,7 +566,7 @@ const styles = StyleSheet.create({
     paddingTop: 10,
   },
   label: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#00ADB5',
@@ -589,7 +588,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#272B3B',
   },
   tallerInput: {
-    height: 333, // Adjust the height as desired
+    height: 369, // Adjust the height as desired
   },
   list: {
     marginBottom: 20,
@@ -618,14 +617,15 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   analysisLabel: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: 'bold',
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: '#00ADB5',
   },
   analysisResult: {
     fontSize: 14,
     marginBottom: 20,
-    color: '#FFFFFF',
+    color: '#A0AEC0',
   },
   imageContainer: {
     alignItems: 'center',
@@ -669,18 +669,19 @@ const styles = StyleSheet.create({
   dreamTitle: {
     fontSize: 16,
     marginBottom: 10,
-    color: '#FFFFFF',
+    color: '#A0AEC0',
     fontWeight: 'bold',
   },
   dreamDate: {
     fontSize: 14,
     marginBottom: 10,
-    color: '#FFFFFF',
-  },
+    color: '#A0AEC0',
+    fontWeight: 'bold',
+  },  
   dreamEntry: {
     fontSize: 14,
     marginBottom: 20,
-    color: '#FFFFFF',
+    color: '#A0AEC0',
   },
   emptyStateContainer: {
     flex: 1,
