@@ -26,45 +26,45 @@ These instructions will get you a copy of the project up and running on your loc
 
 1. Clone the repository:
 
-\`\`\`bash
+```
 git clone https://github.com/cp-james-harbeck/LucidJournal.git
-\`\`\`
+```
 
 2. Install the dependencies:
 
-\`\`\`bash
+```
 cd LucidJournal
 npm install
-\`\`\`
+```
 
 3. Navigate to the `server` directory and install the server dependencies:
 
-\`\`\`bash
+```
 cd server
 npm install
-\`\`\`
+```
 
 4. Create a `.env` file in the `server` directory and add your OpenAI API key:
 
-\`\`\`
+```
 OPENAI_API_KEY=your_openai_api_key
-\`\`\`
+```
 
 ### Running the Application
 
 1. Start the server:
 
-\`\`\`bash
+```
 cd server
 npm start
-\`\`\`
+```
 
 2. In a new terminal window, navigate to the root directory and start the React Native application:
 
-\`\`\`bash
+```
 cd ..
 npm start
-\`\`\`
+```
 
 The Expo developer tools should open in your web browser. You can now run the app on your device using the Expo Go app, or in a simulator/emulator.
 
