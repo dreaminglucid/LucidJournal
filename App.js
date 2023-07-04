@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Button, Card, Title, Subheading } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { API_URL } from '@env';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -67,7 +68,7 @@ const DreamsScreen = ({ navigation }) => {
 
   const fetchDreams = async () => {
     try {
-      const response = await fetch('https://6ae1-24-39-63-209.ngrok-free.app/api/dreams');
+      const response = await fetch(`${API_URL}/api/dreams`);
       if (response.ok) {
         const dreamsData = await response.json();
         setDreams(dreamsData);
@@ -146,7 +147,7 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   const fetchDream = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
         const dreamData = await response.json();
         setDream(dreamData);
@@ -162,7 +163,7 @@ const RegenerateScreen = ({ route, navigation }) => {
   const fetchDreamAnalysis = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/analysis`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
       if (response.ok) {
         const analysisResult = await response.text();
         setAnalysisResult(analysisResult);
@@ -179,7 +180,7 @@ const RegenerateScreen = ({ route, navigation }) => {
   const fetchDreamImage = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/image`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
       if (response.ok) {
         const imageData = await response.json();
         setImageData(imageData);
@@ -207,7 +208,7 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   const handleOverwriteSave = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}`, {
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -287,7 +288,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
   const fetchDream = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
         const dreamData = await response.json();
         setDream(dreamData);
@@ -318,7 +319,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
   const fetchDreamAnalysis = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/analysis`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
       if (response.ok) {
         const analysisResult = await response.text();
         return analysisResult;
@@ -334,7 +335,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
   const fetchDreamImage = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}/image`);
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
       if (response.ok) {
         const imageData = await response.json();
         return imageData;
@@ -350,7 +351,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
   const handleSaveAnalysisAndImage = async () => {
     try {
-      const response = await fetch(`https://6ae1-24-39-63-209.ngrok-free.app/api/dreams/${dreamId}`, {
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -454,7 +455,7 @@ const NewDreamScreen = () => {
     }
 
     try {
-      const response = await fetch('https://6ae1-24-39-63-209.ngrok-free.app/api/dreams', {
+      const response = await fetch('${API_URL}/api/dreams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
