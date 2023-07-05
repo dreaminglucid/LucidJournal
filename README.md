@@ -75,7 +75,7 @@ The Expo developer tools should open in your web browser. You can now run the ap
 - [Express.js](https://expressjs.com/) - The web application framework used for building the API.
 - [OpenAI API](https://openai.com/) - Used to generate dream analysis and images.
 
-TODO
+## TODO
 
 - Add OpenAI function calling for advanced AI cognition 
 - Add embeddings and vectordb for storing data
