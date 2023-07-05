@@ -18,6 +18,3 @@ web-build/
 
 # .env files
 .env
-
-# Program data
-Microsoft/Windows/UUS/State/
