@@ -79,6 +79,9 @@ The Expo developer tools should open in your web browser. You can now run the ap
 
 - Add OpenAI function calling for advanced AI cognition 
 - Add embeddings and vectordb for storing data
+- Add proper database for saving data
+- Add account login and management
 - Add tags and labels for structured data
 - Add a Mindmap for visualizing data
 - Add advanced querying for searching data
+- Add "chat with dream" section for RHFL
