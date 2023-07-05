@@ -5,7 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
 import { Button, Card, Title, Subheading } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { API_URL } from '@env';
+import API_URL from './config';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
