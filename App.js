@@ -455,7 +455,7 @@ const NewDreamScreen = () => {
     }
 
     try {
-      const response = await fetch('${API_URL}/api/dreams', {
+      const response = await fetch(`${API_URL}/api/dreams`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
