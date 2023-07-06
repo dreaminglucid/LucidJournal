@@ -71,7 +71,11 @@ const DreamsScreen = ({ navigation }) => {
       const response = await fetch(`${API_URL}/api/dreams`);
       if (response.ok) {
         const dreamsData = await response.json();
-        setDreams(dreamsData);
+        if (!Array.isArray(dreamsData)) {
+          throw new Error('Dreams data is not an array');
+        }
+        const dreams = dreamsData.map(item => JSON.parse(item.documents[0]));
+        setDreams(dreams);
       } else {
         Alert.alert('Error', 'Failed to fetch dreams.');
       }
@@ -81,7 +85,7 @@ const DreamsScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  
 
   const handleDreamSelection = (dreamId) => {
     navigation.navigate('Details', { dreamId });
@@ -130,7 +134,7 @@ const DreamsScreen = ({ navigation }) => {
         </>
       )}
     </View>
-  );  
+  );
 };
 
 const RegenerateScreen = ({ route, navigation }) => {
@@ -679,7 +683,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     color: '#A0AEC0',
     fontWeight: 'bold',
-  },  
+  },
   dreamEntry: {
     fontSize: 16,
     marginBottom: 20,
