@@ -22,3 +22,5 @@ config.js
 
 # Chromadb
 .chroma
+
+memory/
