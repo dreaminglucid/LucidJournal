@@ -71,11 +71,13 @@ const DreamsScreen = ({ navigation }) => {
       const response = await fetch(`${API_URL}/api/dreams`);
       if (response.ok) {
         const dreamsData = await response.json();
-        console.log('dreamsData:', dreamsData); // Add this line
+        console.log('Dreams data from API:', dreamsData);
         if (!Array.isArray(dreamsData)) {
           throw new Error('Dreams data is not an array');
         }
-        setDreams(dreamsData);
+        const dreams = dreamsData;
+        console.log('Dreams data after processing:', dreams);
+        setDreams(dreams);
       } else {
         Alert.alert('Error', 'Failed to fetch dreams.');
       }
@@ -85,7 +87,7 @@ const DreamsScreen = ({ navigation }) => {
     } finally {
       setIsLoading(false);
     }
-  };  
+  };
 
   const handleDreamSelection = (dreamId) => {
     navigation.navigate('Details', { dreamId });
@@ -111,7 +113,7 @@ const DreamsScreen = ({ navigation }) => {
           {dreams.length > 0 ? (
             <FlatList
               data={dreams}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
               renderItem={renderDreamItem}
               style={styles.list}
               contentContainerStyle={{ paddingBottom: 20 }}
@@ -153,7 +155,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     try {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
-        const dreamData = JSON.parse((await response.json()).document);
+        const dreamData = await response.json();
         setDream(dreamData);
       } else {
         Alert.alert('Error', 'Failed to fetch dream details.');
@@ -280,7 +282,8 @@ const RegenerateScreen = ({ route, navigation }) => {
 };
 
 const DetailsScreen = ({ route, navigation }) => {
-  const { dreamId } = route.params;
+  let { dreamId } = route.params;
+  dreamId = String(dreamId);
   const [dream, setDream] = useState(null);
   const [analysisResult, setAnalysisResult] = useState('');
   const [imageData, setImageData] = useState(null);
@@ -296,6 +299,8 @@ const DetailsScreen = ({ route, navigation }) => {
       if (response.ok) {
         const dreamData = await response.json();
         setDream(dreamData);
+        setAnalysisResult(dreamData.analysis);
+        setImageData(dreamData.image);
       } else {
         Alert.alert('Error', 'Failed to fetch dream details.');
       }
@@ -303,31 +308,32 @@ const DetailsScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
-
-  const handleGenerateDream = async () => {
-    setIsLoading(true);
-    try {
-      const [analysis, image] = await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
-      setAnalysisResult(analysis);
-      setImageData(image);
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-    }
   };
+
+const handleGenerateDream = async () => {
+  setIsLoading(true);
+  try {
+    console.log('Starting generation...');
+    const [analysis, image] = await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
+    console.log('Generation completed.');
+    setAnalysisResult(analysis);
+    setImageData(image);
+  } catch (error) {
+    console.error('Error during generation:', error);
+    Alert.alert('Error', 'An unexpected error occurred during generation.');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const fetchDreamAnalysis = async () => {
     try {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
-      if (response.ok) {
-        const analysisResult = await response.text();
-        return analysisResult;
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream analysis.');
+      if (!response.ok) {
+        throw new Error('Failed to fetch dream analysis.');
       }
+      const analysisResult = await response.text();
+      return analysisResult;
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
@@ -338,12 +344,11 @@ const DetailsScreen = ({ route, navigation }) => {
   const fetchDreamImage = async () => {
     try {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
-      if (response.ok) {
-        const imageData = await response.json();
-        return imageData;
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream image.');
+      if (!response.ok) {
+        throw new Error('Failed to fetch dream image.');
       }
+      const imageData = await response.json();
+      return imageData.image;  // changed this line
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
@@ -397,7 +402,7 @@ const DetailsScreen = ({ route, navigation }) => {
           <Text style={styles.analysisResult}>{analysisResult}</Text>
           {imageData && (
             <View style={styles.imageContainer}>
-              <Image source={{ uri: imageData.url }} style={styles.image} />
+              <Image source={{ uri: imageData }} style={styles.image} />
             </View>
           )}
           {dream && dream.analysis && dream.image ? (
