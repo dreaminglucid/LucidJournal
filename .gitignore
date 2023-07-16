@@ -24,3 +24,5 @@ config.js
 .chroma
 
 memory/
+
+.vscode
