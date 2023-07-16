@@ -23,6 +23,8 @@ config.js
 # Chromadb
 .chroma
 
+# Directories to ignore
 memory/
-
-.vscode
+.vscode/
+/server/python/__pycache__/
+*.pyc
