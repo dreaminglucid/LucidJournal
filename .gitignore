@@ -19,6 +19,7 @@ web-build/
 # secret files
 .env
 config.js
+server/python/config.ini
 
 # Chromadb
 .chroma
