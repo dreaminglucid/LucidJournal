@@ -304,9 +304,10 @@ const DetailsScreen = ({ route, navigation }) => {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
         const dreamData = await response.json();
+        // Remove the analysis and image from the dream data
+        delete dreamData.analysis;
+        delete dreamData.image;
         setDream(dreamData);
-        setAnalysisResult(dreamData.analysis);
-        setImageData(dreamData.image);
       } else {
         Alert.alert('Error', 'Failed to fetch dream details.');
       }
