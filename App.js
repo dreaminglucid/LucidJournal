@@ -152,7 +152,6 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     fetchDream();
-    handleRegenerateDream();
   }, []);
 
   const fetchDream = async () => {
