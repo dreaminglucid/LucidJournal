@@ -19,3 +19,13 @@ web-build/
 # secret files
 .env
 config.js
+server/python/config.ini
+
+# Chromadb
+.chroma
+
+# Directories to ignore
+memory/
+.vscode/
+/server/python/__pycache__/
+*.pyc
