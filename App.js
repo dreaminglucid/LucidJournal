@@ -92,7 +92,7 @@ const DreamsScreen = ({ navigation }) => {
   const handleDreamSelection = (dreamId) => {
     console.log(dreamId); // log the dreamId
     navigation.navigate('Details', { dreamId });
-  };  
+  };
 
   const renderDreamItem = ({ item }) => {
     console.log(item); // log the entire dream item
@@ -100,13 +100,13 @@ const DreamsScreen = ({ navigation }) => {
       <TouchableOpacity onPress={() => handleDreamSelection(item.id)}>
         <Card elevation={3} style={styles.dreamItem}>
           <Card.Content>
-            <Title style={styles.dreamItemText}>{item.title}</Title>
-            <Subheading style={styles.dreamItemDate}>{item.date}</Subheading>
+            <Title style={styles.dreamItemText}>{item.metadata.title}</Title>
+            <Subheading style={styles.dreamItemDate}>{item.metadata.date}</Subheading>
           </Card.Content>
         </Card>
       </TouchableOpacity>
     );
-  };  
+  };
 
   return (
     <View style={styles.container}>
@@ -149,19 +149,30 @@ const RegenerateScreen = ({ route, navigation }) => {
   const [analysisResult, setAnalysisResult] = useState(null);
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [shouldRegenerate, setShouldRegenerate] = useState(false);
 
   useEffect(() => {
     fetchDream();
   }, []);
 
+  useEffect(() => {
+    if (dream && shouldRegenerate) {
+      handleRegenerateDream();
+    }
+  }, [dream, shouldRegenerate]);
+
   const fetchDream = async () => {
     try {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
-        const dreamData = await response.json();
+        let dreamData = await response.json();
+        if ('analysis' in dreamData) {
+          setAnalysisResult(dreamData.analysis);
+        }
+        if ('image' in dreamData) {
+          setImageData(dreamData.image);
+        }
         setDream(dreamData);
-        setAnalysisResult(dreamData.analysis);
-        setImageData(dreamData.image);
       } else {
         Alert.alert('Error', 'Failed to fetch dream details.');
       }
@@ -169,52 +180,42 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
-
-  const fetchDreamAnalysis = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
-      if (response.ok) {
-        const analysisResult = await response.text();
-        setAnalysisResult(analysisResult);
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream analysis.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    }
-    setIsLoading(false);
-  };
-
-  const fetchDreamImage = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
-      if (response.ok) {
-        const imageData = await response.json();
-        return imageData.image;
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream image.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    }
-    setIsLoading(false);
   };
 
   const handleRegenerateDream = async () => {
     setIsLoading(true);
     try {
-      await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
+      const [newAnalysisResult, newImageData] = await Promise.all([
+        generateDreamAnalysis(),
+        generateDreamImage(),
+      ]);
+      setAnalysisResult(newAnalysisResult);
+      setImageData(newImageData);
     } catch (error) {
       console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
+      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
     } finally {
       setIsLoading(false);
+      setShouldRegenerate(false);
     }
+  };
+
+  const generateDreamAnalysis = async () => {
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
+    if (!response.ok) {
+      throw new Error('Failed to generate dream analysis.');
+    }
+    const analysis = await response.text();
+    return analysis;
+  };
+
+  const generateDreamImage = async () => {
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
+    if (!response.ok) {
+      throw new Error('Failed to generate dream image.');
+    }
+    const imageData = await response.json();
+    return imageData.image;
   };
 
   const handleOverwriteSave = async () => {
@@ -226,9 +227,15 @@ const RegenerateScreen = ({ route, navigation }) => {
         },
         body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
-  
+
       if (response.ok) {
         Alert.alert('Success', 'Analysis and image overwritten successfully!');
+        setDream({
+          ...dream,
+          analysis: analysisResult,
+          image: imageData,
+        });
+        navigation.goBack();
       } else {
         Alert.alert('Error', 'Failed to overwrite analysis and image.');
       }
@@ -236,50 +243,45 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       {dream && (
         <>
           <Subheading style={styles.subLabel}>Dream Title</Subheading>
-          <Text style={styles.dreamTitle}>{dream.title}</Text>
+          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
           <Subheading style={styles.subLabel}>Dream Date</Subheading>
-          <Text style={styles.dreamDate}>{dream.date}</Text>
+          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
           <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-          <Text style={styles.dreamEntry}>{dream.entry}</Text>
+          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
         </>
       )}
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
         <>
-          {analysisResult === null || imageData === null ? (
-            <Button
-              mode="contained"
-              onPress={handleRegenerateDream}
-              style={styles.generateButton}
-              labelStyle={styles.generateButtonText}
-            >
-              Generate
-            </Button>
-          ) : (
-            <>
-              <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
-              <Text style={styles.analysisResult}>{analysisResult}</Text>
-              <View style={styles.imageContainer}>
-                <Image source={{ uri: imageData.url }} style={styles.image} />
-              </View>
-              <Button
-                mode="contained"
-                onPress={handleOverwriteSave}
-                style={styles.overwriteButton}
-                labelStyle={styles.overwriteButtonText}
-              >
-                Overwrite Save
-              </Button>
-            </>
-          )}
+          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+          <Text style={styles.analysisResult}>{analysisResult}</Text>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: imageData }} style={styles.image} />
+          </View>
+          <Button
+            mode="contained"
+            onPress={handleOverwriteSave}
+            style={styles.overwriteButton}
+            labelStyle={styles.overwriteButtonText}
+          >
+            Overwrite Save
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => setShouldRegenerate(true)}
+            style={styles.regenerateButton}
+            labelStyle={styles.regenerateButtonText}
+          >
+            Regenerate
+          </Button>
         </>
       )}
     </ScrollView>
@@ -289,7 +291,7 @@ const RegenerateScreen = ({ route, navigation }) => {
 const DetailsScreen = ({ route, navigation }) => {
   let { dreamId } = route.params;
   console.log(dreamId); // log the dreamId
-  dreamId = String(dreamId);  
+  dreamId = String(dreamId);
   const [dream, setDream] = useState(null);
   const [analysisResult, setAnalysisResult] = useState('');
   const [imageData, setImageData] = useState(null);
@@ -303,10 +305,13 @@ const DetailsScreen = ({ route, navigation }) => {
     try {
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
-        const dreamData = await response.json();
-        // Remove the analysis and image from the dream data
-        delete dreamData.analysis;
-        delete dreamData.image;
+        let dreamData = await response.json();
+        if ('analysis' in dreamData) {
+          setAnalysisResult(dreamData.analysis);
+        }
+        if ('image' in dreamData) {
+          setImageData(dreamData.image);
+        }
         setDream(dreamData);
       } else {
         Alert.alert('Error', 'Failed to fetch dream details.');
@@ -315,7 +320,7 @@ const DetailsScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   const handleGenerateDream = async () => {
     setIsLoading(true);
@@ -394,11 +399,11 @@ const DetailsScreen = ({ route, navigation }) => {
       {dream && (
         <>
           <Subheading style={styles.subLabel}>Dream Title</Subheading>
-          <Text style={styles.dreamTitle}>{dream.title}</Text>
+          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
           <Subheading style={styles.subLabel}>Dream Date</Subheading>
-          <Text style={styles.dreamDate}>{dream.date}</Text>
+          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
           <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-          <Text style={styles.dreamEntry}>{dream.entry}</Text>
+          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
         </>
       )}
       {isLoading ? (
