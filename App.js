@@ -288,34 +288,37 @@ const DetailsScreen = ({ route, navigation }) => {
     }
   };
 
-  const handleGenerateDream = async () => {
-    // Only start generating if the current status is idle
-    if (generationStatus !== 'generating') {
-      setGenerationStatus('generating');
-      setIsLoading(true);
-      try {
-        const [analysis, image] = await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
-        if (analysis && image) {
-          setAnalysisResult(analysis);
-          setImageData(image);
-          setGenerationStatus('success');
-        } else {
-          // If the analysis and image are not ready yet, wait for 5 seconds and then try again
-          setTimeout(() => {
-            if (generationStatus === 'generating') {
-              handleGenerateDream();
-            }
-          }, 5000);
-        }
-      } catch (error) {
-        console.error('Error during generation:', error);
-        Alert.alert('Error', 'An unexpected error occurred during generation.');
+  const handleGenerateDream = () => {
+    setIsLoading(true);
+    fetchDreamAnalysis()
+      .then(analysis => {
+        setAnalysisResult(analysis);
+      })
+      .catch(error => {
+        console.error('Error during analysis generation:', error);
+        Alert.alert('Error', 'An unexpected error occurred during analysis generation.');
         setGenerationStatus('error');
-      } finally {
         setIsLoading(false);
-      }
+      });
+  
+    fetchDreamImage()
+      .then(image => {
+        setImageData(image);
+      })
+      .catch(error => {
+        console.error('Error during image generation:', error);
+        Alert.alert('Error', 'An unexpected error occurred during image generation.');
+        setGenerationStatus('error');
+        setIsLoading(false);
+      });
+  }; 
+  
+  useEffect(() => {
+    if (analysisResult && imageData) {
+      setIsLoading(false);
+      setGenerationStatus('success');
     }
-  };  
+  }, [analysisResult, imageData]);  
 
   const fetchDreamAnalysis = async () => {
     try {
@@ -506,37 +509,39 @@ const RegenerateScreen = ({ route, navigation }) => {
     }
   };  
 
-  const handleRegenerateDream = async () => {
-    // Only start regenerating if the current status is idle
-    if (generationStatus !== 'generating') {
-      setGenerationStatus('generating');
-      setIsLoading(true);
-      try {
-        const [newAnalysisResult, newImageData] = await Promise.all([generateDreamAnalysis(), generateDreamImage()]);
-        if (newAnalysisResult && newImageData) {
-          setAnalysisResult(newAnalysisResult);
-          setImageData(newImageData);
-          setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+  const handleRegenerateDream = () => {
+    setIsLoading(true);
+    generateDreamAnalysis()
+      .then(newAnalysisResult => {
+        setAnalysisResult(newAnalysisResult);
+        setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+        if (imageData) {
           setCanSave(true);
-          setGenerationStatus('success');
-        } else {
-          // If the analysis and image are not ready yet, wait for 5 seconds and then try again
-          setTimeout(() => {
-            if (generationStatus === 'generating') {
-              handleRegenerateDream();
-            }
-          }, 5000);
+          setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error during regeneration:', error);
-        Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+      })
+      .catch(error => {
+        console.error('Error during analysis regeneration:', error);
+        Alert.alert('Error', 'An unexpected error occurred during analysis regeneration.');
         setCanSave(false);
-        setGenerationStatus('error');
-      } finally {
         setIsLoading(false);
-      }
-    }
-  };
+      });
+  
+    generateDreamImage()
+      .then(newImageData => {
+        setImageData(newImageData);
+        if (analysisResult) {
+          setCanSave(true);
+          setIsLoading(false);
+        }
+      })
+      .catch(error => {
+        console.error('Error during image regeneration:', error);
+        Alert.alert('Error', 'An unexpected error occurred during image regeneration.');
+        setCanSave(false);
+        setIsLoading(false);
+      });
+  };  
 
   const generateDreamAnalysis = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
