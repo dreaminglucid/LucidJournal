@@ -58,6 +58,83 @@ const App = () => {
   );
 };
 
+const NewDreamScreen = () => {
+  const [title, setTitle] = useState('');
+  const [date, setDate] = useState('');
+  const [entry, setEntry] = useState('');
+
+  const handleSaveDream = async () => {
+    if (title.trim() === '') {
+      Alert.alert('Warning', 'Please enter a dream title.');
+      return;
+    }
+
+    if (date.trim() === '') {
+      Alert.alert('Warning', 'Please enter a dream date.');
+      return;
+    }
+
+    if (entry.trim() === '') {
+      Alert.alert('Warning', 'Please enter a dream entry.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/dreams`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, date, entry }),
+      });
+
+      if (response.ok) {
+        Alert.alert('Success', 'Dream saved successfully!');
+        setTitle('');
+        setDate('');
+        setEntry('');
+      } else {
+        Alert.alert('Error', 'Failed to save dream.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    }
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.label}>Dream Title</Text>
+      <TextInput
+        style={styles.input}
+        value={title}
+        onChangeText={(text) => setTitle(text)}
+      />
+      <Text style={styles.label}>Dream Date</Text>
+      <TextInput
+        style={styles.input}
+        value={date}
+        onChangeText={(text) => setDate(text)}
+      />
+      <Text style={styles.label}>Dream Entry</Text>
+      <TextInput
+        style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
+        value={entry}
+        onChangeText={(text) => setEntry(text)}
+        multiline
+      />
+      <Button
+        mode="contained"
+        onPress={handleSaveDream}
+        style={styles.saveButton}
+        labelStyle={styles.saveButtonText}
+      >
+        Save Dream
+      </Button>
+    </ScrollView>
+  );
+};
+
 const DreamsScreen = ({ navigation }) => {
   const [dreams, setDreams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -146,175 +223,6 @@ const DreamsScreen = ({ navigation }) => {
         </>
       )}
     </View>
-  );
-};
-
-const RegenerateScreen = ({ route, navigation }) => {
-  const { dreamId } = route.params;
-  const [dream, setDream] = useState(null);
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [imageData, setImageData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [shouldRegenerate, setShouldRegenerate] = useState(false);
-
-  useEffect(() => {
-    fetchDream();
-  }, []);
-
-  useEffect(() => {
-    if (dream && shouldRegenerate) {
-      handleRegenerateDream();
-    }
-  }, [dream, shouldRegenerate]);
-
-  const fetchDream = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
-      if (response.ok) {
-        let dreamData = await response.json();
-        if ('analysis' in dreamData) {
-          let analysisText = dreamData.analysis;
-          try {
-            // Try to parse the string as JSON
-            const parsedText = JSON.parse(analysisText);
-            if (typeof parsedText === 'string') {
-              // If the parsed result is a string, use it
-              analysisText = parsedText;
-            }
-          } catch (e) {
-            // If parsing fails, it's not valid JSON, so we'll just use the original string
-          }
-          analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
-          setAnalysisResult(analysisText);
-        }
-        if ('image' in dreamData) {
-          setImageData(dreamData.image);
-        }
-        setDream(dreamData);
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream details.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    }
-  };  
-
-  const handleRegenerateDream = async () => {
-    setIsLoading(true);
-    try {
-      const [newAnalysisResult, newImageData] = await Promise.all([
-        generateDreamAnalysis(),
-        generateDreamImage(),
-      ]);
-      setAnalysisResult(newAnalysisResult);
-      setImageData(newImageData);
-      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
-    } finally {
-      setIsLoading(false);
-    }
-  };  
-
-  const generateDreamAnalysis = async () => {
-    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
-    if (!response.ok) {
-      throw new Error('Failed to generate dream analysis.');
-    }
-    let analysis = await response.text();
-    try {
-      // Try to parse the string as JSON
-      const parsedText = JSON.parse(analysis);
-      if (typeof parsedText === 'string') {
-        // If the parsed result is a string, use it
-        analysis = parsedText;
-      }
-    } catch (e) {
-      // If parsing fails, it's not valid JSON, so we'll just use the original string
-    }
-    analysis = analysis.replace(/\\"/g, '"').replace(/\\n/g, '\n');
-    return analysis;
-  };  
-
-  const generateDreamImage = async () => {
-    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
-    if (!response.ok) {
-      throw new Error('Failed to generate dream image.');
-    }
-    const imageData = await response.json();
-    return imageData.image;
-  };
-
-  const handleOverwriteSave = async () => {
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ analysis: analysisResult, image: imageData }),
-      });
-
-      if (response.ok) {
-        Alert.alert('Success', 'Analysis and image overwritten successfully!');
-        setDream({
-          ...dream,
-          analysis: analysisResult,
-          image: imageData,
-        });
-        // Go back to DetailsScreen after successful save
-        navigation.navigate('Details', { dreamId, dreamUpdated: true });
-      } else {
-        Alert.alert('Error', 'Failed to overwrite analysis and image.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    }
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {dream && (
-        <>
-          <Subheading style={styles.subLabel}>Dream Title</Subheading>
-          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
-          <Subheading style={styles.subLabel}>Dream Date</Subheading>
-          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
-          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
-        </>
-      )}
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
-      ) : (
-        <>
-          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
-          <Text style={styles.analysisResult}>{analysisResult}</Text>
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: imageData }} style={styles.image} />
-          </View>
-          <Button
-            mode="contained"
-            onPress={handleOverwriteSave}
-            style={styles.overwriteButton}
-            labelStyle={styles.overwriteButtonText}
-          >
-            Overwrite Save
-          </Button>
-          <Button
-            mode="contained"
-            onPress={() => setShouldRegenerate(true)}
-            style={styles.regenerateButton}
-            labelStyle={styles.regenerateButtonText}
-          >
-            Regenerate
-          </Button>
-        </>
-      )}
-    </ScrollView>
   );
 };
 
@@ -519,43 +427,125 @@ const DetailsScreen = ({ route, navigation }) => {
   );
 };
 
-const NewDreamScreen = () => {
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
-  const [entry, setEntry] = useState('');
+const RegenerateScreen = ({ route, navigation }) => {
+  const { dreamId } = route.params;
+  const [dream, setDream] = useState(null);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [imageData, setImageData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [shouldRegenerate, setShouldRegenerate] = useState(false);
 
-  const handleSaveDream = async () => {
-    if (title.trim() === '') {
-      Alert.alert('Warning', 'Please enter a dream title.');
-      return;
+  useEffect(() => {
+    fetchDream();
+  }, []);
+
+  useEffect(() => {
+    if (dream && shouldRegenerate) {
+      handleRegenerateDream();
     }
+  }, [dream, shouldRegenerate]);
 
-    if (date.trim() === '') {
-      Alert.alert('Warning', 'Please enter a dream date.');
-      return;
-    }
-
-    if (entry.trim() === '') {
-      Alert.alert('Warning', 'Please enter a dream entry.');
-      return;
-    }
-
+  const fetchDream = async () => {
     try {
-      const response = await fetch(`${API_URL}/api/dreams`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
+      if (response.ok) {
+        let dreamData = await response.json();
+        if ('analysis' in dreamData) {
+          let analysisText = dreamData.analysis;
+          try {
+            // Try to parse the string as JSON
+            const parsedText = JSON.parse(analysisText);
+            if (typeof parsedText === 'string') {
+              // If the parsed result is a string, use it
+              analysisText = parsedText;
+            }
+          } catch (e) {
+            // If parsing fails, it's not valid JSON, so we'll just use the original string
+          }
+          analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+          setAnalysisResult(analysisText);
+        }
+        if ('image' in dreamData) {
+          setImageData(dreamData.image);
+        }
+        setDream(dreamData);
+      } else {
+        Alert.alert('Error', 'Failed to fetch dream details.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    }
+  };  
+
+  const handleRegenerateDream = async () => {
+    setIsLoading(true);
+    try {
+      const [newAnalysisResult, newImageData] = await Promise.all([
+        generateDreamAnalysis(),
+        generateDreamImage(),
+      ]);
+      setAnalysisResult(newAnalysisResult);
+      setImageData(newImageData);
+      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+    } finally {
+      setIsLoading(false);
+    }
+  };  
+
+  const generateDreamAnalysis = async () => {
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
+    if (!response.ok) {
+      throw new Error('Failed to generate dream analysis.');
+    }
+    let analysis = await response.text();
+    try {
+      // Try to parse the string as JSON
+      const parsedText = JSON.parse(analysis);
+      if (typeof parsedText === 'string') {
+        // If the parsed result is a string, use it
+        analysis = parsedText;
+      }
+    } catch (e) {
+      // If parsing fails, it's not valid JSON, so we'll just use the original string
+    }
+    analysis = analysis.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+    return analysis;
+  };  
+
+  const generateDreamImage = async () => {
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
+    if (!response.ok) {
+      throw new Error('Failed to generate dream image.');
+    }
+    const imageData = await response.json();
+    return imageData.image;
+  };
+
+  const handleOverwriteSave = async () => {
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, date, entry }),
+        body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
 
       if (response.ok) {
-        Alert.alert('Success', 'Dream saved successfully!');
-        setTitle('');
-        setDate('');
-        setEntry('');
+        Alert.alert('Success', 'Analysis and image overwritten successfully!');
+        setDream({
+          ...dream,
+          analysis: analysisResult,
+          image: imageData,
+        });
+        // Go back to DetailsScreen after successful save
+        navigation.navigate('Details', { dreamId, dreamUpdated: true });
       } else {
-        Alert.alert('Error', 'Failed to save dream.');
+        Alert.alert('Error', 'Failed to overwrite analysis and image.');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -565,33 +555,43 @@ const NewDreamScreen = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Dream Title</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={(text) => setTitle(text)}
-      />
-      <Text style={styles.label}>Dream Date</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={(text) => setDate(text)}
-      />
-      <Text style={styles.label}>Dream Entry</Text>
-      <TextInput
-        style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
-        value={entry}
-        onChangeText={(text) => setEntry(text)}
-        multiline
-      />
-      <Button
-        mode="contained"
-        onPress={handleSaveDream}
-        style={styles.saveButton}
-        labelStyle={styles.saveButtonText}
-      >
-        Save Dream
-      </Button>
+      {dream && (
+        <>
+          <Subheading style={styles.subLabel}>Dream Title</Subheading>
+          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
+          <Subheading style={styles.subLabel}>Dream Date</Subheading>
+          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
+          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
+          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+        </>
+      )}
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
+      ) : (
+        <>
+          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+          <Text style={styles.analysisResult}>{analysisResult}</Text>
+          <View style={styles.imageContainer}>
+            <Image source={{ uri: imageData }} style={styles.image} />
+          </View>
+          <Button
+            mode="contained"
+            onPress={handleOverwriteSave}
+            style={styles.overwriteButton}
+            labelStyle={styles.overwriteButtonText}
+          >
+            Overwrite Save
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => setShouldRegenerate(true)}
+            style={styles.regenerateButton}
+            labelStyle={styles.regenerateButtonText}
+          >
+            Regenerate
+          </Button>
+        </>
+      )}
     </ScrollView>
   );
 };
