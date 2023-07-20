@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -61,6 +61,7 @@ const App = () => {
 const DreamsScreen = ({ navigation }) => {
   const [dreams, setDreams] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     fetchDreams();
@@ -68,6 +69,7 @@ const DreamsScreen = ({ navigation }) => {
 
   const fetchDreams = async () => {
     try {
+      setIsRefreshing(true);  // Add this line
       const response = await fetch(`${API_URL}/api/dreams`);
       if (response.ok) {
         const dreamsData = await response.json();
@@ -86,6 +88,7 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert('Error', 'An unexpected error occurred.');
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);  // Add this line
     }
   };
 
@@ -122,6 +125,9 @@ const DreamsScreen = ({ navigation }) => {
               style={styles.list}
               contentContainerStyle={{ paddingBottom: 20 }}
               showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
+              }
             />
           ) : (
             <View style={styles.emptyStateContainer}>
@@ -235,7 +241,8 @@ const RegenerateScreen = ({ route, navigation }) => {
           analysis: analysisResult,
           image: imageData,
         });
-        navigation.goBack();
+        // Go back to DetailsScreen after successful save
+        navigation.navigate('Details', { dreamId, dreamUpdated: true });
       } else {
         Alert.alert('Error', 'Failed to overwrite analysis and image.');
       }
@@ -296,19 +303,29 @@ const DetailsScreen = ({ route, navigation }) => {
   const [analysisResult, setAnalysisResult] = useState('');
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    fetchDream();
-  }, []);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const fetchDream = async () => {
     try {
+      setIsRefreshing(true);
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
       if (response.ok) {
         let dreamData = await response.json();
         if ('analysis' in dreamData) {
-          setAnalysisResult(dreamData.analysis);
-        }
+          let analysisText = dreamData.analysis;
+          try {
+            // Try to parse the string as JSON
+            const parsedText = JSON.parse(analysisText);
+            if (typeof parsedText === 'string') {
+              // If the parsed result is a string, use it
+              analysisText = parsedText;
+            }
+          } catch (e) {
+            // If parsing fails, it's not valid JSON, so we'll just use the original string
+          }
+          analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+          setAnalysisResult(analysisText);
+        }        
         if ('image' in dreamData) {
           setImageData(dreamData.image);
         }
@@ -319,8 +336,19 @@ const DetailsScreen = ({ route, navigation }) => {
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setIsRefreshing(false);
     }
   };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', fetchDream);
+
+    // Call fetchDream for the first time
+    fetchDream();
+
+    return unsubscribe;
+  }, [navigation]);
 
   const handleGenerateDream = async () => {
     setIsLoading(true);
@@ -395,7 +423,12 @@ const DetailsScreen = ({ route, navigation }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={isRefreshing} onRefresh={fetchDream} />
+      }
+    >
       {dream && (
         <>
           <Subheading style={styles.subLabel}>Dream Title</Subheading>
