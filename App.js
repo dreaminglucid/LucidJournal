@@ -173,7 +173,19 @@ const RegenerateScreen = ({ route, navigation }) => {
       if (response.ok) {
         let dreamData = await response.json();
         if ('analysis' in dreamData) {
-          setAnalysisResult(dreamData.analysis);
+          let analysisText = dreamData.analysis;
+          try {
+            // Try to parse the string as JSON
+            const parsedText = JSON.parse(analysisText);
+            if (typeof parsedText === 'string') {
+              // If the parsed result is a string, use it
+              analysisText = parsedText;
+            }
+          } catch (e) {
+            // If parsing fails, it's not valid JSON, so we'll just use the original string
+          }
+          analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+          setAnalysisResult(analysisText);
         }
         if ('image' in dreamData) {
           setImageData(dreamData.image);
@@ -186,7 +198,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };
+  };  
 
   const handleRegenerateDream = async () => {
     setIsLoading(true);
@@ -197,23 +209,34 @@ const RegenerateScreen = ({ route, navigation }) => {
       ]);
       setAnalysisResult(newAnalysisResult);
       setImageData(newImageData);
+      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred during regeneration.');
     } finally {
       setIsLoading(false);
-      setShouldRegenerate(false);
     }
-  };
+  };  
 
   const generateDreamAnalysis = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
     if (!response.ok) {
       throw new Error('Failed to generate dream analysis.');
     }
-    const analysis = await response.text();
+    let analysis = await response.text();
+    try {
+      // Try to parse the string as JSON
+      const parsedText = JSON.parse(analysis);
+      if (typeof parsedText === 'string') {
+        // If the parsed result is a string, use it
+        analysis = parsedText;
+      }
+    } catch (e) {
+      // If parsing fails, it's not valid JSON, so we'll just use the original string
+    }
+    analysis = analysis.replace(/\\"/g, '"').replace(/\\n/g, '\n');
     return analysis;
-  };
+  };  
 
   const generateDreamImage = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
@@ -372,14 +395,25 @@ const DetailsScreen = ({ route, navigation }) => {
       if (!response.ok) {
         throw new Error('Failed to fetch dream analysis.');
       }
-      const analysisResult = await response.text();
+      let analysisResult = await response.text();
+      try {
+        // Try to parse the string as JSON
+        const parsedText = JSON.parse(analysisResult);
+        if (typeof parsedText === 'string') {
+          // If the parsed result is a string, use it
+          analysisResult = parsedText;
+        }
+      } catch (e) {
+        // If parsing fails, it's not valid JSON, so we'll just use the original string
+      }
+      analysisResult = analysisResult.replace(/\\"/g, '"').replace(/\\n/g, '\n');
       return analysisResult;
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
       throw error; // Throw the error so it can be caught in handleGenerateDream
     }
-  };
+  };  
 
   const fetchDreamImage = async () => {
     try {
