@@ -235,6 +235,16 @@ const DetailsScreen = ({ route, navigation }) => {
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('idle');
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', fetchDream);
+
+    // Call fetchDream for the first time
+    fetchDream();
+
+    return unsubscribe;
+  }, [navigation]);
 
   const fetchDream = async () => {
     try {
@@ -272,28 +282,24 @@ const DetailsScreen = ({ route, navigation }) => {
     }
   };
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', fetchDream);
-
-    // Call fetchDream for the first time
-    fetchDream();
-
-    return unsubscribe;
-  }, [navigation]);
-
   const handleGenerateDream = async () => {
-    setIsLoading(true);
-    try {
-      console.log('Starting generation...');
-      const [analysis, image] = await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
-      console.log('Generation completed.');
-      setAnalysisResult(analysis);
-      setImageData(image);
-    } catch (error) {
-      console.error('Error during generation:', error);
-      Alert.alert('Error', 'An unexpected error occurred during generation.');
-    } finally {
-      setIsLoading(false);
+    if (generationStatus !== 'generating') {
+      setGenerationStatus('generating');
+      setIsLoading(true);
+      try {
+        console.log('Starting generation...');
+        const [analysis, image] = await Promise.all([fetchDreamAnalysis(), fetchDreamImage()]);
+        console.log('Generation completed.');
+        setAnalysisResult(analysis);
+        setImageData(image);
+        setGenerationStatus('success');
+      } catch (error) {
+        console.error('Error during generation:', error);
+        Alert.alert('Error', 'An unexpected error occurred during generation.');
+        setGenerationStatus('error');
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -434,6 +440,8 @@ const RegenerateScreen = ({ route, navigation }) => {
   const [imageData, setImageData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [shouldRegenerate, setShouldRegenerate] = useState(false);
+  const [canSave, setCanSave] = useState(false);
+  const [generationStatus, setGenerationStatus] = useState('idle');
 
   useEffect(() => {
     fetchDream();
@@ -479,22 +487,28 @@ const RegenerateScreen = ({ route, navigation }) => {
   };  
 
   const handleRegenerateDream = async () => {
-    setIsLoading(true);
-    try {
-      const [newAnalysisResult, newImageData] = await Promise.all([
-        generateDreamAnalysis(),
-        generateDreamImage(),
-      ]);
-      setAnalysisResult(newAnalysisResult);
-      setImageData(newImageData);
-      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
-    } finally {
-      setIsLoading(false);
+    if (generationStatus !== 'generating') {
+      setGenerationStatus('generating');
+      setIsLoading(true);
+      try {
+        console.log('Starting regeneration...');
+        const [newAnalysisResult, newImageData] = await Promise.all([generateDreamAnalysis(), generateDreamImage()]);
+        console.log('Regeneration completed.');
+        setAnalysisResult(newAnalysisResult);
+        setImageData(newImageData);
+        setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+        setCanSave(true); // add this line
+        setGenerationStatus('success');
+      } catch (error) {
+        console.error('Error during regeneration:', error);
+        Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+        setCanSave(false); // add this line
+        setGenerationStatus('error');
+      } finally {
+        setIsLoading(false);
+      }
     }
-  };  
+  };
 
   const generateDreamAnalysis = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
@@ -576,19 +590,20 @@ const RegenerateScreen = ({ route, navigation }) => {
           </View>
           <Button
             mode="contained"
-            onPress={handleOverwriteSave}
-            style={styles.overwriteButton}
-            labelStyle={styles.overwriteButtonText}
-          >
-            Overwrite Save
-          </Button>
-          <Button
-            mode="contained"
             onPress={() => setShouldRegenerate(true)}
             style={styles.regenerateButton}
             labelStyle={styles.regenerateButtonText}
           >
             Regenerate
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleOverwriteSave}
+            disabled={!canSave} // add this line
+            style={styles.overwriteButton}
+            labelStyle={styles.overwriteButtonText}
+          >
+            Overwrite Save
           </Button>
         </>
       )}
@@ -794,6 +809,7 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   overwriteButton: {
+    marginTop: 10,
     marginBottom: 10,
     backgroundColor: '#7851A9',
     borderRadius: 50,
