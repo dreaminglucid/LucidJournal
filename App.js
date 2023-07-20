@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
@@ -511,36 +511,23 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   const handleRegenerateDream = () => {
     setIsLoading(true);
-    generateDreamAnalysis()
-      .then(newAnalysisResult => {
-        setAnalysisResult(newAnalysisResult);
-        setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
-        if (imageData) {
-          setCanSave(true);
-          setIsLoading(false);
-        }
-      })
-      .catch(error => {
-        console.error('Error during analysis regeneration:', error);
-        Alert.alert('Error', 'An unexpected error occurred during analysis regeneration.');
-        setCanSave(false);
-        setIsLoading(false);
-      });
-  
-    generateDreamImage()
-      .then(newImageData => {
-        setImageData(newImageData);
-        if (analysisResult) {
-          setCanSave(true);
-          setIsLoading(false);
-        }
-      })
-      .catch(error => {
-        console.error('Error during image regeneration:', error);
-        Alert.alert('Error', 'An unexpected error occurred during image regeneration.');
-        setCanSave(false);
-        setIsLoading(false);
-      });
+    Promise.all([
+      generateDreamAnalysis(),
+      generateDreamImage()
+    ])
+    .then(([newAnalysisResult, newImageData]) => {
+      setAnalysisResult(newAnalysisResult);
+      setImageData(newImageData);
+      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+      setCanSave(true);
+      setIsLoading(false);
+    })
+    .catch(error => {
+      console.error('Error during regeneration:', error);
+      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+      setCanSave(false);
+      setIsLoading(false);
+    });
   };  
 
   const generateDreamAnalysis = async () => {
