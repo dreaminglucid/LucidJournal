@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl, KeyboardAvoidingView } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -54,16 +54,7 @@ const App = () => {
           }}
         />
         <Tab.Screen
-          name="Search"
-          component={SearchScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="magnify" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Chat"
+          name="Emris"
           component={ChatScreen}
           options={{
             tabBarIcon: ({ color, size }) => (
@@ -76,120 +67,105 @@ const App = () => {
   );
 };
 
-const SearchScreen = () => {
-  const [searchText, setSearchText] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSearch = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/search`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: searchText }),
-      });
-
-      if (response.ok) {
-        const results = await response.json();
-        setSearchResults(results);
-      } else {
-        Alert.alert('Error', 'Failed to perform search.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const renderSearchResultItem = ({ item }) => {
-    return (
-      <View style={styles.searchResultItem}>
-        <Text style={styles.searchResultText}>{item.metadata.title}</Text>
-      </View>
-    );
-  };
-
-  return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        value={searchText}
-        onChangeText={(text) => setSearchText(text)}
-        placeholder="Search for dreams"
-        onSubmitEditing={handleSearch} // Call handleSearch when user submits the form
-      />
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#00ADB5" />
-      ) : (
-        <FlatList
-          data={searchResults}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={renderSearchResultItem}
-        />
-      )}
-    </View>
-  );
-};
-
 const ChatScreen = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const flatListRef = useRef();
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (message.trim() === '') {
       return;
     }
 
+    const newMessage = {
+      text: message,
+      sender: 'User',
+      timestamp: new Date(),
+    };
+
     // Add the user's message to the chat history
-    setChatHistory(prevChatHistory => [...prevChatHistory, { text: message, sender: 'User' }]);
-
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ prompt: message }),
-      });
-
-      if (response.ok) {
-        const responseData = await response.json();
-
-        // Add the system's response to the chat history
-        setChatHistory(prevChatHistory => [...prevChatHistory, { text: responseData.arguments.prompt, sender: 'System' }]);
-      } else {
-        Alert.alert('Error', 'Failed to send message.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    }
+    setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
+    setIsTyping(true);
 
     // Clear the input field
     setMessage('');
   };
+
+  useEffect(() => {
+    const getSystemResponse = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: message }),
+        });
+    
+        if (response.ok) {
+          const responseData = await response.json();
+          const systemResponse = {
+            // Get the discussion text from the response
+            text: responseData.arguments.discussion,
+            sender: 'System',
+            timestamp: new Date(),
+          };
+    
+          // Add the system's response to the chat history
+          setChatHistory((prevChatHistory) => [...prevChatHistory, systemResponse]);
+        } else {
+          Alert.alert('Error', 'Failed to send message.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'An unexpected error occurred.');
+      }
+    
+      setIsTyping(false);
+    }    
+
+    if (isTyping) {
+      getSystemResponse();
+    }
+  }, [chatHistory]);
 
   const renderMessageItem = ({ item }) => {
     const isUserMessage = item.sender === 'User';
     return (
       <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
         <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+        <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
+      </View>
+    );
+  };
+
+  const renderEmptyState = () => {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <Text style={styles.emptyStateText}>No messages yet. Start a conversation!</Text>
       </View>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={chatHistory}
-        keyExtractor={(item, index) => index.toString()}
-        renderItem={renderMessageItem}
-      />
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 45 : 20}
+    >
+      <ScrollView contentContainerStyle={styles.container}>
+        <FlatList
+          ref={flatListRef}
+          data={chatHistory}
+          keyExtractor={(item, index) => index.toString()}
+          renderItem={renderMessageItem}
+          ListEmptyComponent={renderEmptyState}
+          onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
+        />
+
+        {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
+      </ScrollView>
 
       <View style={styles.inputContainer}>
         <TextInput
@@ -201,7 +177,7 @@ const ChatScreen = () => {
         />
         <Button title="Send" onPress={handleSendMessage} />
       </View>
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -284,6 +260,8 @@ const NewDreamScreen = () => {
 
 const DreamsScreen = ({ navigation }) => {
   const [dreams, setDreams] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -321,6 +299,36 @@ const DreamsScreen = ({ navigation }) => {
     navigation.navigate('Details', { dreamId });
   };
 
+  const handleSearch = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: searchText }),
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      } else {
+        Alert.alert('Error', 'Failed to perform search.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchText('');
+    setSearchResults([]);
+  };
+
   const renderDreamItem = ({ item }) => {
     console.log(item); // log the entire dream item
     return (
@@ -337,37 +345,34 @@ const DreamsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.input}
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+          placeholder="Search for dreams"
+          onSubmitEditing={handleSearch} // Call handleSearch when user submits the form
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>X</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
-        <>
-          {dreams.length > 0 ? (
-            <FlatList
-              data={dreams}
-              keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
-              renderItem={renderDreamItem}
-              style={styles.list}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
-              }
-            />
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <MaterialCommunityIcons name="emoticon-sad-outline" size={120} color="#FFFFFF" style={styles.emptyStateImage} />
-              <Text style={styles.emptyStateText}>No dreams found</Text>
-              <Button
-                mode="contained"
-                onPress={() => navigation.navigate('New Dream')}
-                style={styles.emptyStateButton}
-                labelStyle={styles.generateButtonText}
-              >
-                Add New Dream
-              </Button>
-            </View>
-          )}
-        </>
+        <FlatList
+          data={searchResults.length > 0 ? searchResults : dreams}
+          keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
+          renderItem={renderDreamItem}
+          style={styles.list}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
+          }
+        />
       )}
     </View>
   );
@@ -1002,6 +1007,16 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 16,
   },
+  searchBar: {
+
+  },
+  clearButton: {
+    padding: 10,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: '#999',
+  },
   chatInput: {
     flexGrow: 1,
     marginRight: 10,
@@ -1034,6 +1049,10 @@ const styles = StyleSheet.create({
   systemMessageText: {
     color: '#FFFFFF',
     fontSize: 16,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 
