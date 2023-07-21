@@ -53,8 +53,77 @@ const App = () => {
             ),
           }}
         />
+        <Tab.Screen
+          name="Search"
+          component={SearchScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="magnify" color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+};
+
+const SearchScreen = () => {
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSearch = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: searchText }),
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      } else {
+        Alert.alert('Error', 'Failed to perform search.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderSearchResultItem = ({ item }) => {
+    return (
+      <View style={styles.searchResultItem}>
+        <Text style={styles.searchResultText}>{item.metadata.title}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <TextInput
+        style={styles.input}
+        value={searchText}
+        onChangeText={(text) => setSearchText(text)}
+        placeholder="Search for dreams"
+        onSubmitEditing={handleSearch} // Call handleSearch when user submits the form
+      />
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#00ADB5" />
+      ) : (
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderSearchResultItem}
+        />
+      )}
+    </View>
   );
 };
 
@@ -245,7 +314,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
     return unsubscribe;
   }, [navigation]);
-  
+
   useEffect(() => {
     if (generationStatus === 'generating') {
       handleGenerateDream();
@@ -272,7 +341,7 @@ const DetailsScreen = ({ route, navigation }) => {
           }
           analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
           setAnalysisResult(analysisText);
-        }        
+        }
         if ('image' in dreamData) {
           setImageData(dreamData.image);
         }
@@ -300,7 +369,7 @@ const DetailsScreen = ({ route, navigation }) => {
         setGenerationStatus('error');
         setIsLoading(false);
       });
-  
+
     fetchDreamImage()
       .then(image => {
         setImageData(image);
@@ -311,14 +380,14 @@ const DetailsScreen = ({ route, navigation }) => {
         setGenerationStatus('error');
         setIsLoading(false);
       });
-  }; 
-  
+  };
+
   useEffect(() => {
     if (analysisResult && imageData) {
       setIsLoading(false);
       setGenerationStatus('success');
     }
-  }, [analysisResult, imageData]);  
+  }, [analysisResult, imageData]);
 
   const fetchDreamAnalysis = async () => {
     try {
@@ -344,7 +413,7 @@ const DetailsScreen = ({ route, navigation }) => {
       Alert.alert('Error', 'An unexpected error occurred.');
       throw error; // Throw the error so it can be caught in handleGenerateDream
     }
-  };  
+  };
 
   const fetchDreamImage = async () => {
     try {
@@ -507,7 +576,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   const handleRegenerateDream = () => {
     setIsLoading(true);
@@ -515,20 +584,20 @@ const RegenerateScreen = ({ route, navigation }) => {
       generateDreamAnalysis(),
       generateDreamImage()
     ])
-    .then(([newAnalysisResult, newImageData]) => {
-      setAnalysisResult(newAnalysisResult);
-      setImageData(newImageData);
-      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
-      setCanSave(true);
-      setIsLoading(false);
-    })
-    .catch(error => {
-      console.error('Error during regeneration:', error);
-      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
-      setCanSave(false);
-      setIsLoading(false);
-    });
-  };  
+      .then(([newAnalysisResult, newImageData]) => {
+        setAnalysisResult(newAnalysisResult);
+        setImageData(newImageData);
+        setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+        setCanSave(true);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error during regeneration:', error);
+        Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+        setCanSave(false);
+        setIsLoading(false);
+      });
+  };
 
   const generateDreamAnalysis = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
@@ -548,7 +617,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     }
     analysis = analysis.replace(/\\"/g, '"').replace(/\\n/g, '\n');
     return analysis;
-  };  
+  };
 
   const generateDreamImage = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
@@ -842,6 +911,18 @@ const styles = StyleSheet.create({
   overwriteButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  searchResultItem: {
+    borderWidth: 1,
+    borderColor: '#123',
+    borderRadius: 15,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#272B3B',
+  },
+  searchResultText: {
+    color: '#FFFFFF',
+    fontSize: 16,
   },
 });
 
