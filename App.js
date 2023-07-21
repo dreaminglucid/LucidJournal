@@ -62,6 +62,15 @@ const App = () => {
             ),
           }}
         />
+        <Tab.Screen
+          name="Chat"
+          component={ChatScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="chat" color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
   );
@@ -123,6 +132,75 @@ const SearchScreen = () => {
           renderItem={renderSearchResultItem}
         />
       )}
+    </View>
+  );
+};
+
+const ChatScreen = () => {
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([]);
+
+  const handleSendMessage = async () => {
+    if (message.trim() === '') {
+      return;
+    }
+
+    // Add the user's message to the chat history
+    setChatHistory(prevChatHistory => [...prevChatHistory, { text: message, sender: 'User' }]);
+
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: message }),
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+
+        // Add the system's response to the chat history
+        setChatHistory(prevChatHistory => [...prevChatHistory, { text: responseData.arguments.prompt, sender: 'System' }]);
+      } else {
+        Alert.alert('Error', 'Failed to send message.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    }
+
+    // Clear the input field
+    setMessage('');
+  };
+
+  const renderMessageItem = ({ item }) => {
+    const isUserMessage = item.sender === 'User';
+    return (
+      <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
+        <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+      </View>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      <FlatList
+        data={chatHistory}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderMessageItem}
+      />
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={message}
+          onChangeText={(text) => setMessage(text)}
+          placeholder="Type a message"
+          onSubmitEditing={handleSendMessage}
+        />
+        <Button title="Send" onPress={handleSendMessage} />
+      </View>
     </View>
   );
 };
@@ -921,6 +999,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#272B3B',
   },
   searchResultText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  chatInput: {
+    flexGrow: 1,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#123',
+    borderRadius: 15,
+    padding: 10,
+    color: '#FFFFFF',
+    backgroundColor: '#272B3B',
+    fontSize: 16,
+  },
+  userMessageContainer: {
+    alignSelf: 'flex-end',
+    borderRadius: 15,
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#00ADB5',
+  },
+  userMessageText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  systemMessageContainer: {
+    alignSelf: 'flex-start',
+    borderRadius: 15,
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#272B3B',
+  },
+  systemMessageText: {
     color: '#FFFFFF',
     fontSize: 16,
   },
