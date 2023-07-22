@@ -69,7 +69,13 @@ const App = () => {
 
 const ChatScreen = () => {
   const [message, setMessage] = useState('');
-  const [chatHistory, setChatHistory] = useState([]);
+  const [chatHistory, setChatHistory] = useState([
+    {
+      text: "My name is Emris, I am your personal dream guide AI! Please ask something about your dreams.",
+      sender: "System",
+      timestamp: new Date(),
+    },
+  ]);  
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef();
 
@@ -87,9 +93,6 @@ const ChatScreen = () => {
     // Add the user's message to the chat history
     setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
     setIsTyping(true);
-
-    // Clear the input field
-    setMessage('');
   };
 
   useEffect(() => {
@@ -102,16 +105,16 @@ const ChatScreen = () => {
           },
           body: JSON.stringify({ prompt: message }),
         });
-    
+
         if (response.ok) {
           const responseData = await response.json();
           const systemResponse = {
             // Get the discussion text from the response
-            text: responseData.arguments.discussion,
+            text: responseData['arguments']['discussion'],
             sender: 'System',
             timestamp: new Date(),
           };
-    
+
           // Add the system's response to the chat history
           setChatHistory((prevChatHistory) => [...prevChatHistory, systemResponse]);
         } else {
@@ -121,14 +124,15 @@ const ChatScreen = () => {
         console.error('Error:', error);
         Alert.alert('Error', 'An unexpected error occurred.');
       }
-    
+
       setIsTyping(false);
-    }    
+    }
 
     if (isTyping) {
       getSystemResponse();
+      setMessage('');
     }
-  }, [chatHistory]);
+  }, [isTyping]);
 
   const renderMessageItem = ({ item }) => {
     const isUserMessage = item.sender === 'User';
