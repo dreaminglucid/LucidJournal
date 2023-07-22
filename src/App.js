@@ -356,16 +356,17 @@ const DreamsScreen = ({ navigation }) => {
   const renderDreamItem = ({ item }) => {
     console.log(item); // log the entire dream item
     return (
-      <TouchableOpacity onPress={() => handleDreamSelection(item.id)}>
-        <Card elevation={3} style={styles.dreamItem}>
-          <Card.Content>
-            <Title style={styles.dreamItemText}>{item.metadata.title}</Title>
-            <Subheading style={styles.dreamItemDate}>{item.metadata.date}</Subheading>
-          </Card.Content>
-        </Card>
+      <TouchableOpacity style={styles.dreamItem} onPress={() => handleDreamSelection(item.id)}>
+        <View style={styles.dreamTextContent}>
+          <Title style={styles.dreamItemText}>{item.metadata.title}</Title>
+          <Subheading style={styles.dreamItemDate}>{item.metadata.date}</Subheading>
+        </View>
+        {item.metadata.image && (
+          <Image source={{ uri: item.metadata.image }} style={styles.dreamItemImage} />
+        )}
       </TouchableOpacity>
     );
-  };
+  };  
 
   return (
     <View style={styles.container}>
@@ -942,6 +943,9 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   dreamItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#123',
     borderRadius: 15,
@@ -952,6 +956,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 2,
     elevation: 5,
+    padding: 10,
+  },
+  dreamItemImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 13,
+    marginLeft: 10,
   },
   dreamItemText: {
     color: '#FFFFFF',
