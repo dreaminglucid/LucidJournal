@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "LucidProject",
-    "slug": "LucidProject",
+    "name": "Lucid Journal",
+    "slug": "lucid-journal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jamesfeura.lucidjournal"
     },
     "android": {
       "adaptiveIcon": {
@@ -25,6 +26,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "ca62a3da-e797-4f07-aec8-f5f27ea698c5"
+      }
+    },
+    "owner": "jamesfeura"
   }
 }

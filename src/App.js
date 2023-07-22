@@ -3,7 +3,7 @@ import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpa
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Button, Card, Title, Subheading } from 'react-native-paper';
+import { Button, Card, Title, Subheading, FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import API_URL from './config';
 
@@ -54,7 +54,7 @@ const App = () => {
             ),
           }}
         />
-        <Tab.Screen
+        {/* <Tab.Screen
           name="New Dream"
           component={NewDreamScreen}
           options={{
@@ -62,7 +62,7 @@ const App = () => {
               <MaterialCommunityIcons name="plus-circle" color={color} size={size} />
             ),
           }}
-        />
+        /> */}
         <Tab.Screen
           name="Emris"
           component={ChatScreen}
@@ -177,9 +177,9 @@ const ChatScreen = () => {
         ListEmptyComponent={renderEmptyState}
         onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
       />
-  
+
       {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
-  
+
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
@@ -254,7 +254,7 @@ const NewDreamScreen = () => {
         style={styles.input}
         value={date}
         onChangeText={(text) => setDate(text)}
-        placeholder="(MM/DD/YYYY)"
+        placeholder="MM/DD/YYYY"
         placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Entry</Text>
@@ -349,6 +349,10 @@ const DreamsScreen = ({ navigation }) => {
     setSearchResults([]);
   };
 
+  const navigateToNewDream = () => {
+    navigation.navigate('New Dream');
+  };
+
   const renderDreamItem = ({ item }) => {
     console.log(item); // log the entire dream item
     return (
@@ -395,6 +399,23 @@ const DreamsScreen = ({ navigation }) => {
           }
         />
       )}
+      <FAB
+        style={{
+          position: 'absolute',
+          margin: 16,
+          right: 16,
+          bottom: 66,
+          backgroundColor: '#00ADB5',
+          elevation: 4, // shadow on Android
+          shadowColor: '#000', // shadow on iOS
+          shadowOffset: { width: 0, height: 2 }, // shadow on iOS
+          shadowOpacity: 0.25, // shadow on iOS
+          shadowRadius: 3.84, // shadow on iOS
+          borderRadius: 222,
+        }}
+        icon={() => <MaterialCommunityIcons name="plus" color="white" size={26} />}
+        onPress={navigateToNewDream}
+      />
     </View>
   );
 };
@@ -824,6 +845,22 @@ const DreamsScreenStack = () => {
         }}
       />
       <Stack.Screen
+        name="New Dream"
+        component={NewDreamScreen}
+        options={{
+          headerTitleAlign: 'center',
+          headerTintColor: '#FFFFFF',
+          headerStyle: {
+            backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+          },
+        }}
+      />
+      <Stack.Screen
         name="Details"
         component={DetailsScreen}
         options={{
@@ -899,7 +936,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   tallerInput: {
-    height: 369, // Adjust the height as desired
+    height: 333, // Adjust the height as desired
   },
   list: {
     marginBottom: 20,
