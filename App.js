@@ -17,6 +17,11 @@ const App = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
           headerTitleStyle: {
             color: '#FFFFFF',
@@ -25,6 +30,11 @@ const App = () => {
           tabBarStyle: {
             backgroundColor: '#0C0E17',
             borderTopColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
           tabBarLabelStyle: {
             fontSize: 14,
@@ -158,26 +168,25 @@ const ChatScreen = () => {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 45 : 20}
     >
-      <ScrollView contentContainerStyle={styles.container}>
-        <FlatList
-          ref={flatListRef}
-          data={chatHistory}
-          keyExtractor={(item, index) => index.toString()}
-          renderItem={renderMessageItem}
-          ListEmptyComponent={renderEmptyState}
-          onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
-        />
-
-        {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
-      </ScrollView>
-
+      <FlatList
+        ref={flatListRef}
+        contentContainerStyle={styles.container}
+        data={chatHistory}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderMessageItem}
+        ListEmptyComponent={renderEmptyState}
+        onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
+      />
+  
+      {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
+  
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
           value={message}
           onChangeText={(text) => setMessage(text)}
           placeholder="Type a message"
-          placeholderTextColor="#888" // Change this to your desired color
+          placeholderTextColor="#888"
           onSubmitEditing={handleSendMessage}
         />
         <Button title="Send" onPress={handleSendMessage} />
@@ -806,6 +815,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
@@ -817,6 +831,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
@@ -828,6 +847,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
