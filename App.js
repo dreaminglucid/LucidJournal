@@ -75,7 +75,7 @@ const ChatScreen = () => {
       sender: "System",
       timestamp: new Date(),
     },
-  ]);  
+  ]);
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef();
 
@@ -177,6 +177,7 @@ const ChatScreen = () => {
           value={message}
           onChangeText={(text) => setMessage(text)}
           placeholder="Type a message"
+          placeholderTextColor="#888" // Change this to your desired color
           onSubmitEditing={handleSendMessage}
         />
         <Button title="Send" onPress={handleSendMessage} />
@@ -236,19 +237,25 @@ const NewDreamScreen = () => {
         style={styles.input}
         value={title}
         onChangeText={(text) => setTitle(text)}
+        placeholder="Enter dream title"
+        placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Date</Text>
       <TextInput
         style={styles.input}
         value={date}
         onChangeText={(text) => setDate(text)}
+        placeholder="(MM/DD/YYYY)"
+        placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Entry</Text>
       <TextInput
-        style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
+        style={[styles.input, styles.tallerInput]}
         value={entry}
         onChangeText={(text) => setEntry(text)}
         multiline
+        placeholder="Write your dream here"
+        placeholderTextColor="#888"
       />
       <Button
         mode="contained"
@@ -355,7 +362,8 @@ const DreamsScreen = ({ navigation }) => {
           value={searchText}
           onChangeText={(text) => setSearchText(text)}
           placeholder="Search for dreams"
-          onSubmitEditing={handleSearch} // Call handleSearch when user submits the form
+          placeholderTextColor="#888"
+          onSubmitEditing={handleSearch}
         />
         {searchText.length > 0 && (
           <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
