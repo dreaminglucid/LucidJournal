@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl, KeyboardAvoidingView } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -17,6 +17,11 @@ const App = () => {
         screenOptions={{
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
           headerTitleStyle: {
             color: '#FFFFFF',
@@ -25,6 +30,11 @@ const App = () => {
           tabBarStyle: {
             backgroundColor: '#0C0E17',
             borderTopColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
           tabBarLabelStyle: {
             fontSize: 14,
@@ -53,8 +63,135 @@ const App = () => {
             ),
           }}
         />
+        <Tab.Screen
+          name="Emris"
+          component={ChatScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="chat" color={color} size={size} />
+            ),
+          }}
+        />
       </Tab.Navigator>
     </NavigationContainer>
+  );
+};
+
+const ChatScreen = () => {
+  const [message, setMessage] = useState('');
+  const [chatHistory, setChatHistory] = useState([
+    {
+      text: "My name is Emris, I am your personal dream guide AI! Please ask something about your dreams.",
+      sender: "System",
+      timestamp: new Date(),
+    },
+  ]);
+  const [isTyping, setIsTyping] = useState(false);
+  const flatListRef = useRef();
+
+  const handleSendMessage = () => {
+    if (message.trim() === '') {
+      return;
+    }
+
+    const newMessage = {
+      text: message,
+      sender: 'User',
+      timestamp: new Date(),
+    };
+
+    // Add the user's message to the chat history
+    setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
+    setIsTyping(true);
+  };
+
+  useEffect(() => {
+    const getSystemResponse = async () => {
+      try {
+        const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt: message }),
+        });
+
+        if (response.ok) {
+          const responseData = await response.json();
+          const systemResponse = {
+            // Get the discussion text from the response
+            text: responseData['arguments']['discussion'],
+            sender: 'System',
+            timestamp: new Date(),
+          };
+
+          // Add the system's response to the chat history
+          setChatHistory((prevChatHistory) => [...prevChatHistory, systemResponse]);
+        } else {
+          Alert.alert('Error', 'Failed to send message.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'An unexpected error occurred.');
+      }
+
+      setIsTyping(false);
+    }
+
+    if (isTyping) {
+      getSystemResponse();
+      setMessage('');
+    }
+  }, [isTyping]);
+
+  const renderMessageItem = ({ item }) => {
+    const isUserMessage = item.sender === 'User';
+    return (
+      <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
+        <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+        <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
+      </View>
+    );
+  };
+
+  const renderEmptyState = () => {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <Text style={styles.emptyStateText}>No messages yet. Start a conversation!</Text>
+      </View>
+    );
+  };
+
+  return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 45 : 20}
+    >
+      <FlatList
+        ref={flatListRef}
+        contentContainerStyle={styles.container}
+        data={chatHistory}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={renderMessageItem}
+        ListEmptyComponent={renderEmptyState}
+        onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
+      />
+  
+      {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
+  
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          value={message}
+          onChangeText={(text) => setMessage(text)}
+          placeholder="Type a message"
+          placeholderTextColor="#888"
+          onSubmitEditing={handleSendMessage}
+        />
+        <Button title="Send" onPress={handleSendMessage} />
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -109,19 +246,25 @@ const NewDreamScreen = () => {
         style={styles.input}
         value={title}
         onChangeText={(text) => setTitle(text)}
+        placeholder="Enter dream title"
+        placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Date</Text>
       <TextInput
         style={styles.input}
         value={date}
         onChangeText={(text) => setDate(text)}
+        placeholder="(MM/DD/YYYY)"
+        placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Entry</Text>
       <TextInput
-        style={[styles.input, styles.tallerInput]} // Added 'tallerInput' style
+        style={[styles.input, styles.tallerInput]}
         value={entry}
         onChangeText={(text) => setEntry(text)}
         multiline
+        placeholder="Write your dream here"
+        placeholderTextColor="#888"
       />
       <Button
         mode="contained"
@@ -137,6 +280,8 @@ const NewDreamScreen = () => {
 
 const DreamsScreen = ({ navigation }) => {
   const [dreams, setDreams] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -174,6 +319,36 @@ const DreamsScreen = ({ navigation }) => {
     navigation.navigate('Details', { dreamId });
   };
 
+  const handleSearch = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ query: searchText }),
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        setSearchResults(results);
+      } else {
+        Alert.alert('Error', 'Failed to perform search.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearSearch = () => {
+    setSearchText('');
+    setSearchResults([]);
+  };
+
   const renderDreamItem = ({ item }) => {
     console.log(item); // log the entire dream item
     return (
@@ -190,37 +365,35 @@ const DreamsScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.searchBar}>
+        <TextInput
+          style={styles.input}
+          value={searchText}
+          onChangeText={(text) => setSearchText(text)}
+          placeholder="Search for dreams"
+          placeholderTextColor="#888"
+          onSubmitEditing={handleSearch}
+        />
+        {searchText.length > 0 && (
+          <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+            <Text style={styles.clearButtonText}>X</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
-        <>
-          {dreams.length > 0 ? (
-            <FlatList
-              data={dreams}
-              keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
-              renderItem={renderDreamItem}
-              style={styles.list}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              showsVerticalScrollIndicator={false}
-              refreshControl={
-                <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
-              }
-            />
-          ) : (
-            <View style={styles.emptyStateContainer}>
-              <MaterialCommunityIcons name="emoticon-sad-outline" size={120} color="#FFFFFF" style={styles.emptyStateImage} />
-              <Text style={styles.emptyStateText}>No dreams found</Text>
-              <Button
-                mode="contained"
-                onPress={() => navigation.navigate('New Dream')}
-                style={styles.emptyStateButton}
-                labelStyle={styles.generateButtonText}
-              >
-                Add New Dream
-              </Button>
-            </View>
-          )}
-        </>
+        <FlatList
+          data={searchResults.length > 0 ? searchResults : dreams}
+          keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
+          renderItem={renderDreamItem}
+          style={styles.list}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
+          }
+        />
       )}
     </View>
   );
@@ -245,7 +418,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
     return unsubscribe;
   }, [navigation]);
-  
+
   useEffect(() => {
     if (generationStatus === 'generating') {
       handleGenerateDream();
@@ -272,7 +445,7 @@ const DetailsScreen = ({ route, navigation }) => {
           }
           analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
           setAnalysisResult(analysisText);
-        }        
+        }
         if ('image' in dreamData) {
           setImageData(dreamData.image);
         }
@@ -300,7 +473,7 @@ const DetailsScreen = ({ route, navigation }) => {
         setGenerationStatus('error');
         setIsLoading(false);
       });
-  
+
     fetchDreamImage()
       .then(image => {
         setImageData(image);
@@ -311,14 +484,14 @@ const DetailsScreen = ({ route, navigation }) => {
         setGenerationStatus('error');
         setIsLoading(false);
       });
-  }; 
-  
+  };
+
   useEffect(() => {
     if (analysisResult && imageData) {
       setIsLoading(false);
       setGenerationStatus('success');
     }
-  }, [analysisResult, imageData]);  
+  }, [analysisResult, imageData]);
 
   const fetchDreamAnalysis = async () => {
     try {
@@ -344,7 +517,7 @@ const DetailsScreen = ({ route, navigation }) => {
       Alert.alert('Error', 'An unexpected error occurred.');
       throw error; // Throw the error so it can be caught in handleGenerateDream
     }
-  };  
+  };
 
   const fetchDreamImage = async () => {
     try {
@@ -507,7 +680,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
     }
-  };  
+  };
 
   const handleRegenerateDream = () => {
     setIsLoading(true);
@@ -515,20 +688,20 @@ const RegenerateScreen = ({ route, navigation }) => {
       generateDreamAnalysis(),
       generateDreamImage()
     ])
-    .then(([newAnalysisResult, newImageData]) => {
-      setAnalysisResult(newAnalysisResult);
-      setImageData(newImageData);
-      setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
-      setCanSave(true);
-      setIsLoading(false);
-    })
-    .catch(error => {
-      console.error('Error during regeneration:', error);
-      Alert.alert('Error', 'An unexpected error occurred during regeneration.');
-      setCanSave(false);
-      setIsLoading(false);
-    });
-  };  
+      .then(([newAnalysisResult, newImageData]) => {
+        setAnalysisResult(newAnalysisResult);
+        setImageData(newImageData);
+        setShouldRegenerate(false); // Reset shouldRegenerate after a successful regeneration
+        setCanSave(true);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error during regeneration:', error);
+        Alert.alert('Error', 'An unexpected error occurred during regeneration.');
+        setCanSave(false);
+        setIsLoading(false);
+      });
+  };
 
   const generateDreamAnalysis = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
@@ -548,7 +721,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     }
     analysis = analysis.replace(/\\"/g, '"').replace(/\\n/g, '\n');
     return analysis;
-  };  
+  };
 
   const generateDreamImage = async () => {
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
@@ -642,6 +815,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
@@ -653,6 +831,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
@@ -664,6 +847,11 @@ const DreamsScreenStack = () => {
           headerTintColor: '#FFFFFF',
           headerStyle: {
             backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
           },
         }}
       />
@@ -842,6 +1030,65 @@ const styles = StyleSheet.create({
   overwriteButtonText: {
     color: '#FFFFFF',
     fontWeight: 'bold',
+  },
+  searchResultItem: {
+    borderWidth: 1,
+    borderColor: '#123',
+    borderRadius: 15,
+    padding: 10,
+    marginBottom: 10,
+    backgroundColor: '#272B3B',
+  },
+  searchResultText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  searchBar: {
+
+  },
+  clearButton: {
+    padding: 10,
+  },
+  clearButtonText: {
+    fontSize: 16,
+    color: '#999',
+  },
+  chatInput: {
+    flexGrow: 1,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#123',
+    borderRadius: 15,
+    padding: 10,
+    color: '#FFFFFF',
+    backgroundColor: '#272B3B',
+    fontSize: 16,
+  },
+  userMessageContainer: {
+    alignSelf: 'flex-end',
+    borderRadius: 15,
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#00ADB5',
+  },
+  userMessageText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  systemMessageContainer: {
+    alignSelf: 'flex-start',
+    borderRadius: 15,
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#272B3B',
+  },
+  systemMessageText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#6B7280',
   },
 });
 
