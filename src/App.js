@@ -421,7 +421,7 @@ const DreamsScreen = ({ navigation }) => {
           position: 'absolute',
           margin: 16,
           right: 16,
-          bottom: 6,
+          bottom: 0,
           backgroundColor: 'rgba(0, 173, 181, 0.8)',
           elevation: 10,
           shadowColor: '#000',
