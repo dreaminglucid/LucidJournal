@@ -12,64 +12,6 @@ import API_URL from './config';
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 
-const App = () => {
-  return (
-    <NavigationContainer theme={navigationTheme}>
-      <Tab.Navigator
-        screenOptions={{
-          headerStyle: {
-            backgroundColor: '#0C0E17',
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: '#000', // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
-          },
-          headerTitleStyle: {
-            color: '#FFFFFF',
-            fontWeight: 'bold',
-          },
-          tabBarStyle: {
-            backgroundColor: '#0C0E17',
-            borderTopColor: '#0C0E17',
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: '#000', // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
-          },
-          tabBarLabelStyle: {
-            fontSize: 14,
-            fontWeight: 'bold',
-            color: '#FFFFFF',
-          },
-          tabBarActiveTintColor: '#00ADB5',
-          tabBarInactiveTintColor: '#6B7280',
-        }}
-      >
-        <Tab.Screen
-          name="Dreams"
-          component={DreamsScreenStack}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="cloud" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Emris"
-          component={ChatScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="chat" color={color} size={size} />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </NavigationContainer>
-  );
-};
-
 const ChatScreen = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
@@ -141,9 +83,11 @@ const ChatScreen = () => {
   const renderMessageItem = ({ item }) => {
     const isUserMessage = item.sender === 'User';
     return (
-      <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
-        <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
-        <Text style={styles.timestamp}>{item.timestamp.toLocaleTimeString()}</Text>
+      <View style={isUserMessage ? styles.userMessageBox : styles.systemMessageBox}>
+        <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
+          <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+        </View>
+        <Text style={isUserMessage ? styles.userTimestamp : styles.systemTimestamp}>{item.timestamp.toLocaleTimeString()}</Text>
       </View>
     );
   };
@@ -184,7 +128,7 @@ const ChatScreen = () => {
           onSubmitEditing={handleSendMessage}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-          <Text style={styles.sendButtonText}>Send</Text>
+          <MaterialCommunityIcons name="send" color="#FFFFFF" size={24} />
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -336,8 +280,16 @@ const DreamsScreen = ({ navigation }) => {
     setIsLoading(false);
   };
 
-  const handleDreamSelection = (dreamId) => {
-    navigation.navigate('Details', { dreamId });
+  const handleDreamSelection = async (dreamId) => {
+    setIsLoading(true);
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
+    if (response.ok) {
+      const dreamData = await response.json();
+      navigation.navigate('Details', { dreamId, dreamData });
+    } else {
+      Alert.alert('Error', 'Failed to fetch dream details.');
+    }
+    setIsLoading(false);
   };
 
   const handleSearch = async () => {
@@ -450,12 +402,12 @@ const DetailsScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', fetchDream);
-
+  
     // Call fetchDream for the first time
     fetchDream();
-
+  
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, route.params.dreamUpdated]);
 
   useEffect(() => {
     if (generationStatus === 'generating') {
@@ -464,38 +416,65 @@ const DetailsScreen = ({ route, navigation }) => {
   }, [generationStatus]);
 
   const fetchDream = async () => {
-    try {
-      setIsRefreshing(true);
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
-      if (response.ok) {
-        let dreamData = await response.json();
-        if ('analysis' in dreamData) {
-          let analysisText = dreamData.analysis;
-          try {
-            // Try to parse the string as JSON
-            const parsedText = JSON.parse(analysisText);
-            if (typeof parsedText === 'string') {
-              // If the parsed result is a string, use it
-              analysisText = parsedText;
-            }
-          } catch (e) {
-            // If parsing fails, it's not valid JSON, so we'll just use the original string
+    // Check if dream data was passed from the previous screen
+    if (route.params && route.params.dreamData) {
+      // If yes, use the passed data
+      let dreamData = route.params.dreamData;
+      setDream(dreamData);
+      if ('analysis' in dreamData) {
+        let analysisText = dreamData.analysis;
+        try {
+          // Try to parse the string as JSON
+          const parsedText = JSON.parse(analysisText);
+          if (typeof parsedText === 'string') {
+            // If the parsed result is a string, use it
+            analysisText = parsedText;
           }
-          analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
-          setAnalysisResult(analysisText);
+        } catch (e) {
+          // If parsing fails, it's not valid JSON, so we'll just use the original string
         }
-        if ('image' in dreamData) {
-          setImageData(dreamData.image);
-        }
-        setDream(dreamData);
-      } else {
-        Alert.alert('Error', 'Failed to fetch dream details.');
+        analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+        setAnalysisResult(analysisText);
       }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    } finally {
+      if ('image' in dreamData) {
+        setImageData(dreamData.image);
+      }
       setIsRefreshing(false);
+    } else {
+      // If no data was passed, fetch the dream data as before
+      try {
+        setIsRefreshing(true);
+        const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
+        if (response.ok) {
+          let dreamData = await response.json();
+          if ('analysis' in dreamData) {
+            let analysisText = dreamData.analysis;
+            try {
+              // Try to parse the string as JSON
+              const parsedText = JSON.parse(analysisText);
+              if (typeof parsedText === 'string') {
+                // If the parsed result is a string, use it
+                analysisText = parsedText;
+              }
+            } catch (e) {
+              // If parsing fails, it's not valid JSON, so we'll just use the original string
+            }
+            analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+            setAnalysisResult(analysisText);
+          }
+          if ('image' in dreamData) {
+            setImageData(dreamData.image);
+          }
+          setDream(dreamData);
+        } else {
+          Alert.alert('Error', 'Failed to fetch dream details.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Error', 'An unexpected error occurred.');
+      } finally {
+        setIsRefreshing(false);
+      }
     }
   };
 
@@ -607,54 +586,84 @@ const DetailsScreen = ({ route, navigation }) => {
     >
       {dream && (
         <>
-          <Subheading style={styles.subLabel}>Dream Title</Subheading>
-          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
-          <Subheading style={styles.subLabel}>Dream Date</Subheading>
-          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
-          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+          <Card style={styles.card}>
+            <Card.Content>
+              <View style={styles.infoBlock}>
+                <MaterialCommunityIcons name="book" color="#00ADB5" size={24} />
+                <Subheading style={styles.subLabel}>Dream Title</Subheading>
+                <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
+              </View>
+            </Card.Content>
+          </Card>
+          <Card style={styles.card}>
+            <Card.Content>
+              <View style={styles.infoBlock}>
+                <MaterialCommunityIcons name="calendar" color="#00ADB5" size={24} />
+                <Subheading style={styles.subLabel}>Dream Date</Subheading>
+                <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
+              </View>
+            </Card.Content>
+          </Card>
+          <Card style={styles.card}>
+            <Card.Content>
+              <View style={styles.infoBlock}>
+                <MaterialCommunityIcons name="note-text" color="#00ADB5" size={24} />
+                <Subheading style={styles.subLabel}>Dream Entry</Subheading>
+                <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+              </View>
+            </Card.Content>
+          </Card>
+          <Card style={styles.card}>
+            <Card.Content>
+              <View style={styles.infoBlock}>
+                <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
+                <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+                <Text style={styles.analysisResult}>{analysisResult}</Text>
+              </View>
+            </Card.Content>
+          </Card>
         </>
       )}
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
         <>
-          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
-          <Text style={styles.analysisResult}>{analysisResult}</Text>
           {imageData && (
             <View style={styles.imageContainer}>
               <Image source={{ uri: imageData }} style={styles.image} />
             </View>
           )}
-          {dream && dream.analysis && dream.image ? (
-            <Button
-              mode="contained"
-              onPress={() => navigation.navigate('Regenerate', { dreamId })}
-              style={styles.generateButton}
-              labelStyle={styles.generateButtonText}
-            >
-              Regenerate
-            </Button>
-          ) : (
-            <Button
-              mode="contained"
-              onPress={handleGenerateDream}
-              style={styles.generateButton}
-              labelStyle={styles.generateButtonText}
-            >
-              Generate
-            </Button>
-          )}
-          {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
-            <Button
-              mode="contained"
-              onPress={handleSaveAnalysisAndImage}
-              style={styles.saveButton}
-              labelStyle={styles.saveButtonText}
-            >
-              Save
-            </Button>
-          )}
+          <View style={styles.buttonContainer}>
+            {dream && dream.analysis && dream.image ? (
+              <Button
+                mode="contained"
+                onPress={() => navigation.navigate('Regenerate', { dreamId, dreamData: dream })}
+                style={styles.generateButton}
+                labelStyle={styles.generateButtonText}
+              >
+                Regenerate
+              </Button>
+            ) : (
+              <Button
+                mode="contained"
+                onPress={handleGenerateDream}
+                style={styles.generateButton}
+                labelStyle={styles.generateButtonText}
+              >
+                Generate
+              </Button>
+            )}
+            {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
+              <Button
+                mode="contained"
+                onPress={handleSaveAnalysisAndImage}
+                style={styles.saveButton}
+                labelStyle={styles.saveButtonText}
+              >
+                Save
+              </Button>
+            )}
+          </View>
         </>
       )}
     </ScrollView>
@@ -672,7 +681,30 @@ const RegenerateScreen = ({ route, navigation }) => {
   const [generationStatus, setGenerationStatus] = useState('idle');
 
   useEffect(() => {
-    fetchDream();
+    if (route.params && route.params.dreamData) {
+      let dreamData = route.params.dreamData;
+      setDream(dreamData);
+      if ('analysis' in dreamData) {
+        let analysisText = dreamData.analysis;
+        try {
+          // Try to parse the string as JSON
+          const parsedText = JSON.parse(analysisText);
+          if (typeof parsedText === 'string') {
+            // If the parsed result is a string, use it
+            analysisText = parsedText;
+          }
+        } catch (e) {
+          // If parsing fails, it's not valid JSON, so we'll just use the original string
+        }
+        analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, '\n');
+        setAnalysisResult(analysisText);
+      }
+      if ('image' in dreamData) {
+        setImageData(dreamData.image);
+      }
+    } else {
+      fetchDream();
+    }
   }, []);
 
   useEffect(() => {
@@ -800,45 +832,135 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {dream && (
-        <>
-          <Subheading style={styles.subLabel}>Dream Title</Subheading>
-          <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
-          <Subheading style={styles.subLabel}>Dream Date</Subheading>
-          <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
-          <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-          <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
-        </>
-      )}
       {isLoading ? (
         <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
       ) : (
         <>
-          <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
-          <Text style={styles.analysisResult}>{analysisResult}</Text>
-          <View style={styles.imageContainer}>
-            <Image source={{ uri: imageData }} style={styles.image} />
+          {dream && (
+            <>
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.infoBlock}>
+                    <MaterialCommunityIcons name="book" color="#00ADB5" size={24} />
+                    <Subheading style={styles.subLabel}>Dream Title</Subheading>
+                    <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
+                  </View>
+                </Card.Content>
+              </Card>
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.infoBlock}>
+                    <MaterialCommunityIcons name="calendar" color="#00ADB5" size={24} />
+                    <Subheading style={styles.subLabel}>Dream Date</Subheading>
+                    <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
+                  </View>
+                </Card.Content>
+              </Card>
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.infoBlock}>
+                    <MaterialCommunityIcons name="note-text" color="#00ADB5" size={24} />
+                    <Subheading style={styles.subLabel}>Dream Entry</Subheading>
+                    <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+                  </View>
+                </Card.Content>
+              </Card>
+              <Card style={styles.card}>
+                <Card.Content>
+                  <View style={styles.infoBlock}>
+                    <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
+                    <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+                    <Text style={styles.analysisResult}>{analysisResult}</Text>
+                  </View>
+                </Card.Content>
+              </Card>
+              {imageData && (
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: imageData }} style={styles.image} />
+                </View>
+              )}
+            </>
+          )}
+          <View style={styles.buttonContainer}>
+            <Button
+              mode="contained"
+              onPress={() => setShouldRegenerate(true)}
+              style={styles.regenerateButton}
+              labelStyle={styles.regenerateButtonText}
+            >
+              Regenerate
+            </Button>
+            <Button
+              mode="contained"
+              onPress={handleOverwriteSave}
+              disabled={!canSave} // add this line
+              style={styles.overwriteButton}
+              labelStyle={styles.overwriteButtonText}
+            >
+              Overwrite Save
+            </Button>
           </View>
-          <Button
-            mode="contained"
-            onPress={() => setShouldRegenerate(true)}
-            style={styles.regenerateButton}
-            labelStyle={styles.regenerateButtonText}
-          >
-            Regenerate
-          </Button>
-          <Button
-            mode="contained"
-            onPress={handleOverwriteSave}
-            disabled={!canSave} // add this line
-            style={styles.overwriteButton}
-            labelStyle={styles.overwriteButtonText}
-          >
-            Overwrite Save
-          </Button>
         </>
       )}
     </ScrollView>
+  );
+};
+
+const App = () => {
+  return (
+    <NavigationContainer theme={navigationTheme}>
+      <Tab.Navigator
+        screenOptions={{
+          headerStyle: {
+            backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+          },
+          headerTitleStyle: {
+            color: '#FFFFFF',
+            fontWeight: 'bold',
+          },
+          tabBarStyle: {
+            backgroundColor: '#0C0E17',
+            borderTopColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+          },
+          tabBarLabelStyle: {
+            fontSize: 14,
+            fontWeight: 'bold',
+            color: '#FFFFFF',
+          },
+          tabBarActiveTintColor: '#00ADB5',
+          tabBarInactiveTintColor: '#6B7280',
+        }}
+      >
+        <Tab.Screen
+          name="Dreams"
+          component={DreamsScreenStack}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="cloud" color={color} size={size} />
+            ),
+          }}
+        />
+        <Tab.Screen
+          name="Emris"
+          component={ChatScreen}
+          options={{
+            tabBarIcon: ({ color, size }) => (
+              <MaterialCommunityIcons name="chat" color={color} size={size} />
+            ),
+          }}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
 };
 
@@ -965,7 +1087,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#123',
-    borderRadius: 20,
+    borderRadius: 22,
     marginBottom: 15,
     backgroundColor: '#272B3B',
     padding: 15,
@@ -988,9 +1110,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
-  // Loading Indicator
   loadingIndicator: {
-    marginTop: 30,
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)', // semi-transparent background
   },
 
   // Analysis
@@ -1002,7 +1130,7 @@ const styles = StyleSheet.create({
   },
   analysisResult: {
     fontSize: 18,
-    marginBottom: 20,
+    marginBottom: 10,
     color: '#A0AEC0',
   },
 
@@ -1019,16 +1147,40 @@ const styles = StyleSheet.create({
     borderRadius: 35,
   },
 
+
+  // New styles
+  card: {
+    backgroundColor: '#272B3B',
+    marginBottom: 20,
+    borderRadius: 22,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4,
+  },
+  infoBlock: {
+    marginBottom: 0,
+  },
+  cardActions: {
+    justifyContent: 'space-between',
+  },
+
   // Buttons
   generateButton: {
     marginBottom: 15,
     ...this.buttonStyle,
     backgroundColor: '#00ADB5',
+    width: '100%',
   },
   saveButton: {
     marginBottom: 15,
     ...this.buttonStyle,
     backgroundColor: '#00ADB5',
+    width: '100%',
   },
   emptyStateButton: {
     ...this.buttonStyle,
@@ -1055,13 +1207,13 @@ const styles = StyleSheet.create({
   // Dream
   dreamTitle: {
     fontSize: 20,
-    marginBottom: 25,
+    marginBottom: 10,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },
   dreamDate: {
     fontSize: 18,
-    marginBottom: 25,
+    marginBottom: 10,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },
@@ -1085,7 +1237,7 @@ const styles = StyleSheet.create({
   },
   dreamEntry: {
     fontSize: 18,
-    marginBottom: 25,
+    marginBottom: 10,
     color: '#A0AEC0',
   },
 
@@ -1135,7 +1287,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     top: '50%',
     transform: [{ translateY: -25 }],
-    
+
   },
   clearButtonText: {
     color: '#FFFFFF',
@@ -1148,10 +1300,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 10,
     paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 30,
+    paddingVertical: 3,
+    borderRadius: 22,
     backgroundColor: '#272B3B',
-    marginBottom: 39,
+    marginBottom: 35,
   },
   chatInput: {
     flex: 1,
@@ -1161,8 +1313,12 @@ const styles = StyleSheet.create({
   },
   sendButton: {
     backgroundColor: '#00ADB5',
-    borderRadius: 30,
-    padding: 10,
+    borderRadius: 22,
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
   },
   sendButtonText: {
     color: '#FFFFFF',
@@ -1171,18 +1327,23 @@ const styles = StyleSheet.create({
   },
   userMessageContainer: {
     alignSelf: 'flex-end',
-    borderRadius: 20,
-    marginBottom: 15,
+    borderRadius: 22,
+    marginBottom: 5,
     padding: 15,
     backgroundColor: '#00ADB5',
+    marginLight: 40,
+    width: 300, // increase right margin to bias the message towards the right
   },
   systemMessageContainer: {
     alignSelf: 'flex-start',
-    borderRadius: 20,
-    marginBottom: 15,
+    borderRadius: 22,
+    marginBottom: 5,
     padding: 15,
     backgroundColor: '#272B3B',
+    marginRight: 40, // increase left margin to bias the message towards the left
+    width: 300
   },
+  
   userMessageText: {
     color: '#FFFFFF',
     fontSize: 18,
@@ -1191,9 +1352,19 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
   },
-  timestamp: {
-    fontSize: 14,
+  userTimestamp: {
+    fontSize: 12,
     color: '#6B7280',
+    alignSelf: 'flex-end',
+    paddingRight: 5,
+    paddingBottom: 22,
+  },
+  systemTimestamp: {
+    fontSize: 12,
+    color: '#6B7280',
+    alignSelf: 'flex-start',
+    paddingLeft: 5,
+    paddingBottom: 22,
   },
   emptyStateContainer: {
     flex: 1,
