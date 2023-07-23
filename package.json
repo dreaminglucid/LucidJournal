@@ -1,5 +1,5 @@
 {
-  "name": "lucidproject",
+  "name": "lucid-journal",
   "version": "1.0.0",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -16,6 +16,7 @@
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
+    "datepicker": "^0.0.0",
     "dotenv": "^16.3.1",
     "expo": "~48.0.18",
     "expo-linear-gradient": "^12.1.2",
@@ -24,6 +25,7 @@
     "react-dom": "18.2.0",
     "react-native": "0.71.8",
     "react-native-config": "^1.5.1",
+    "react-native-datepicker": "^1.7.2",
     "react-native-dotenv": "^3.4.9",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.12.0",
@@ -33,7 +35,8 @@
     "react-native-screens": "^3.22.0",
     "react-native-vector-icons": "^9.2.0",
     "react-native-view-shot": "^3.7.0",
-    "react-native-web": "~0.18.10"
+    "react-native-web": "~0.18.10",
+    "use-debounce": "^9.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

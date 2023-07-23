@@ -3,8 +3,10 @@ import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpa
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Button, Card, Title, Subheading } from 'react-native-paper';
+import { Button, Card, Title, Subheading, FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { useDebounce } from 'use-debounce';
 import API_URL from './config';
 
 const Tab = createBottomTabNavigator();
@@ -55,15 +57,6 @@ const App = () => {
           }}
         />
         <Tab.Screen
-          name="New Dream"
-          component={NewDreamScreen}
-          options={{
-            tabBarIcon: ({ color, size }) => (
-              <MaterialCommunityIcons name="plus-circle" color={color} size={size} />
-            ),
-          }}
-        />
-        <Tab.Screen
           name="Emris"
           component={ChatScreen}
           options={{
@@ -103,6 +96,7 @@ const ChatScreen = () => {
     // Add the user's message to the chat history
     setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
     setIsTyping(true);
+    setMessage('');
   };
 
   useEffect(() => {
@@ -166,7 +160,7 @@ const ChatScreen = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 45 : 20}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
     >
       <FlatList
         ref={flatListRef}
@@ -177,19 +171,21 @@ const ChatScreen = () => {
         ListEmptyComponent={renderEmptyState}
         onContentSizeChange={() => chatHistory.length > 0 && flatListRef.current.scrollToEnd()}
       />
-  
-      {isTyping && <ActivityIndicator size="small" color="#00ADB5" />}
-  
-      <View style={styles.inputContainer}>
+
+      {isTyping && <ActivityIndicator size="small" color="#00ADB5" style={styles.loadingIndicator} />}
+
+      <View style={styles.chatInputContainer}>
         <TextInput
-          style={styles.input}
+          style={styles.chatInput}
           value={message}
           onChangeText={(text) => setMessage(text)}
           placeholder="Type a message"
           placeholderTextColor="#888"
           onSubmitEditing={handleSendMessage}
         />
-        <Button title="Send" onPress={handleSendMessage} />
+        <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
+          <Text style={styles.sendButtonText}>Send</Text>
+        </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
   );
@@ -197,24 +193,35 @@ const ChatScreen = () => {
 
 const NewDreamScreen = () => {
   const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const [entry, setEntry] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSaveDream = async () => {
+  const validateForm = () => {
     if (title.trim() === '') {
       Alert.alert('Warning', 'Please enter a dream title.');
-      return;
+      return false;
     }
-
-    if (date.trim() === '') {
+    if (!date) {
       Alert.alert('Warning', 'Please enter a dream date.');
-      return;
+      return false;
     }
-
     if (entry.trim() === '') {
       Alert.alert('Warning', 'Please enter a dream entry.');
+      return false;
+    }
+    return true;
+  };
+
+  const handleSaveDream = async () => {
+    if (!validateForm()) {
       return;
     }
+
+    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+
+    setLoading(true);
 
     try {
       const response = await fetch(`${API_URL}/api/dreams`, {
@@ -222,13 +229,13 @@ const NewDreamScreen = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ title, date, entry }),
+        body: JSON.stringify({ title, date: formattedDate, entry }),
       });
 
       if (response.ok) {
         Alert.alert('Success', 'Dream saved successfully!');
         setTitle('');
-        setDate('');
+        setDate(new Date());
         setEntry('');
       } else {
         Alert.alert('Error', 'Failed to save dream.');
@@ -236,32 +243,51 @@ const NewDreamScreen = () => {
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Error', 'An unexpected error occurred.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.label}>Dream Date</Text>
+      <TouchableOpacity style={styles.datePicker} onPress={() => setShowDatePicker(true)}>
+        <TextInput
+          style={[styles.dateText, { flex: 1 }]}
+          value={`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`}
+          editable={false}
+          placeholder="MM/DD/YYYY"
+          placeholderTextColor="#888"
+        />
+        <MaterialCommunityIcons style={styles.dateIcon} name="calendar-blank" size={24} />
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            setShowDatePicker(false);
+            if (selectedDate) {
+              setDate(selectedDate);
+            }
+          }}
+        />
+      )}
       <Text style={styles.label}>Dream Title</Text>
       <TextInput
         style={styles.input}
         value={title}
-        onChangeText={(text) => setTitle(text)}
+        onChangeText={setTitle}
         placeholder="Enter dream title"
-        placeholderTextColor="#888"
-      />
-      <Text style={styles.label}>Dream Date</Text>
-      <TextInput
-        style={styles.input}
-        value={date}
-        onChangeText={(text) => setDate(text)}
-        placeholder="(MM/DD/YYYY)"
         placeholderTextColor="#888"
       />
       <Text style={styles.label}>Dream Entry</Text>
       <TextInput
         style={[styles.input, styles.tallerInput]}
         value={entry}
-        onChangeText={(text) => setEntry(text)}
+        onChangeText={setEntry}
         multiline
         placeholder="Write your dream here"
         placeholderTextColor="#888"
@@ -271,8 +297,9 @@ const NewDreamScreen = () => {
         onPress={handleSaveDream}
         style={styles.saveButton}
         labelStyle={styles.saveButtonText}
+        disabled={loading}
       >
-        Save Dream
+        {loading ? <ActivityIndicator size="small" color="#FFFFFF" /> : 'Save Dream'}
       </Button>
     </ScrollView>
   );
@@ -281,6 +308,7 @@ const NewDreamScreen = () => {
 const DreamsScreen = ({ navigation }) => {
   const [dreams, setDreams] = useState([]);
   const [searchText, setSearchText] = useState('');
+  const [debouncedSearchText] = useDebounce(searchText, 500);
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -289,59 +317,46 @@ const DreamsScreen = ({ navigation }) => {
     fetchDreams();
   }, []);
 
-  const fetchDreams = async () => {
-    try {
-      setIsRefreshing(true);  // Add this line
-      const response = await fetch(`${API_URL}/api/dreams`);
-      if (response.ok) {
-        const dreamsData = await response.json();
-        console.log('Dreams data from API:', dreamsData);
-        if (!Array.isArray(dreamsData)) {
-          throw new Error('Dreams data is not an array');
-        }
-        const dreams = dreamsData;
-        console.log('Dreams data after processing:', dreams);
-        setDreams(dreams);
-      } else {
-        Alert.alert('Error', 'Failed to fetch dreams.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
-      setIsRefreshing(false);  // Add this line
+  useEffect(() => {
+    if (debouncedSearchText) {
+      handleSearch();
     }
+  }, [debouncedSearchText]);
+
+  const fetchDreams = async () => {
+    setIsRefreshing(true);
+    const response = await fetch(`${API_URL}/api/dreams`);
+    if (response.ok) {
+      const dreamsData = await response.json();
+      setDreams(dreamsData);
+    } else {
+      Alert.alert('Error', 'Failed to fetch dreams.');
+    }
+    setIsRefreshing(false);
+    setIsLoading(false);
   };
 
   const handleDreamSelection = (dreamId) => {
-    console.log(dreamId); // log the dreamId
     navigation.navigate('Details', { dreamId });
   };
 
   const handleSearch = async () => {
     setIsLoading(true);
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/search`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ query: searchText }),
-      });
+    const response = await fetch(`${API_URL}/api/dreams/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ query: debouncedSearchText }),
+    });
 
-      if (response.ok) {
-        const results = await response.json();
-        setSearchResults(results);
-      } else {
-        Alert.alert('Error', 'Failed to perform search.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Error', 'An unexpected error occurred.');
-    } finally {
-      setIsLoading(false);
+    if (response.ok) {
+      const results = await response.json();
+      setSearchResults(results);
+    } else {
+      Alert.alert('Error', 'Failed to perform search.');
     }
+    setIsLoading(false);
   };
 
   const handleClearSearch = () => {
@@ -349,52 +364,75 @@ const DreamsScreen = ({ navigation }) => {
     setSearchResults([]);
   };
 
+  const navigateToNewDream = () => {
+    navigation.navigate('New Dream');
+  };
+
   const renderDreamItem = ({ item }) => {
-    console.log(item); // log the entire dream item
     return (
-      <TouchableOpacity onPress={() => handleDreamSelection(item.id)}>
-        <Card elevation={3} style={styles.dreamItem}>
-          <Card.Content>
-            <Title style={styles.dreamItemText}>{item.metadata.title}</Title>
-            <Subheading style={styles.dreamItemDate}>{item.metadata.date}</Subheading>
-          </Card.Content>
-        </Card>
+      <TouchableOpacity style={styles.dreamItem} onPress={() => handleDreamSelection(item.id)}>
+        <View style={styles.dreamTextContent}>
+          <Text style={styles.dreamItemText}>{item.metadata.title}</Text>
+          <Text style={styles.dreamItemDate}>{item.metadata.date}</Text>
+        </View>
+        {item.metadata.image && (
+          <Image source={{ uri: item.metadata.image }} style={styles.dreamItemImage} />
+        )}
       </TouchableOpacity>
     );
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.searchBar}>
-        <TextInput
-          style={styles.input}
-          value={searchText}
-          onChangeText={(text) => setSearchText(text)}
-          placeholder="Search for dreams"
-          placeholderTextColor="#888"
-          onSubmitEditing={handleSearch}
-        />
-        {searchText.length > 0 && (
-          <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
-            <Text style={styles.clearButtonText}>X</Text>
-          </TouchableOpacity>
+    <View style={{ flex: 1 }}>
+      <View style={styles.container}>
+        <View style={[styles.searchBar, { flexDirection: 'row', justifyContent: 'space-between' }]}>
+          <TextInput
+            style={styles.input}
+            value={searchText}
+            onChangeText={(text) => setSearchText(text)}
+            placeholder="Search for dreams"
+            placeholderTextColor="#888"
+            onSubmitEditing={handleSearch}
+          />
+          {searchText.length > 0 && (
+            <TouchableOpacity onPress={handleClearSearch} style={styles.clearButton}>
+              <MaterialCommunityIcons name="close-circle" color="#00ADB5" size={26} />
+            </TouchableOpacity>
+          )}
+        </View>
+        {isLoading ? (
+          <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
+        ) : (
+          <FlatList
+            data={searchResults.length > 0 ? searchResults : dreams}
+            keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
+            renderItem={renderDreamItem}
+            style={styles.list}
+            contentContainerStyle={{ paddingBottom: 80 }} // Increased padding at the bottom
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
+            }
+          />
         )}
       </View>
-      {isLoading ? (
-        <ActivityIndicator size="large" color="#00ADB5" style={styles.loadingIndicator} />
-      ) : (
-        <FlatList
-          data={searchResults.length > 0 ? searchResults : dreams}
-          keyExtractor={(item) => item && item.id ? item.id.toString() : ''}
-          renderItem={renderDreamItem}
-          style={styles.list}
-          contentContainerStyle={{ paddingBottom: 20 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={isRefreshing} onRefresh={fetchDreams} />
-          }
-        />
-      )}
+      <FAB
+        style={{
+          position: 'absolute',
+          margin: 16,
+          right: 16,
+          bottom: 6,
+          backgroundColor: 'rgba(0, 173, 181, 0.8)',
+          elevation: 10,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.5,
+          shadowRadius: 5,
+          borderRadius: 33,
+        }}
+        icon={() => <MaterialCommunityIcons name="plus" color="white" size={26} />}
+        onPress={navigateToNewDream}
+      />
     </View>
   );
 };
@@ -824,6 +862,22 @@ const DreamsScreenStack = () => {
         }}
       />
       <Stack.Screen
+        name="New Dream"
+        component={NewDreamScreen}
+        options={{
+          headerTitleAlign: 'center',
+          headerTintColor: '#FFFFFF',
+          headerStyle: {
+            backgroundColor: '#0C0E17',
+            elevation: 4, // This is for Android
+            shadowOpacity: 0.5, // This is for iOS
+            shadowRadius: 5, // This is for iOS
+            shadowColor: '#000', // This is for iOS
+            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+          },
+        }}
+      />
+      <Stack.Screen
         name="Details"
         component={DetailsScreen}
         options={{
@@ -869,14 +923,13 @@ const navigationTheme = {
 };
 
 const styles = StyleSheet.create({
+  // General
   container: {
     flexGrow: 1,
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingTop: 10,
+    padding: 20,
   },
   label: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 10,
     color: '#00ADB5',
@@ -884,211 +937,307 @@ const styles = StyleSheet.create({
   subLabel: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 0,
     marginBottom: 5,
     color: '#00ADB5',
   },
   input: {
+    flex: 1,
     borderWidth: 1,
     borderColor: '#123',
-    borderRadius: 15,
+    borderRadius: 20,
     padding: 10,
     marginBottom: 20,
     color: '#FFFFFF',
     backgroundColor: '#272B3B',
-    fontSize: 16,
+    fontSize: 18,
   },
   tallerInput: {
-    height: 369, // Adjust the height as desired
+    height: 270,
   },
   list: {
-    marginBottom: 20,
+    marginBottom: 30,
   },
+
+  // Dream Item
   dreamItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: '#123',
-    borderRadius: 15,
-    marginBottom: 10,
+    borderRadius: 20,
+    marginBottom: 15,
     backgroundColor: '#272B3B',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 2,
-    elevation: 5,
+    padding: 15,
+    ...this.dropShadow,
+  },
+  dreamItemImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    marginLeft: 15,
+    ...this.engravedShadow,
   },
   dreamItemText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '500',
   },
   dreamItemDate: {
     color: '#6B7280',
-    fontSize: 12,
+    fontSize: 14,
   },
+
+  // Loading Indicator
   loadingIndicator: {
-    marginTop: 20,
+    marginTop: 30,
   },
+
+  // Analysis
   analysisLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 5,
     color: '#00ADB5',
   },
   analysisResult: {
-    fontSize: 16,
+    fontSize: 18,
     marginBottom: 20,
     color: '#A0AEC0',
   },
+
+  // Image
   imageContainer: {
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    marginTop: 15,
+    marginBottom: 30,
   },
   image: {
-    width: 333,
-    height: 333,
+    width: 350,
+    height: 350,
     resizeMode: 'contain',
-    borderRadius: 33,
+    borderRadius: 35,
   },
+
+  // Buttons
   generateButton: {
-    marginBottom: 10,
+    marginBottom: 15,
+    ...this.buttonStyle,
     backgroundColor: '#00ADB5',
-    borderRadius: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  generateButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
   },
   saveButton: {
-    marginBottom: 10,
+    marginBottom: 15,
+    ...this.buttonStyle,
     backgroundColor: '#00ADB5',
-    borderRadius: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+  },
+  emptyStateButton: {
+    ...this.buttonStyle,
+    backgroundColor: '#00ADB5',
+  },
+  overwriteButton: {
+    marginTop: 15,
+    marginBottom: 15,
+    ...this.buttonStyle,
+    backgroundColor: '#7851A9',
+  },
+
+  // Button Text
+  generateButtonText: {
+    ...this.buttonTextStyle,
   },
   saveButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    ...this.buttonTextStyle,
   },
+  overwriteButtonText: {
+    ...this.buttonTextStyle,
+  },
+
+  // Dream
   dreamTitle: {
-    fontSize: 18,
-    marginBottom: 20,
+    fontSize: 20,
+    marginBottom: 25,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },
   dreamDate: {
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: 18,
+    marginBottom: 25,
     color: '#A0AEC0',
     fontWeight: 'bold',
   },
-  dreamEntry: {
-    fontSize: 16,
+  datePicker: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#123',
+    borderRadius: 20,
+    padding: 10,
     marginBottom: 20,
+    backgroundColor: '#272B3B',
+  },
+  dateText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+  dateIcon: {
+    color: '#888',
+  },
+  dreamEntry: {
+    fontSize: 18,
+    marginBottom: 25,
     color: '#A0AEC0',
   },
+
+  // Empty State
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
   emptyStateImage: {
-    marginBottom: 20,
+    marginBottom: 25,
   },
   emptyStateText: {
-    fontSize: 16,
-    marginBottom: 20,
+    fontSize: 18,
+    marginBottom: 25,
     color: '#FFFFFF',
   },
-  emptyStateButton: {
-    backgroundColor: '#00ADB5',
-    borderRadius: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  overwriteButton: {
-    marginTop: 10,
-    marginBottom: 10,
-    backgroundColor: '#7851A9',
-    borderRadius: 50,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  overwriteButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
-  },
+
+  // Search
   searchResultItem: {
     borderWidth: 1,
     borderColor: '#123',
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 10,
+    borderRadius: 20,
+    padding: 15,
+    marginBottom: 15,
     backgroundColor: '#272B3B',
   },
   searchResultText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
   },
   searchBar: {
-
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 0,
+    borderRadius: 20,
+    padding: 0,
   },
+  // Style for the clear button
   clearButton: {
-    padding: 10,
+    position: 'absolute',
+    right: 10,
+    backgroundColor: 'transparent',  // Change the background to transparent
+    width: 30,   // Increase the width and height
+    height: 30,  // Increase the width and height
+    alignItems: 'center',
+    justifyContent: 'center',
+    top: '50%',
+    transform: [{ translateY: -25 }],
+    
   },
   clearButtonText: {
-    fontSize: 16,
-    color: '#999',
+    color: '#FFFFFF',
+    fontSize: 18,
+  },
+
+  // Chat
+  chatInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 30,
+    backgroundColor: '#272B3B',
+    marginBottom: 39,
   },
   chatInput: {
-    flexGrow: 1,
-    marginRight: 10,
-    borderWidth: 1,
-    borderColor: '#123',
-    borderRadius: 15,
-    padding: 10,
+    flex: 1,
+    fontSize: 18,
     color: '#FFFFFF',
-    backgroundColor: '#272B3B',
-    fontSize: 16,
+    marginRight: 10,
+  },
+  sendButton: {
+    backgroundColor: '#00ADB5',
+    borderRadius: 30,
+    padding: 10,
+  },
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
   userMessageContainer: {
     alignSelf: 'flex-end',
-    borderRadius: 15,
-    marginBottom: 10,
-    padding: 10,
+    borderRadius: 20,
+    marginBottom: 15,
+    padding: 15,
     backgroundColor: '#00ADB5',
-  },
-  userMessageText: {
-    color: '#FFFFFF',
-    fontSize: 16,
   },
   systemMessageContainer: {
     alignSelf: 'flex-start',
-    borderRadius: 15,
-    marginBottom: 10,
-    padding: 10,
+    borderRadius: 20,
+    marginBottom: 15,
+    padding: 15,
     backgroundColor: '#272B3B',
+  },
+  userMessageText: {
+    color: '#FFFFFF',
+    fontSize: 18,
   },
   systemMessageText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 18,
   },
   timestamp: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#6B7280',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyStateText: {
+    fontSize: 18,
+    marginBottom: 25,
+    color: '#FFFFFF',
+  },
+  // Reusable Styles
+  dropShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  engravedShadow: {
+    borderWidth: 1,
+    borderColor: '#272B3B',
+    backgroundColor: '#272B3B',
+    shadowColor: '#000',
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 3,
+  },
+  buttonStyle: {
+    borderRadius: 50,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 3,
+    elevation: 6,
+  },
+  buttonTextStyle: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  messageTextStyle: {
+    color: '#FFFFFF',
+    fontSize: 18,
   },
 });
 
