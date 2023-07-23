@@ -16,7 +16,7 @@ const ChatScreen = () => {
   const [message, setMessage] = useState('');
   const [chatHistory, setChatHistory] = useState([
     {
-      text: "My name is Emris, I am your personal dream guide AI! Please ask something about your dreams.",
+      text: "My name is Emris, I'm your personal AI dream guide! Please ask about your dreams.",
       sender: "System",
       timestamp: new Date(),
     },
@@ -104,7 +104,7 @@ const ChatScreen = () => {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 60 : 20}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 85 : 20}
     >
       <FlatList
         ref={flatListRef}
@@ -126,6 +126,8 @@ const ChatScreen = () => {
           placeholder="Type a message"
           placeholderTextColor="#888"
           onSubmitEditing={handleSendMessage}
+          multiline={true} // add this line
+          numberOfLines={4} // max number of lines before scrolling
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
           <MaterialCommunityIcons name="send" color="#FFFFFF" size={24} />
@@ -402,10 +404,10 @@ const DetailsScreen = ({ route, navigation }) => {
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', fetchDream);
-  
+
     // Call fetchDream for the first time
     fetchDream();
-  
+
     return unsubscribe;
   }, [navigation, route.params.dreamUpdated]);
 
@@ -1280,9 +1282,9 @@ const styles = StyleSheet.create({
   clearButton: {
     position: 'absolute',
     right: 10,
-    backgroundColor: 'transparent',  // Change the background to transparent
-    width: 30,   // Increase the width and height
-    height: 30,  // Increase the width and height
+    backgroundColor: 'transparent',
+    width: 30,
+    height: 30,
     alignItems: 'center',
     justifyContent: 'center',
     top: '50%',
@@ -1299,25 +1301,35 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 10,
-    paddingHorizontal: 10,
+    paddingHorizontal: 7,
     paddingVertical: 3,
     borderRadius: 22,
     backgroundColor: '#272B3B',
-    marginBottom: 35,
+    marginBottom: 10,
+    marginTop: 2.2,
   },
   chatInput: {
     flex: 1,
     fontSize: 18,
     color: '#FFFFFF',
     marginRight: 10,
+    minHeight: 33,
+    maxHeight: 160,
+    padding: 5,
   },
   sendButton: {
     backgroundColor: '#00ADB5',
     borderRadius: 22,
-    width: 40,
-    height: 40,
+    width: 33,
+    height: 33,
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#006a79',
+    shadowColor: '#008c9e',
+    shadowOffset: { width: -1, height: -1 },
+    shadowOpacity: 0.8,
+    shadowRadius: 1,
     elevation: 5,
   },
   sendButtonText: {
@@ -1332,7 +1344,7 @@ const styles = StyleSheet.create({
     padding: 15,
     backgroundColor: '#00ADB5',
     marginLight: 40,
-    width: 300, // increase right margin to bias the message towards the right
+    width: 300,
   },
   systemMessageContainer: {
     alignSelf: 'flex-start',
@@ -1340,10 +1352,10 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     padding: 15,
     backgroundColor: '#272B3B',
-    marginRight: 40, // increase left margin to bias the message towards the left
+    marginRight: 40,
     width: 300
   },
-  
+
   userMessageText: {
     color: '#FFFFFF',
     fontSize: 18,
@@ -1356,14 +1368,14 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     alignSelf: 'flex-end',
-    paddingRight: 5,
+    paddingRight: 15,
     paddingBottom: 22,
   },
   systemTimestamp: {
     fontSize: 12,
     color: '#6B7280',
     alignSelf: 'flex-start',
-    paddingLeft: 5,
+    paddingLeft: 15,
     paddingBottom: 22,
   },
   emptyStateContainer: {
