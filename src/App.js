@@ -1,16 +1,60 @@
+// React and React Native Libraries
 import React, { useState, useRef, useEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, Alert, Image, FlatList, TouchableOpacity, ActivityIndicator, ScrollView, RefreshControl, KeyboardAvoidingView } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  Alert,
+  Image,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  RefreshControl,
+  KeyboardAvoidingView
+} from 'react-native';
+
+// Navigation Libraries
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createStackNavigator } from '@react-navigation/stack';
-import { Button, Card, Title, Subheading, FAB } from 'react-native-paper';
+
+// UI Component Libraries
+import { Button, Card, Subheading, FAB } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+// Other Libraries
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useDebounce } from 'use-debounce';
+
+// Application Specific Imports
 import API_URL from './config';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
+
+const predefinedPrompts = [
+  "Tell me about the themes in my dream",
+  "What emotions are present in my dream?",
+  "Who are the characters in my dream?",
+  "What do the symbols in my dream mean?",
+  "What personal associations might I have with this dream?",
+  "Do I have any similar dreams?",
+  "What might my future dreams look like based on this one?",
+  "What general concepts can we discuss about my dream?",
+];
+
+const function_map = {
+  "Tell me about the themes in my dream": "discuss_themes",
+  "What emotions are present in my dream?": "discuss_emotions",
+  "Who are the characters in my dream?": "discuss_characters",
+  "What do the symbols in my dream mean?": "interpret_dream_symbols",
+  "What personal associations might I have with this dream?": "explore_personal_associations",
+  "Do I have any similar dreams?": "recall_similar_dreams",
+  "What might my future dreams look like based on this one?": "predict_future_dreams",
+  "What general concepts can we discuss about my dream?": "discuss_general_dream_concept",
+};
 
 const ChatScreen = () => {
   const [message, setMessage] = useState('');
@@ -23,6 +67,13 @@ const ChatScreen = () => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const flatListRef = useRef();
+  const [lastUsedPrompts, setLastUsedPrompts] = useState([]);
+  const [availablePrompts, setAvailablePrompts] = useState([...predefinedPrompts]);
+
+  useEffect(() => {
+    // Generate prompts when the component mounts
+    generateNewPrompts();
+  }, []);
 
   const handleSendMessage = () => {
     if (message.trim() === '') {
@@ -38,59 +89,167 @@ const ChatScreen = () => {
     // Add the user's message to the chat history
     setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
     setIsTyping(true);
+
+    // Call the backend for response
+    fetchResponse(message);
+
+    // After sending a message, generate new prompts
+    generateNewPrompts();
+
+    // Clear the message input field
     setMessage('');
   };
 
-  useEffect(() => {
-    const getSystemResponse = async () => {
-      try {
-        const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ prompt: message }),
-        });
+  const generateNewPrompts = () => {
+    // If there are not enough available prompts, reset the lists
+    if (availablePrompts.length < 3) {
+      setLastUsedPrompts([]);
+      setAvailablePrompts([...predefinedPrompts]);
+    }
 
-        if (response.ok) {
-          const responseData = await response.json();
-          const systemResponse = {
-            // Get the discussion text from the response
-            text: responseData['arguments']['discussion'],
-            sender: 'System',
-            timestamp: new Date(),
-          };
+    // Select three prompts at random from the available ones
+    let newPrompts = [];
+    for (let i = 0; i < 3; i++) {
+      const randomIndex = Math.floor(Math.random() * availablePrompts.length);
+      newPrompts.push(availablePrompts[randomIndex]);
+      availablePrompts.splice(randomIndex, 1);  // Remove the selected prompt from the available ones
+    }
 
-          // Add the system's response to the chat history
-          setChatHistory((prevChatHistory) => [...prevChatHistory, systemResponse]);
-        } else {
-          Alert.alert('Error', 'Failed to send message.');
+    // Update the last used prompts
+    setLastUsedPrompts(newPrompts);
+  };
+
+  const fetchResponse = async (message) => {
+    try {
+      const function_name = predefinedPrompts.includes(message) ?
+        function_map[message] :
+        function_map["Tell me about the themes in my dream"];  // If the message is not one of the predefined prompts, default to "discuss themes"
+      const response = await fetch(`${API_URL}/api/dreams/search-chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: message,
+          function_name: function_name
+        }),
+      });
+
+      if (response.ok) {
+        const responseData = await response.json();
+        let systemResponse;
+
+        // Check the function that was called and handle the response accordingly
+        switch (responseData['function_name']) {
+          case 'discuss_search_results':
+            systemResponse = {
+              text: responseData['arguments']['discussion'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'discuss_themes':
+            systemResponse = {
+              text: responseData['arguments']['themes'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'discuss_emotions':
+            systemResponse = {
+              text: responseData['arguments']['emotions'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'discuss_characters':
+            systemResponse = {
+              text: responseData['arguments']['characters'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'interpret_dream_symbols':
+            systemResponse = {
+              text: responseData['arguments']['symbols'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'explore_personal_associations':
+            systemResponse = {
+              text: responseData['arguments']['personal_associations'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'recall_similar_dreams':
+            systemResponse = {
+              text: responseData['arguments']['similar_dreams'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'predict_future_dreams':
+            systemResponse = {
+              text: responseData['arguments']['future_dreams'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          case 'discuss_general_dream_concept':
+            systemResponse = {
+              text: responseData['arguments']['general_concept'],
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
+          default:
+            systemResponse = {
+              text: 'Hmm, I don\'t seem to have a suitable response for that. Could you please rephrase or ask something else?',
+              sender: 'System',
+              timestamp: new Date(),
+            };
+            break;
         }
-      } catch (error) {
-        console.error('Error:', error);
-        Alert.alert('Error', 'An unexpected error occurred.');
+
+        // Add the system's response to the chat history
+        setChatHistory((prevChatHistory) => [...prevChatHistory, systemResponse]);
+      } else {
+        Alert.alert('Error', 'Failed to send message.');
       }
-
-      setIsTyping(false);
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Error', 'An unexpected error occurred.');
     }
 
-    if (isTyping) {
-      getSystemResponse();
-      setMessage('');
-    }
-  }, [isTyping]);
+    setIsTyping(false);
+  }
 
-  const renderMessageItem = ({ item }) => {
+  const renderMessageItem = ({ item, index }) => {
     const isUserMessage = item.sender === 'User';
     return (
-      <View style={isUserMessage ? styles.userMessageBox : styles.systemMessageBox}>
-        <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
-          <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+      <>
+        <View style={isUserMessage ? styles.userMessageBox : styles.systemMessageBox}>
+          <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
+            <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>{item.text}</Text>
+          </View>
+          <Text style={isUserMessage ? styles.userTimestamp : styles.systemTimestamp}>{item.timestamp.toLocaleTimeString()}</Text>
         </View>
-        <Text style={isUserMessage ? styles.userTimestamp : styles.systemTimestamp}>{item.timestamp.toLocaleTimeString()}</Text>
-      </View>
+        {/* If it's a system message and there are predefined prompts available, display them */}
+        {!isUserMessage && index === chatHistory.length - 1 &&
+          <View style={styles.predefinedPromptsContainer}>
+            <View style={styles.prompts}>
+              {lastUsedPrompts.map(renderPredefinedPrompt)}
+            </View>
+            <TouchableOpacity style={styles.nextPromptButton} onPress={generateNewPrompts}>
+              <MaterialCommunityIcons name="chevron-right" color="#FFFFFF" size={24} />
+            </TouchableOpacity>
+          </View>
+        }
+      </>
     );
-  };
+  };  
 
   const renderEmptyState = () => {
     return (
@@ -100,6 +259,32 @@ const ChatScreen = () => {
     );
   };
 
+  const renderPredefinedPrompt = (prompt) => (
+    <TouchableOpacity
+      style={styles.predefinedPromptButton}
+      onPress={() => {
+        // When a predefined prompt is pressed, send the message directly
+        const newMessage = {
+          text: prompt,
+          sender: 'User',
+          timestamp: new Date(),
+        };
+  
+        // Add the user's message to the chat history
+        setChatHistory((prevChatHistory) => [...prevChatHistory, newMessage]);
+        setIsTyping(true);
+  
+        // Call the backend for response
+        fetchResponse(prompt);
+  
+        // After sending a message, generate new prompts
+        generateNewPrompts();
+      }}
+    >
+      <Text style={styles.predefinedPromptButtonText}>{prompt}</Text>
+    </TouchableOpacity>
+  );  
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -107,6 +292,7 @@ const ChatScreen = () => {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 85 : 20}
     >
       <FlatList
+        style={{ flexGrow: 1 }}
         ref={flatListRef}
         contentContainerStyle={styles.container}
         data={chatHistory}
@@ -126,8 +312,8 @@ const ChatScreen = () => {
           placeholder="Type a message"
           placeholderTextColor="#888"
           onSubmitEditing={handleSendMessage}
-          multiline={true} // add this line
-          numberOfLines={4} // max number of lines before scrolling
+          multiline={true}
+          numberOfLines={4}
         />
         <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
           <MaterialCommunityIcons name="send" color="#FFFFFF" size={24} />
@@ -1052,6 +1238,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
   },
+
   label: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -1378,6 +1565,49 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingBottom: 22,
   },
+  predefinedPromptsContainer: {
+    flexDirection: 'row', // Align buttons horizontally
+    justifyContent: 'space-between', // Space out the buttons and the arrow
+    paddingHorizontal: 0,
+    paddingVertical: 5,
+    backgroundColor: '#0C0E17',
+    padding: 0,
+    marginBottom: 10,
+    // width: 300, // matching width with systemMessageContainer
+    alignSelf: 'flex-start', // align container to the left
+  },
+  prompts: {
+    flexDirection: 'column', // Align buttons vertically
+    width: '70%', // Allocate 80% of the space to the prompts
+  },
+  predefinedPromptButton: {
+    borderWidth: 1,
+    borderColor: '#00ADB5',
+    borderRadius: 30,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    backgroundColor: 'transparent',
+    width: '100%', // Full width of the prompts container
+    minHeight: 33, // Minimum height for buttons
+    maxHeight: 66, // Maximum height for buttons
+    marginBottom: 5, // Space between buttons
+    elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  predefinedPromptButtonText: {
+    color: '#fff',
+    fontSize: 12, // Reduce font size to fit more text per line
+    textAlign: 'center',
+    numberOfLines: 2, // Limit text to 2 lines
+  },
+  nextPromptButton: {
+    backgroundColor: 'transparent', // Transparent background
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '22%', // Allocate 20% of the space to the arrow
+  },
+
   emptyStateContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -1422,6 +1652,7 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 18,
   },
+
 });
 
 export default App;
