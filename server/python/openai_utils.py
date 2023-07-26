@@ -13,7 +13,7 @@ from easycompletion import (
     count_tokens,
     get_tokens,
 )
-from agentmemory import search_memory
+from agentmemory import search_memory, create_memory
 
 # Read config.ini file
 config = configparser.ConfigParser()
@@ -147,12 +147,30 @@ predict_future_function = compose_function(
     required_properties=["future_dreams"],
 )
 
+# Create memories for the functions
+create_memory("functions", discuss_emotions_function["description"], metadata={
+              "function_name": discuss_emotions_function["name"]})
+create_memory("functions", predict_future_function["description"], metadata={
+              "function_name": predict_future_function["name"]})
+
 
 # Define available functions
 available_functions = [
     discuss_emotions_function,
     predict_future_function,
 ]
+
+
+def handle_message(message):
+    # Recognize the user's intent
+    recognized_intent = recognize_intent(message)
+
+    if recognized_intent:
+        # If an intent was recognized, search for dreams and call the appropriate function
+        return search_chat_with_dreams(recognized_intent, message)
+    else:
+        # If no intent was recognized, perform a regular chat
+        return regular_chat(message)
 
 
 def regular_chat(message):
@@ -179,7 +197,8 @@ def regular_chat(message):
         log(f"GPT-4 response: {response}", type="info")
 
         if "error" in response and response["error"] is not None:
-            log(f"Error from GPT-4: {response['error']}", type="error", color="red")
+            log(f"Error from GPT-4: {response['error']}",
+                type="error", color="red")
 
         if "text" in response:
             return response["text"]
@@ -212,7 +231,8 @@ def search_dreams(keyword):
 def call_function_by_name(function_name, prompt):
     # Get the corresponding function from the available_functions dictionary
     function_to_call = next(
-        (func for func in available_functions if func["name"] == function_name), None
+        (func for func in available_functions if func["name"]
+         == function_name), None
     )
 
     # If the function name is not recognized, select a random function
@@ -239,6 +259,20 @@ def call_function_by_name(function_name, prompt):
     )
 
     return response
+
+
+def recognize_intent(user_input):
+    # Recognize user's intent
+    intent_search_results = search_memory("functions", user_input, n_results=1)
+
+    # The top search result is the recognized intent
+    if intent_search_results:
+        recognized_intent = intent_search_results[0]["metadata"]["function_name"]
+    else:
+        # If no match is found, return None
+        recognized_intent = None
+
+    return recognized_intent
 
 
 def search_chat_with_dreams(function_name, prompt):
@@ -275,7 +309,8 @@ def search_chat_with_dreams(function_name, prompt):
 
         # If there's an error from GPT-4, return an error message.
         if "error" in response and response["error"] is not None:
-            log(f"Error from GPT-4: {response['error']}", type="error", color="red")
+            log(f"Error from GPT-4: {response['error']}",
+                type="error", color="red")
             return "Error: Unable to generate a response."
 
         # If there's a response from GPT-4, return the response along with the search results.
@@ -290,4 +325,3 @@ def search_chat_with_dreams(function_name, prompt):
             f"Error generating GPT response with search: {e}", type="error", color="red"
         )
         return "Error: Unable to generate a response."
-

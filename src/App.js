@@ -118,20 +118,11 @@ const ChatScreen = () => {
 
   const fetchResponse = async (message) => {
     try {
-      let endpoint, requestBody;
-      if (predefinedPrompts.hasOwnProperty(message)) {
-        endpoint = `${API_URL}/api/dreams/search-chat`;
-        requestBody = {
-          function_name: predefinedPrompts[message].function_name,
-          prompt: message,
-        };
-      } else {
-        endpoint = `${API_URL}/api/chat`;
-        requestBody = {
-          message: message,
-        };
-      }
-
+      const endpoint = `${API_URL}/api/handle-message`;
+      const requestBody = {
+        message: message,
+      };
+  
       const response = await fetch(endpoint, {
         method: "POST",
         headers: {
@@ -139,29 +130,42 @@ const ChatScreen = () => {
         },
         body: JSON.stringify(requestBody),
       });
-
+  
       if (response.ok) {
         const responseData = await response.json();
+        console.log('Server response:', responseData);
+        
         let systemResponseText = "";
-
-        // Use the response handler to get the system's response
         if (predefinedPrompts.hasOwnProperty(message)) {
           systemResponseText = predefinedPrompts[message].responseHandler(responseData);
         } else {
-          systemResponseText = responseData.response;
+          if (responseData.hasOwnProperty('arguments')) {
+            // Iterate over the properties of the 'arguments' object and construct the system response text
+            for (const key in responseData.arguments) {
+              systemResponseText += `${key}: ${responseData.arguments[key]}\n`;
+            }
+          } else if (responseData.hasOwnProperty('response')) {
+            systemResponseText = responseData.response;
+          } else {
+            systemResponseText = 'No response provided.';
+          }
         }
-
+        
+        console.log('System response text:', systemResponseText);
+        
         const systemResponse = {
           text: systemResponseText,
           sender: "System",
           timestamp: new Date(),
         };
-
+        
         // Add the system's response to the chat history
         setChatHistory((prevChatHistory) => [
           ...prevChatHistory,
           systemResponse,
         ]);
+        
+        console.log('New chat history:', chatHistory);
       } else {
         Alert.alert("Error", "Failed to send message.");
       }
@@ -169,7 +173,7 @@ const ChatScreen = () => {
       console.error("Error:", error);
       Alert.alert("Error", "An unexpected error occurred.");
     }
-
+  
     setIsTyping(false);
   };
 

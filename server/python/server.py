@@ -9,7 +9,7 @@ from database import (
     get_dream_analysis,
     get_dream_image,
 )
-from openai_utils import search_dreams, search_chat_with_dreams, regular_chat
+from openai_utils import search_dreams, search_chat_with_dreams, regular_chat, handle_message
 from agentlogger import log, print_header, write_to_file
 import traceback
 
@@ -203,6 +203,23 @@ def search_chat_with_dreams_endpoint(args):
             f"Successfully retrieved chat search results: {response}", type="info")
 
         # return the entire response object, not just 'arguments'
+        return jsonify(response)
+    except Exception as e:
+        log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
+        return jsonify({"error": "Internal server error"}), 500
+
+
+@app.route("/api/handle-message", methods=["POST"])
+@use_args(regular_chat_args)
+def handle_message_endpoint(args):
+    try:
+        log(
+            f"Received POST request at /api/handle-message with data {args}",
+            type="info",
+        )
+        response = handle_message(args["message"])
+        log(f"Successfully retrieved response: {response}", type="info")
+
         return jsonify(response)
     except Exception as e:
         log(f"Unhandled exception occurred: {traceback.format_exc()}", type="error")
