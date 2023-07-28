@@ -643,5 +643,4 @@ const RegenerateScreen = ({ route, navigation }) => {
     },
 });
 
-
 export default RegenerateScreen;

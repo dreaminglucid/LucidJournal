@@ -1,5 +1,4 @@
 // App.js
-
 import React from "react";
 import AppNavigation from "./Navigation/AppNavigation";
 
