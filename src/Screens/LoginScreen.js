@@ -1,40 +1,19 @@
-import * as React from 'react';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
+// LoginScreen.js
+import React, { useContext } from 'react';
 import { Button, View, StyleSheet } from 'react-native';
+import { GitHubAuthContext } from '../Contexts/GithubAuthContext';
 
-WebBrowser.maybeCompleteAuthSession();
+export default function LoginScreen() {
+  const { user, promptAsync } = useContext(GitHubAuthContext);
 
-// Endpoint
-const discovery = {
-  authorizationEndpoint: 'https://github.com/login/oauth/authorize',
-  tokenEndpoint: 'https://github.com/login/oauth/access_token',
-  revocationEndpoint: 'https://github.com/settings/connections/applications/<CLIENT_ID>',
-};
-
-export default function App() {
-  const [request, response, promptAsync] = useAuthRequest(
-    {
-      clientId: 'CLIENT_ID',
-      scopes: ['identity'],
-      redirectUri: makeRedirectUri({
-        scheme: 'your.app'
-      }),
-    },
-    discovery
-  );
-
-  React.useEffect(() => {
-    if (response?.type === 'success') {
-      const { code } = response.params;
-    }
-  }, [response]);
+  if (user) {
+    return null; // If user is already logged in, don't show login screen
+  }
 
   return (
     <View style={styles.container}>
       <Button
-        disabled={!request}
-        title="Login"
+        title="Login with GitHub"
         color="#00ADB5"
         onPress={() => {
           promptAsync();
@@ -52,5 +31,3 @@ const styles = StyleSheet.create({
     backgroundColor: '#0C0E17',
   },
 });
-
-

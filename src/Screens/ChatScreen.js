@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import API_URL from "../config";
+import { API_URL } from "../config";
 
 const predefinedPrompts = {
     "What emotions are present in my dreams?": {

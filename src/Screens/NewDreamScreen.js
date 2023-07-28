@@ -18,7 +18,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 
 // Application Specific Imports
-import API_URL from "../config";
+import { API_URL } from "../config";
 
 const NewDreamScreen = () => {
     const [title, setTitle] = useState("");
