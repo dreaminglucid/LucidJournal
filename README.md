@@ -11,7 +11,7 @@ Lucid Journal is a cutting-edge mobile application designed as a personal AI dre
 ### Getting Started
 To run the Dream Guide app on your local machine using Expo and ngrok, follow these steps:
 
-1. Clone the Dream Guide app repository.
+1. Clone the Lucid Journal app repository.
 2. Install dependencies using `npm install`.
 3. Set the API URL in `config.js` to point to your ngrok URL (e.g., `http://xxxxxxx.ngrok.io/api`).
 4. Run the app using `npm start`.
@@ -27,11 +27,18 @@ To run the Dream Guide app on your local machine using Expo and ngrok, follow th
 
 - **RegenerateScreen**: Provides options to regenerate dream analysis and images for a specific dream entry, giving users more insights into their dreams.
 
-## Lucid Journal API
-The Lucid Journal API is the backend component of the project, responsible for managing dream data, analyzing dream entries, and generating dream-inspired images using AI models like GPT-3.5 and DALLE.
+## Lucid Journal backend server
+The Lucid Journal backend server of the project is responsible for managing dream data, analyzing dream entries, and generating dream-inspired images using AI models like GPT-3.5/4 and DALLE 2.
+
+## Packages
+We utilize several agent-centric python packages from the [Autonomous Research Group](https://github.com/AutonomousResearchGroup).
+
+- https://github.com/AutonomousResearchGroup/agentmemory
+- https://github.com/AutonomousResearchGroup/easycompletion
+- https://github.com/AutonomousResearchGroup/agentlogger
 
 ### Setup
-To set up the Lucid Journal API, follow these steps:
+To set up the Lucid Journal backend server, follow these steps:
 
 1. Install Python: Visit the official Python website and download the latest version of Python for your operating system.
 
@@ -52,7 +59,7 @@ To expose the API locally and access it from the Dream Guide app running on Expo
 
 1. Install ngrok: Visit the ngrok website and download the appropriate version for your operating system.
 
-2. In the terminal, navigate to the directory containing the Lucid Journal API.
+2. In the terminal, navigate to the directory containing the Lucid Journal backend server.
 
 3. Run the command to start ngrok and forward requests to the local API server on port 5000:
    ```
@@ -62,7 +69,7 @@ To expose the API locally and access it from the Dream Guide app running on Expo
 4. ngrok will generate a temporary public URL (e.g., `http://xxxxxxx.ngrok.io`) that forwards requests to your local API server.
 
 ### API Endpoints
-The Lucid Journal API provides several endpoints to interact with dream data and AI models. Some key endpoints include:
+The Lucid Journal backend server provides several endpoints to interact with dream data and AI models. Some key endpoints include:
 
 - **POST /api/dreams**: Create a new dream entry.
 - **PUT /api/dreams/{dream_id}**: Update the analysis and image of a specific dream entry.
@@ -84,6 +91,6 @@ python server.py
 By default, the API will run on `http://127.0.0.1:5000/`, and you can make requests to the API using tools like Postman or integrate it into your own applications.
 
 ## Conclusion
-The Lucid Journal project aims to empower users to explore the realm of dreams and gain insights from various perspectives with the help of AI. The Dream Guide app provides a user-friendly interface, while the Lucid Journal API offers powerful functionalities for dream analysis and image generation.
+The Lucid Journal project aims to empower users to explore the realm of dreams and gain insights from various perspectives with the help of AI. The Dream Guide app provides a user-friendly interface, while the Lucid Journal backend server offers powerful functionalities for dream analysis and image generation.
 
 Happy Dreaming!
