@@ -13,7 +13,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-import API_URL from "../config";
+import { API_URL } from "../config";
 
 const predefinedPrompts = {
     "What emotions are present in my dreams?": {
@@ -34,6 +34,7 @@ const ChatScreen = () => {
             text: "My name is Emris, I'm your personal AI dream guide! Please ask about your dreams.",
             sender: "System",
             timestamp: new Date(),
+            status: "sent",
         },
     ]);
     const [isTyping, setIsTyping] = useState(false);
@@ -57,6 +58,7 @@ const ChatScreen = () => {
             text: message,
             sender: "User",
             timestamp: new Date(),
+            status: "pending",
         };
 
         // Add the user's message to the chat history
@@ -64,7 +66,7 @@ const ChatScreen = () => {
         setIsTyping(true);
 
         // Call the backend for response
-        fetchResponse(message);
+        fetchResponse(message, newMessage);
 
         // After sending a message, generate new prompts
         generateNewPrompts();
@@ -95,7 +97,13 @@ const ChatScreen = () => {
         setAvailablePrompts(remainingPrompts);
     };
 
-    const fetchResponse = async (message) => {
+    const timeoutPromise = (timeout) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), timeout);
+        });
+    };
+
+    const fetchResponse = async (message, userMessage) => {
         try {
             let endpoint, requestBody;
             if (predefinedPrompts.hasOwnProperty(message)) {
@@ -111,13 +119,18 @@ const ChatScreen = () => {
                 };
             }
 
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestBody),
-            });
+            const response = await Promise.race([
+                fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(requestBody),
+                }),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Request timeout")), 30000)
+                ),
+            ]);
 
             if (response.ok) {
                 const responseData = await response.json();
@@ -134,6 +147,7 @@ const ChatScreen = () => {
                     text: systemResponseText,
                     sender: "System",
                     timestamp: new Date(),
+                    status: "sent",
                 };
 
                 // Add the system's response to the chat history
@@ -141,15 +155,29 @@ const ChatScreen = () => {
                     ...prevChatHistory,
                     systemResponse,
                 ]);
+                userMessage.status = "sent";
             } else {
+                userMessage.status = "failed";
                 Alert.alert("Error", "Failed to send message.");
             }
         } catch (error) {
+            userMessage.status = "failed";
             console.error("Error:", error);
             Alert.alert("Error", "An unexpected error occurred.");
         }
 
+        // Update the chat history to reflect the new message status
+        setChatHistory((prevChatHistory) => [...prevChatHistory]);
         setIsTyping(false);
+    };
+
+    const handleRetryMessage = (message) => {
+        message.status = "pending";
+        setChatHistory((prevChatHistory) => [...prevChatHistory]);
+        setIsTyping(true);  // Set isTyping to true here
+        fetchResponse(message.text, message)
+            .then(() => setIsTyping(false))
+            .catch(() => setIsTyping(false));
     };
 
     const handleClearChat = () => {
@@ -159,44 +187,30 @@ const ChatScreen = () => {
                 text: "My name is Emris, I'm your personal AI dream guide! Please ask about your dreams.",
                 sender: "System",
                 timestamp: new Date(),
+                status: "sent",
             },
         ]);
+        setIsTyping(false);
     };
-
 
     const renderMessageItem = ({ item, index }) => {
         const isUserMessage = item.sender === "User";
         return (
             <>
-                <View
-                    style={
-                        isUserMessage ? styles.userMessageBox : styles.systemMessageBox
-                    }
-                >
-                    <View
-                        style={
-                            isUserMessage
-                                ? styles.userMessageContainer
-                                : styles.systemMessageContainer
-                        }
-                    >
-                        <Text
-                            style={
-                                isUserMessage
-                                    ? styles.userMessageText
-                                    : styles.systemMessageText
-                            }
-                        >
+                <View style={isUserMessage ? styles.userMessageBox : styles.systemMessageBox}>
+                    <View style={isUserMessage ? styles.userMessageContainer : styles.systemMessageContainer}>
+                        <Text style={isUserMessage ? styles.userMessageText : styles.systemMessageText}>
                             {item.text}
                         </Text>
                     </View>
-                    <Text
-                        style={
-                            isUserMessage ? styles.userTimestamp : styles.systemTimestamp
-                        }
-                    >
+                    <Text style={isUserMessage ? styles.userTimestamp : styles.systemTimestamp}>
                         {item.timestamp.toLocaleTimeString()}
                     </Text>
+                    {isUserMessage && item.status === "failed" && (
+                        <TouchableOpacity style={styles.retryButton} onPress={() => handleRetryMessage(item)}>
+                            <Text style={styles.retryText}>Retry</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
                 {/* If it's a system message and there are predefined prompts available, display them */}
                 {!isUserMessage && index === chatHistory.length - 1 && (
@@ -204,15 +218,8 @@ const ChatScreen = () => {
                         <View style={styles.prompts}>
                             {lastUsedPrompts.map(renderPredefinedPrompt)}
                         </View>
-                        <TouchableOpacity
-                            style={styles.nextPromptButton}
-                            onPress={generateNewPrompts}
-                        >
-                            <MaterialCommunityIcons
-                                name="chevron-right"
-                                color="#FFFFFF"
-                                size={24}
-                            />
+                        <TouchableOpacity style={styles.nextPromptButton} onPress={generateNewPrompts}>
+                            <MaterialCommunityIcons name="chevron-right" color="#FFFFFF" size={24} />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -230,8 +237,9 @@ const ChatScreen = () => {
         );
     };
 
-    const renderPredefinedPrompt = (promptKey) => (
+    const renderPredefinedPrompt = (promptKey, index) => (
         <TouchableOpacity
+            key={index} // Add this line
             style={styles.predefinedPromptButton}
             onPress={() => {
                 // When a predefined prompt is pressed, send the message directly
@@ -246,13 +254,15 @@ const ChatScreen = () => {
                 setIsTyping(true);
 
                 // Call the backend for response
-                fetchResponse(promptKey);
+                fetchResponse(promptKey, newMessage)
+                    .then(() => setIsTyping(false))
+                    .catch(() => setIsTyping(false));
 
                 // After sending a message, generate new prompts
                 generateNewPrompts();
             }}
         >
-            <Text style={styles.predefinedPromptButtonText}>{promptKey}</Text>
+            <Text style={styles.predefinedPromptButtonText} numberOfLines={2}>{promptKey}</Text>
         </TouchableOpacity>
     );
 
@@ -270,9 +280,7 @@ const ChatScreen = () => {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderMessageItem}
                 ListEmptyComponent={renderEmptyState}
-                onContentSizeChange={() =>
-                    chatHistory.length > 0 && flatListRef.current.scrollToEnd()
-                }
+                onContentSizeChange={() => flatListRef.current.scrollToEnd()}
             />
 
             {isTyping && (
@@ -431,13 +439,26 @@ const styles = StyleSheet.create({
         color: "#fff",
         fontSize: 12,
         textAlign: "center",
-        numberOfLines: 2,
     },
     nextPromptButton: {
         backgroundColor: "transparent",
         justifyContent: "center",
         alignItems: "center",
         width: "22%",
+    },
+    retryButton: {
+        alignSelf: "center",
+        borderWidth: 1.22,
+        borderColor: "#FFA500",
+        borderRadius: 20,
+        paddingHorizontal: 33,
+        paddingVertical: 5,
+        marginTop: 5,
+        marginBottom: 20,
+    },
+    retryText: {
+        color: "#FFA500",
+        fontSize: 14,
     },
     emptyStateContainer: {
         flex: 1,

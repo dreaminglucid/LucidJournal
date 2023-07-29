@@ -1,29 +1,40 @@
 {
   "name": "lucid-journal",
   "version": "1.0.0",
-  "main": "node_modules/expo/AppEntry.js",
+  "main": "AppEntry.js",
   "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web"
+    "start": "npx expo start",
+    "android": "npx expo run:android",
+    "ios": "npx expo run:ios",
+    "web": "npx expo start --web",
+    "eject": "npx expo prebuild",
+    "dev": "npx expo start --dev-client"
   },
   "dependencies": {
     "@expo/webpack-config": "^18.0.1",
     "@react-native-async-storage/async-storage": "^1.18.2",
     "@react-native-community/datetimepicker": "^7.3.0",
     "@react-native-community/masked-view": "^0.1.11",
+    "@react-native-firebase/app": "^18.3.0",
+    "@react-native-firebase/auth": "^18.3.0",
+    "@react-native-firebase/firestore": "^18.3.0",
     "@react-navigation/bottom-tabs": "^6.5.8",
     "@react-navigation/native": "^6.1.7",
     "@react-navigation/stack": "^6.3.17",
+    "axios": "^1.4.0",
     "datepicker": "^0.0.0",
     "dotenv": "^16.3.1",
     "expo": "~48.0.18",
+    "expo-auth-session": "~4.0.3",
     "expo-linear-gradient": "^12.1.2",
     "expo-status-bar": "~1.4.4",
+    "expo-updates": "~0.16.4",
+    "expo-web-browser": "~12.1.1",
+    "firebase": "^10.1.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-native": "0.71.8",
+    "react-native-app-auth": "^6.4.3",
     "react-native-config": "^1.5.1",
     "react-native-datepicker": "^1.7.2",
     "react-native-dotenv": "^3.4.9",
@@ -37,7 +48,8 @@
     "react-native-vector-icons": "^9.2.0",
     "react-native-view-shot": "^3.7.0",
     "react-native-web": "~0.18.10",
-    "use-debounce": "^9.0.4"
+    "use-debounce": "^9.0.4",
+    "expo-dev-client": "~2.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

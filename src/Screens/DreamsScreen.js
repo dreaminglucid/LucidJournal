@@ -20,7 +20,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 // Other Libraries
 import { useDebounce } from "use-debounce";
 // Application Specific Imports
-import API_URL from "../config";
+import { API_URL } from "../config";
 
 
 const DreamsScreen = ({ navigation }) => {

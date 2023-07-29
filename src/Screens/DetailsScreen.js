@@ -16,8 +16,7 @@ import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Application Specific Imports
-import API_URL from "../config";
-
+import { API_URL } from "../config";
 
 const DetailsScreen = ({ route, navigation }) => {
     let { dreamId } = route.params;

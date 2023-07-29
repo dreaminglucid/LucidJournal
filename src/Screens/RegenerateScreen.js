@@ -15,7 +15,7 @@ import {
 import { Button, Card, Subheading, FAB } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 // Application Specific Imports
-import API_URL from "../config";
+import { API_URL } from "../config";
 
 const RegenerateScreen = ({ route, navigation }) => {
     const { dreamId } = route.params;
@@ -642,6 +642,5 @@ const RegenerateScreen = ({ route, navigation }) => {
       fontSize: 18,
     },
 });
-
 
 export default RegenerateScreen;
