@@ -17,7 +17,7 @@ const discovery = {
 export const GitHubAuthContext = createContext();
 
 const redirectUri = makeRedirectUri({
-  scheme: 'lucidjournal',
+  scheme: 'lucid-journal',
   path: 'redirect',
 });
 
