@@ -2,7 +2,7 @@
 
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
-import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, getFocusedRouteNameFromRoute  } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -21,11 +21,11 @@ const TabNavigator = () => (
             tabBarStyle: {
                 backgroundColor: "#0C0E17",
                 borderTopColor: "#0C0E17",
-                elevation: 4, 
-                shadowOpacity: 0.5, 
-                shadowRadius: 5, 
-                shadowColor: "#000", 
-                shadowOffset: { height: 2, width: 0 }, 
+                elevation: 4,
+                shadowOpacity: 0.5,
+                shadowRadius: 5,
+                shadowColor: "#000",
+                shadowOffset: { height: 2, width: 0 },
             },
             tabBarLabelStyle: {
                 fontSize: 14,
@@ -64,11 +64,11 @@ const AppNavigation = () => {
                 screenOptions={{
                     headerStyle: {
                         backgroundColor: "#0C0E17",
-                        elevation: 4, 
-                        shadowOpacity: 0.5, 
-                        shadowRadius: 5, 
-                        shadowColor: "#000", 
-                        shadowOffset: { height: 2, width: 0 }, 
+                        elevation: 4,
+                        shadowOpacity: 0.5,
+                        shadowRadius: 5,
+                        shadowColor: "#000",
+                        shadowOffset: { height: 2, width: 0 },
                     },
                     headerTitleStyle: {
                         color: "#FFFFFF",
@@ -95,13 +95,15 @@ const AppNavigation = () => {
 };
 
 const getHeaderTitle = (route) => {
-    const routeName = route.state?.routes[route.state.index]?.name ?? 'Dreams';
+    const routeName = getFocusedRouteNameFromRoute(route) ?? 'Dreams';
 
     switch (routeName) {
         case 'Dreams':
             return 'Dreams';
         case 'Emris':
             return 'Emris';
+        default:
+            return routeName;
     }
 };
 
