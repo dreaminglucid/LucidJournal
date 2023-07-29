@@ -1,33 +1,67 @@
 // React and React Native Libraries
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     StyleSheet,
     View,
     Text,
     Alert,
     Image,
+    Animated,
     ActivityIndicator,
     ScrollView,
     RefreshControl,
 } from "react-native";
-
-// UI Component Libraries
 import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-// Application Specific Imports
 import { API_URL } from "../config";
 
 const DetailsScreen = ({ route, navigation }) => {
     let { dreamId } = route.params;
-    console.log(dreamId); // log the dreamId
     dreamId = String(dreamId);
     const [dream, setDream] = useState(null);
     const [analysisResult, setAnalysisResult] = useState("");
     const [imageData, setImageData] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingStatus, setLoadingStatus] = useState("");
     const [generationStatus, setGenerationStatus] = useState("idle");
+    const animation = new Animated.Value(0);
+
+    // Similar loading animation logic as in RegenerateScreen
+    useEffect(() => {
+        if (isLoading) {
+            const animate = Animated.loop(
+                Animated.sequence([
+                    Animated.timing(animation, {
+                        toValue: 1,
+                        duration: 500,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(animation, {
+                        toValue: 0,
+                        duration: 500,
+                        useNativeDriver: true,
+                    }),
+                ]),
+            );
+            animate.start();
+        } else {
+            animation.stopAnimation();
+        }
+    }, [isLoading]);
+
+    const dot1 = animation.interpolate({
+        inputRange: [0, 0.4, 0.8, 1],
+        outputRange: [0, 1, 0, 0],
+    });
+    const dot2 = animation.interpolate({
+        inputRange: [0, 0.2, 0.6, 1],
+        outputRange: [0, 1, 0, 0],
+    });
+    const dot3 = animation.interpolate({
+        inputRange: [0, 0, 0.4, 0.8, 1],
+        outputRange: [0, 1, 0, 0, 0],
+    });
 
     useEffect(() => {
         const unsubscribe = navigation.addListener("focus", fetchDream);
@@ -111,9 +145,13 @@ const DetailsScreen = ({ route, navigation }) => {
 
     const handleGenerateDream = () => {
         setIsLoading(true);
+        setLoadingStatus("Generating Analysis & Image"); // Set loading status
+    
         fetchDreamAnalysis()
             .then((analysis) => {
                 setAnalysisResult(analysis);
+                if (!imageData) setIsLoading(false);  // Only set loading to false if image data has also been fetched
+                setLoadingStatus("");
             })
             .catch((error) => {
                 console.error("Error during analysis generation:", error);
@@ -121,13 +159,15 @@ const DetailsScreen = ({ route, navigation }) => {
                     "Error",
                     "An unexpected error occurred during analysis generation.",
                 );
-                setGenerationStatus("error");
                 setIsLoading(false);
+                setLoadingStatus("");
             });
-
+    
         fetchDreamImage()
             .then((image) => {
                 setImageData(image);
+                if (!analysisResult) setIsLoading(false);  // Only set loading to false if analysis data has also been fetched
+                setLoadingStatus("");
             })
             .catch((error) => {
                 console.error("Error during image generation:", error);
@@ -135,10 +175,10 @@ const DetailsScreen = ({ route, navigation }) => {
                     "Error",
                     "An unexpected error occurred during image generation.",
                 );
-                setGenerationStatus("error");
                 setIsLoading(false);
+                setLoadingStatus("");
             });
-    };
+    };        
 
     useEffect(() => {
         if (analysisResult && imageData) {
@@ -223,68 +263,58 @@ const DetailsScreen = ({ route, navigation }) => {
                 <RefreshControl refreshing={isRefreshing} onRefresh={fetchDream} />
             }
         >
-            {dream && (
-                <>
-                    <Card style={styles.card}>
-                        <Card.Content>
-                            <View style={styles.infoBlock}>
-                                <MaterialCommunityIcons name="book" color="#00ADB5" size={24} />
-                                <Subheading style={styles.subLabel}>Dream Title</Subheading>
-                                <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
-                            </View>
-                        </Card.Content>
-                    </Card>
-                    <Card style={styles.card}>
-                        <Card.Content>
-                            <View style={styles.infoBlock}>
-                                <MaterialCommunityIcons
-                                    name="calendar"
-                                    color="#00ADB5"
-                                    size={24}
-                                />
-                                <Subheading style={styles.subLabel}>Dream Date</Subheading>
-                                <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
-                            </View>
-                        </Card.Content>
-                    </Card>
-                    <Card style={styles.card}>
-                        <Card.Content>
-                            <View style={styles.infoBlock}>
-                                <MaterialCommunityIcons
-                                    name="note-text"
-                                    color="#00ADB5"
-                                    size={24}
-                                />
-                                <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-                                <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
-                            </View>
-                        </Card.Content>
-                    </Card>
-                    <Card style={styles.card}>
-                        <Card.Content>
-                            <View style={styles.infoBlock}>
-                                <MaterialCommunityIcons
-                                    name="brain"
-                                    color="#00ADB5"
-                                    size={24}
-                                />
-                                <Subheading style={styles.analysisLabel}>
-                                    Dream Analysis
-                                </Subheading>
-                                <Text style={styles.analysisResult}>{analysisResult}</Text>
-                            </View>
-                        </Card.Content>
-                    </Card>
-                </>
-            )}
             {isLoading ? (
-                <ActivityIndicator
-                    size="large"
-                    color="#00ADB5"
-                    style={styles.loadingIndicator}
-                />
+                <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#00ADB5" />
+                    <View style={styles.loadingMessageContainer}>
+                        <Text style={styles.loadingMessage}>{loadingStatus}</Text>
+                        <Animated.Text style={[styles.loadingDot, { opacity: dot1 }]}>.</Animated.Text>
+                        <Animated.Text style={[styles.loadingDot, { opacity: dot2 }]}>.</Animated.Text>
+                        <Animated.Text style={[styles.loadingDot, { opacity: dot3 }]}>.</Animated.Text>
+                    </View>
+                </View>
             ) : (
                 <>
+                    {dream && (
+                        <>
+                            <Card style={styles.card}>
+                                <Card.Content>
+                                    <View style={styles.infoBlock}>
+                                        <MaterialCommunityIcons name="book" color="#00ADB5" size={24} />
+                                        <Subheading style={styles.subLabel}>Dream Title</Subheading>
+                                        <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
+                                    </View>
+                                </Card.Content>
+                            </Card>
+                            <Card style={styles.card}>
+                                <Card.Content>
+                                    <View style={styles.infoBlock}>
+                                        <MaterialCommunityIcons name="calendar" color="#00ADB5" size={24} />
+                                        <Subheading style={styles.subLabel}>Dream Date</Subheading>
+                                        <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
+                                    </View>
+                                </Card.Content>
+                            </Card>
+                            <Card style={styles.card}>
+                                <Card.Content>
+                                    <View style={styles.infoBlock}>
+                                        <MaterialCommunityIcons name="note-text" color="#00ADB5" size={24} />
+                                        <Subheading style={styles.subLabel}>Dream Entry</Subheading>
+                                        <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+                                    </View>
+                                </Card.Content>
+                            </Card>
+                            <Card style={styles.card}>
+                                <Card.Content>
+                                    <View style={styles.infoBlock}>
+                                        <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
+                                        <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+                                        <Text style={styles.analysisResult}>{analysisResult}</Text>
+                                    </View>
+                                </Card.Content>
+                            </Card>
+                        </>
+                    )}
                     {imageData && (
                         <View style={styles.imageContainer}>
                             <Image source={{ uri: imageData }} style={styles.image} />
@@ -315,18 +345,16 @@ const DetailsScreen = ({ route, navigation }) => {
                                 Generate
                             </Button>
                         )}
-                        {analysisResult &&
-                            imageData &&
-                            !(dream && dream.analysis && dream.image) && (
-                                <Button
-                                    mode="contained"
-                                    onPress={handleSaveAnalysisAndImage}
-                                    style={styles.saveButton}
-                                    labelStyle={styles.saveButtonText}
-                                >
-                                    Save
-                                </Button>
-                            )}
+                        {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
+                            <Button
+                                mode="contained"
+                                onPress={handleSaveAnalysisAndImage}
+                                style={styles.saveButton}
+                                labelStyle={styles.saveButtonText}
+                            >
+                                Save
+                            </Button>
+                        )}
                     </View>
                 </>
             )}
@@ -438,6 +466,38 @@ const styles = StyleSheet.create({
         color: "#FFFFFF",
         fontWeight: "bold",
         fontSize: 18,
+    },
+    loadingContainer: {
+        position: "absolute",
+        left: 0,
+        right: 0,
+        top: 0,
+        bottom: 0,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        zIndex: 1,
+      },  
+    loadingMessageContainer: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 33,
+    },
+    loadingMessage: {
+        color: "#00ADB5",
+        fontSize: 18,
+    },
+    loadingDots: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        marginTop: 10,
+    },
+    loadingDot: {
+        color: "#00ADB5",
+        fontSize: 20,
+        marginHorizontal: 5,
     },
 });
 
