@@ -23,13 +23,10 @@ web-build/
 .env
 config.js
 firebaseConfig.js
-server/python/config.ini
 
 # Chromadb
 .chroma
 
 # Directories to ignore
-memory/
+server/  # Server is its own repository
 .vscode/
-/server/python/__pycache__/
-*.pyc
