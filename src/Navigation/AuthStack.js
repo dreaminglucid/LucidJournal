@@ -18,7 +18,7 @@ const AuthStack = () => {
         }} 
       />
       <Stack.Screen 
-        name="Account" 
+        name="AccountDetails"  // Renamed to 'AccountDetails'
         component={AccountScreen} 
         options={{
           headerShown: false,  // Hide header
