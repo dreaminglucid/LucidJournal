@@ -39,9 +39,6 @@
     },
     "updates": {
       "url": "https://u.expo.dev/ca62a3da-e797-4f07-aec8-f5f27ea698c5"
-    },
-      "expo": {
-        "scheme": "lucid-jounral"
-      }
-    }    
+    }
+  }
 }
