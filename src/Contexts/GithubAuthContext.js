@@ -16,12 +16,17 @@ const discovery = {
 
 export const GitHubAuthContext = createContext();
 
+const redirectUri = makeRedirectUri({
+  scheme: 'lucidjournal',
+  path: 'redirect',
+});
+
 export const GitHubAuthProvider = ({ children }) => {
   const [request, response, promptAsync] = useAuthRequest(
     {
       clientId: GITHUB_CLIENT_ID,
-      scopes: ['identity'],
-      redirectUri: 'https://auth.expo.io/@jamesfeura/lucid-journal',
+      scopes: ['user'],
+      redirectUri,
     },
     discovery
   );

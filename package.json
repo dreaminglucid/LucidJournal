@@ -7,7 +7,8 @@
     "android": "npx expo run:android",
     "ios": "npx expo run:ios",
     "web": "npx expo start --web",
-    "eject": "npx expo prebuild"
+    "eject": "npx expo prebuild",
+    "dev": "npx expo start --dev-client"
   },
   "dependencies": {
     "@expo/webpack-config": "^18.0.1",
@@ -47,7 +48,8 @@
     "react-native-vector-icons": "^9.2.0",
     "react-native-view-shot": "^3.7.0",
     "react-native-web": "~0.18.10",
-    "use-debounce": "^9.0.4"
+    "use-debounce": "^9.0.4",
+    "expo-dev-client": "~2.2.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
