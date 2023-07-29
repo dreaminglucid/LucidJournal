@@ -30,6 +30,7 @@ const DreamsScreen = ({ navigation }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInputFocused, setIsInputFocused] = useState(false);
 
   useEffect(() => {
     fetchDreams();
@@ -120,9 +121,10 @@ const DreamsScreen = ({ navigation }) => {
         <View
           style={[
             styles.searchBar,
-            { flexDirection: "row", justifyContent: "space-between" },
+            { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
           ]}
         >
+          {!isInputFocused && <MaterialCommunityIcons name="magnify" color="#888" size={22} style={styles.searchIcon} />}
           <TextInput
             style={styles.input}
             value={searchText}
@@ -130,6 +132,8 @@ const DreamsScreen = ({ navigation }) => {
             placeholder="Search for dreams"
             placeholderTextColor="#888"
             onSubmitEditing={handleSearch}
+            onFocus={() => setIsInputFocused(true)}
+            onBlur={() => setIsInputFocused(false)}
           />
           {searchText.length > 0 && (
             <TouchableOpacity
@@ -248,6 +252,12 @@ const styles = StyleSheet.create({
     marginBottom: 0,
     borderRadius: 20,
     padding: 0,
+  },
+  searchIcon: {
+    position: "absolute",
+    right: 10,
+    height: 40,
+    zIndex: 1,
   },
   clearButton: {
     position: "absolute",
