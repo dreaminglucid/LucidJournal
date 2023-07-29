@@ -1,7 +1,6 @@
-// DreamsScreenStack.js
-
-import React from "react";
+import React, { useContext } from "react";  // Import useContext
 import { createStackNavigator } from "@react-navigation/stack";
+import { ThemeContext } from '../Contexts/ThemeContext';
 
 import DreamsScreen from "../Screens/DreamsScreen";
 import NewDreamScreen from "../Screens/NewDreamScreen";
@@ -11,6 +10,8 @@ import RegenerateScreen from "../Screens/RegenerateScreen";
 const Stack = createStackNavigator();
 
 const DreamsScreenStack = () => {
+  const { theme } = useContext(ThemeContext);  // Use ThemeContext
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -18,14 +19,14 @@ const DreamsScreenStack = () => {
         component={DreamsScreen}
         options={{
           headerTitleAlign: "center",
-          headerTintColor: "#FFFFFF",
+          headerTintColor: theme.colors.text,  // Use theme colors
           headerStyle: {
-            backgroundColor: "#0C0E17",
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: "#000", // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+            backgroundColor: theme.colors.background,  // Use theme colors
+            elevation: 4,
+            shadowOpacity: 0.5,
+            shadowRadius: 5,
+            shadowColor: "#000",
+            shadowOffset: { height: 2, width: 0 },
           },
         }}
       />
@@ -34,14 +35,14 @@ const DreamsScreenStack = () => {
         component={NewDreamScreen}
         options={{
           headerTitleAlign: "center",
-          headerTintColor: "#FFFFFF",
+          headerTintColor: theme.colors.text,  // Use theme colors
           headerStyle: {
-            backgroundColor: "#0C0E17",
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: "#000", // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+            backgroundColor: theme.colors.background,  // Use theme colors
+            elevation: 4,
+            shadowOpacity: 0.5,
+            shadowRadius: 5,
+            shadowColor: "#000",
+            shadowOffset: { height: 2, width: 0 },
           },
         }}
       />
@@ -50,14 +51,14 @@ const DreamsScreenStack = () => {
         component={DetailsScreen}
         options={{
           headerTitleAlign: "center",
-          headerTintColor: "#FFFFFF",
+          headerTintColor: theme.colors.text,  // Use theme colors
           headerStyle: {
-            backgroundColor: "#0C0E17",
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: "#000", // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+            backgroundColor: theme.colors.background,  // Use theme colors
+            elevation: 4,
+            shadowOpacity: 0.5,
+            shadowRadius: 5,
+            shadowColor: "#000",
+            shadowOffset: { height: 2, width: 0 },
           },
         }}
       />
@@ -66,14 +67,14 @@ const DreamsScreenStack = () => {
         component={RegenerateScreen}
         options={{
           headerTitleAlign: "center",
-          headerTintColor: "#FFFFFF",
+          headerTintColor: theme.colors.text,  // Use theme colors
           headerStyle: {
-            backgroundColor: "#0C0E17",
-            elevation: 4, // This is for Android
-            shadowOpacity: 0.5, // This is for iOS
-            shadowRadius: 5, // This is for iOS
-            shadowColor: "#000", // This is for iOS
-            shadowOffset: { height: 2, width: 0 }, // This is for iOS
+            backgroundColor: theme.colors.background,  // Use theme colors
+            elevation: 4,
+            shadowOpacity: 0.5,
+            shadowRadius: 5,
+            shadowColor: "#000",
+            shadowOffset: { height: 2, width: 0 },
           },
         }}
       />

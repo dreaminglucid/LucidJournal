@@ -1,13 +1,17 @@
 // App.js
+
 import React from "react";
-import { GitHubAuthProvider } from './Contexts/GithubAuthContext'; // Import GitHubAuthProvider
+import { ThemeProvider } from './Contexts/ThemeContext';  // Import ThemeProvider
+import { GitHubAuthProvider } from './Contexts/GithubAuthContext';
 import AppNavigation from "./Navigation/AppNavigation";
 
 const App = () => {
   return (
-    <GitHubAuthProvider>
-      <AppNavigation />
-    </GitHubAuthProvider>
+    <ThemeProvider>
+      <GitHubAuthProvider>
+        <AppNavigation />
+      </GitHubAuthProvider>
+    </ThemeProvider>
   );
 };
 

@@ -219,7 +219,7 @@ const ChatScreen = () => {
                             {lastUsedPrompts.map(renderPredefinedPrompt)}
                         </View>
                         <TouchableOpacity style={styles.nextPromptButton} onPress={generateNewPrompts}>
-                            <MaterialCommunityIcons name="chevron-right" color="#FFFFFF" size={24} />
+                            <MaterialCommunityIcons name="chevron-right" color="#00ADB5" size={24} />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 0,
         paddingVertical: 5,
-        backgroundColor: "#0C0E17",
+        // backgroundColor: "#0C0E17",
         padding: 0,
         marginBottom: 10,
         alignSelf: "flex-start",
@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        backgroundColor: "transparent",
+        backgroundColor: "#0C0E17",
         width: "100%",
         minHeight: 33,
         maxHeight: 66,
@@ -448,7 +448,7 @@ const styles = StyleSheet.create({
     },
     retryButton: {
         alignSelf: "center",
-        borderWidth: 1.22,
+        borderWidth: 3.33,
         borderColor: "#FFA500",
         borderRadius: 20,
         paddingHorizontal: 33,
@@ -459,6 +459,7 @@ const styles = StyleSheet.create({
     retryText: {
         color: "#FFA500",
         fontSize: 14,
+        fontWeight: "bold",
     },
     emptyStateContainer: {
         flex: 1,

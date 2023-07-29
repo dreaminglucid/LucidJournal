@@ -166,6 +166,8 @@ const DreamsScreen = ({ navigation }) => {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={fetchDreams}
+                colors={["#00ADB5"]} // Add this line to change the color of the refresh indicator
+                tintColor={"#00ADB5"} // This line changes the color for iOS
               />
             }
           />
