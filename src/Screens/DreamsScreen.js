@@ -1,5 +1,5 @@
 // React and React Native Libraries
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
   StyleSheet,
   View,
@@ -19,11 +19,15 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Other Libraries
 import { useDebounce } from "use-debounce";
+import { ThemeContext } from '../Contexts/ThemeContext';
+
 // Application Specific Imports
 import { API_URL } from "../config";
 
 
 const DreamsScreen = ({ navigation }) => {
+  const { theme } = useContext(ThemeContext);
+  const styles = getStyles(theme);
   const [dreams, setDreams] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [debouncedSearchText] = useDebounce(searchText, 500);
@@ -116,7 +120,7 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View style={styles.container}>
         <View
           style={[
@@ -202,33 +206,32 @@ const DreamsScreen = ({ navigation }) => {
 };
 
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: 20,
   },
   input: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 2.22,
     borderColor: "#123",
     borderRadius: 20,
     padding: 10,
     marginBottom: 20,
-    color: "#FFFFFF",
-    backgroundColor: "#272B3B",
+    color: theme.colors.text,
+    backgroundColor: theme.colors.background,
     fontSize: 18,
   },
   dreamItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderWidth: 1,
+    borderWidth: 2.22,
     borderColor: "#123",
     borderRadius: 22,
     marginBottom: 15,
-    backgroundColor: "#272B3B",
+    backgroundColor: theme.colors.background,
     padding: 15,
-    ...this.dropShadow,
   },
   dreamItemImage: {
     width: 60,
@@ -238,9 +241,9 @@ const styles = StyleSheet.create({
     ...this.engravedShadow,
   },
   dreamItemText: {
-    color: "#FFFFFF",
     fontSize: 18,
     fontWeight: "500",
+    color: theme.colors.text // Dynamic text color
   },
   dreamItemDate: {
     color: "#6B7280",

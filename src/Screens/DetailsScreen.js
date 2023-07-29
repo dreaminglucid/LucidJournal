@@ -1,5 +1,5 @@
 // React and React Native Libraries
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
     StyleSheet,
     View,
@@ -13,9 +13,12 @@ import {
 } from "react-native";
 import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ThemeContext } from '../Contexts/ThemeContext';
 import { API_URL } from "../config";
 
 const DetailsScreen = ({ route, navigation }) => {
+    const { theme } = useContext(ThemeContext);
+    const styles = getStyles(theme);
     let { dreamId } = route.params;
     dreamId = String(dreamId);
     const [dream, setDream] = useState(null);
@@ -70,7 +73,7 @@ const DetailsScreen = ({ route, navigation }) => {
         fetchDream();
 
         return unsubscribe;
-    }, [navigation, route.params.dreamUpdated]);
+    }, [navigation, route.params.dreamUpdated, theme]);
 
     useEffect(() => {
         if (generationStatus === "generating") {
@@ -146,7 +149,7 @@ const DetailsScreen = ({ route, navigation }) => {
     const handleGenerateDream = () => {
         setIsLoading(true);
         setLoadingStatus("Generating Analysis & Image"); // Set loading status
-    
+
         fetchDreamAnalysis()
             .then((analysis) => {
                 setAnalysisResult(analysis);
@@ -162,7 +165,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 setIsLoading(false);
                 setLoadingStatus("");
             });
-    
+
         fetchDreamImage()
             .then((image) => {
                 setImageData(image);
@@ -178,7 +181,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 setIsLoading(false);
                 setLoadingStatus("");
             });
-    };        
+    };
 
     useEffect(() => {
         if (analysisResult && imageData) {
@@ -362,15 +365,18 @@ const DetailsScreen = ({ route, navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flexGrow: 1,
         padding: 20,
+        backgroundColor: theme.colors.background,
     },
     card: {
-        backgroundColor: "#272B3B",
+        backgroundColor: theme.colors.card,
         marginBottom: 20,
         borderRadius: 22,
+        borderWidth: 2.22,
+        borderColor: "#123",
         shadowColor: "#000",
         shadowOffset: {
             width: 0,
@@ -387,36 +393,37 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 5,
-        color: "#00ADB5",
+        color: theme.colors.primary,  // Changed this line
     },
     dreamTitle: {
         fontSize: 20,
         marginBottom: 10,
-        color: "#A0AEC0",
+        color: theme.colors.text,  // Changed this line
         fontWeight: "bold",
     },
     dreamDate: {
         fontSize: 18,
         marginBottom: 10,
-        color: "#A0AEC0",
+        color: theme.colors.text,  // Changed this line
         fontWeight: "bold",
     },
     dreamEntry: {
         fontSize: 18,
         marginBottom: 10,
-        color: "#A0AEC0",
+        color: theme.colors.text,  // Changed this line
     },
     analysisLabel: {
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 5,
-        color: "#00ADB5",
+        color: theme.colors.primary,  // Changed this line
     },
     analysisResult: {
         fontSize: 18,
         marginBottom: 10,
-        color: "#A0AEC0",
+        color: theme.colors.text,  // Changed this line
     },
+
     loadingIndicator: {
         justifyContent: "center",
         height: "90%",
@@ -477,7 +484,7 @@ const styles = StyleSheet.create({
         justifyContent: "center",
         backgroundColor: "rgba(0, 0, 0, 0.3)",
         zIndex: 1,
-      },  
+    },
     loadingMessageContainer: {
         flexDirection: "row",
         alignItems: "center",
@@ -485,9 +492,9 @@ const styles = StyleSheet.create({
         marginTop: 33,
     },
     loadingMessage: {
-        color: "#00ADB5",
-        fontSize: 18,
-    },
+        fontSize: 20,
+        color: theme.colors.text,
+      }, 
     loadingDots: {
         flexDirection: "row",
         alignItems: "center",

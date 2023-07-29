@@ -20,21 +20,25 @@ export const ThemeProvider = ({ children }) => {
 };
 
 const lightTheme = {
-    ...DefaultTheme,
-    dark: false, // Add this line
-    colors: {
-      ...DefaultTheme.colors,
-      background: "#F0F0F0",
-      text: "#333333",
-    },
-  };
-  
-  const darkTheme = {
-    ...DefaultTheme,
-    dark: true, // Add this line
-    colors: {
-      ...DefaultTheme.colors,
-      background: "#0C0E17",
-      text: "#ffffff",
-    },
-  };  
+  ...DefaultTheme,
+  dark: false, // Add this line
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#F0F0F0",
+    primary: "#00ADB5",  // Add this line
+    text: "#333333",
+    card: "#FFFFFF", // Add this line for light theme card color
+  },
+};
+
+const darkTheme = {
+  ...DefaultTheme,
+  dark: true, // Add this line
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#0C0E17",
+    primary: "#00ADB5",  // Add this line
+    text: "#A0AEC0",
+    card: "#0C0E17", // Add this line for dark theme card color
+  },
+}; 
