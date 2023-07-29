@@ -154,6 +154,11 @@ const DreamsScreen = ({ navigation }) => {
             color="#00ADB5"
             style={styles.loadingIndicator}
           />
+        ) : dreams.length === 0 ? ( // Check if dreams array is empty
+          <View style={styles.emptyContainer}>
+            <MaterialCommunityIcons name="alert-circle-outline" size={50} color="#00ADB5" />
+            <Text style={styles.emptyText}>No dreams found. Tap on '+' to create a new dream.</Text>
+          </View>
         ) : (
           <FlatList
             data={searchResults.length > 0 ? searchResults : dreams}
@@ -311,6 +316,18 @@ const styles = StyleSheet.create({
     color: "#00ADB5",
     fontSize: 20,
     marginHorizontal: 5,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 20, // Add some padding to ensure the text doesn't touch the sides
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 18,
+    color: '#888',
+    textAlign: 'center', // This will center align the text
   },
 });
 

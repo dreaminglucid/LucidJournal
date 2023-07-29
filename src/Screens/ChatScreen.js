@@ -426,7 +426,7 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        backgroundColor: "#0C0E17",
+        backgroundColor: "#272B3B",
         width: "100%",
         minHeight: 33,
         maxHeight: 66,
