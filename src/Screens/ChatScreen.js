@@ -97,6 +97,12 @@ const ChatScreen = () => {
         setAvailablePrompts(remainingPrompts);
     };
 
+    const timeoutPromise = (timeout) => {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), timeout);
+        });
+    };
+
     const fetchResponse = async (message, userMessage) => {
         try {
             let endpoint, requestBody;
@@ -113,13 +119,18 @@ const ChatScreen = () => {
                 };
             }
 
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(requestBody),
-            });
+            const response = await Promise.race([
+                fetch(endpoint, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(requestBody),
+                }),
+                new Promise((_, reject) =>
+                    setTimeout(() => reject(new Error("Request timeout")), 30000)
+                ),
+            ]);
 
             if (response.ok) {
                 const responseData = await response.json();
@@ -179,6 +190,7 @@ const ChatScreen = () => {
                 status: "sent",
             },
         ]);
+        setIsTyping(false);
     };
 
     const renderMessageItem = ({ item, index }) => {
@@ -213,7 +225,7 @@ const ChatScreen = () => {
                 )}
             </>
         );
-    };     
+    };
 
     const renderEmptyState = () => {
         return (
@@ -268,9 +280,7 @@ const ChatScreen = () => {
                 keyExtractor={(item, index) => index.toString()}
                 renderItem={renderMessageItem}
                 ListEmptyComponent={renderEmptyState}
-                onContentSizeChange={() =>
-                    chatHistory.length > 0 && flatListRef.current.scrollToEnd()
-                }
+                onContentSizeChange={() => flatListRef.current.scrollToEnd()}
             />
 
             {isTyping && (
