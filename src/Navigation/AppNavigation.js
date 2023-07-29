@@ -1,5 +1,3 @@
-// AppNavigation.js
-
 import React from "react";
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer, DefaultTheme, getFocusedRouteNameFromRoute  } from "@react-navigation/native";
@@ -10,6 +8,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DreamsScreenStack from "./DreamsScreenStack";
 import ChatScreen from "../Screens/ChatScreen";
 import AuthStack from "./AuthStack";
+import SettingsScreen from "../Screens/SettingsScreen";  // Import SettingsScreen
 
 const Tab = createBottomTabNavigator();
 const RootStack = createStackNavigator();
@@ -86,9 +85,15 @@ const AppNavigation = () => {
                                 <MaterialCommunityIcons name="account" color={"#FFFFFF"} size={25} style={{ marginRight: 10 }} />
                             </TouchableOpacity>
                         ),
+                        headerLeft: () => (  // Add this block
+                            <TouchableOpacity onPress={() => navigation.navigate('Settings')}>
+                                <MaterialCommunityIcons name="cog" color={"#FFFFFF"} size={25} style={{ marginLeft: 10 }} />
+                            </TouchableOpacity>
+                        ),
                     })}
                 />
                 <RootStack.Screen name="Account" component={AuthStack} />
+                <RootStack.Screen name="Settings" component={SettingsScreen} />
             </RootStack.Navigator>
         </NavigationContainer>
     );
