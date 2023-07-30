@@ -332,13 +332,13 @@ const ChatScreen = () => {
                     numberOfLines={4}
                 />
                 <TouchableOpacity style={styles.sendButton} onPress={handleSendMessage}>
-                    <MaterialCommunityIcons name="send" color="#FFFFFF" size={24} />
+                    <MaterialCommunityIcons name="send" color={theme.colors.text} size={24} />
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.clearChatButton}
                     onLongPress={handleClearChat} // Here is the change
                 >
-                    <MaterialCommunityIcons name="delete" color="#FFFFFF" size={24} />
+                    <MaterialCommunityIcons name="delete" color={theme.colors.text} size={24} />
                 </TouchableOpacity>
             </View>
         </KeyboardAvoidingView>
