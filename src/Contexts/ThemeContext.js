@@ -4,7 +4,7 @@ import { DefaultTheme } from '@react-navigation/native';
 export const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true); // Set initial state to true
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
@@ -24,10 +24,10 @@ const lightTheme = {
   dark: false,
   colors: {
     ...DefaultTheme.colors,
-    background: "#F0F0F0",
+    background: "#F8F8F8",
     primary: "#00ADB5",
     text: "#333333",
-    card: "#D0D0D0", // Slightly darker color for light theme
+    card: "#E8E8E8",
   },
 };
 
@@ -36,9 +36,9 @@ const darkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    background: "#0C0E17",
+    background: "#333333",
     primary: "#00ADB5",
     text: "#A0AEC0",
-    card: "#1C1E27", // Slightly lighter color for dark theme
+    card: "#222222",
   },
 };

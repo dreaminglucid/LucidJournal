@@ -374,7 +374,6 @@ const getStyles = (theme) => StyleSheet.create({
         padding: 5,
     },
     sendButton: {
-        backgroundColor: "#00ADB5",
         borderRadius: 22,
         width: 33,
         height: 33,
@@ -382,7 +381,6 @@ const getStyles = (theme) => StyleSheet.create({
         alignItems: "center",
     },
     clearChatButton: {
-        backgroundColor: '#FF0000',
         padding: 5,
         borderRadius: 30,
         alignItems: 'center',
@@ -403,7 +401,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 22,
         marginBottom: 5,
         padding: 15,
-        backgroundColor: "#272B3B",
+        backgroundColor: theme.colors.card,
         marginRight: 40,
         width: 300,
     },
@@ -412,7 +410,7 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 18,
     },
     systemMessageText: {
-        color: "#FFFFFF",
+        color: theme.colors.text,
         fontSize: 18,
     },
     userTimestamp: {
@@ -443,11 +441,9 @@ const getStyles = (theme) => StyleSheet.create({
         width: "70%",
     },
     predefinedPromptButton: {
-        borderWidth: 1,
-        borderColor: "#00ADB5",
-        borderRadius: 30,
-        paddingHorizontal: 10,
-        paddingVertical: 5,
+        borderRadius: 22,
+        paddingHorizontal: 13,
+        paddingVertical: 13,
         width: "100%",
         minHeight: 33,
         maxHeight: 66,
@@ -471,11 +467,9 @@ const getStyles = (theme) => StyleSheet.create({
     },
     retryButton: {
         alignSelf: "center",
-        borderWidth: 1,
-        borderColor: "#123",
         borderRadius: 20,
         paddingHorizontal: 33,
-        paddingVertical: 5,
+        paddingVertical: 13,
         marginTop: 5,
         marginBottom: 20,
         backgroundColor: theme.colors.card,
