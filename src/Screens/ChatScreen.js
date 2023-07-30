@@ -409,7 +409,6 @@ const getStyles = (theme) => StyleSheet.create({
         justifyContent: "space-between",
         paddingHorizontal: 0,
         paddingVertical: 5,
-        // backgroundColor: "#0C0E17",
         padding: 0,
         marginBottom: 10,
         alignSelf: "flex-start",
@@ -431,6 +430,7 @@ const getStyles = (theme) => StyleSheet.create({
         elevation: 5,
         justifyContent: "center",
         alignItems: "center",
+        backgroundColor: theme.colors.card,
     },
     predefinedPromptButtonText: {
         color: theme.colors.text,
@@ -453,6 +453,7 @@ const getStyles = (theme) => StyleSheet.create({
         paddingVertical: 5,
         marginTop: 5,
         marginBottom: 20,
+        backgroundColor: theme.colors.card,
     },
     retryText: {
         color: "#FF0000",
