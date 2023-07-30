@@ -382,8 +382,6 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.colors.card,
     marginBottom: 20,
     borderRadius: 22,
-    borderWidth: 2.22,
-    borderColor: "#123",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
