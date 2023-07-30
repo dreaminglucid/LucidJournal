@@ -248,7 +248,7 @@ const ChatScreen = () => {
                             {lastUsedPrompts.map(renderPredefinedPrompt)}
                         </View>
                         <TouchableOpacity style={styles.nextPromptButton} onPress={generateNewPrompts}>
-                            <MaterialCommunityIcons name="chevron-right" color="#00ADB5" size={24} />
+                            <MaterialCommunityIcons name="refresh" color="#00ADB5" size={24} />
                         </TouchableOpacity>
                     </View>
                 )}
