@@ -23,7 +23,7 @@ const DreamsScreenStack = () => {
           headerStyle: {
             backgroundColor: theme.colors.background,  // Use theme colors
             elevation: 4,
-            shadowOpacity: 0.5,
+            shadowOpacity: 0,
             shadowRadius: 5,
             shadowColor: "#000",
             shadowOffset: { height: 2, width: 0 },
@@ -39,7 +39,7 @@ const DreamsScreenStack = () => {
           headerStyle: {
             backgroundColor: theme.colors.background,  // Use theme colors
             elevation: 4,
-            shadowOpacity: 0.5,
+            shadowOpacity: 0,
             shadowRadius: 5,
             shadowColor: "#000",
             shadowOffset: { height: 2, width: 0 },
@@ -55,7 +55,7 @@ const DreamsScreenStack = () => {
           headerStyle: {
             backgroundColor: theme.colors.background,  // Use theme colors
             elevation: 4,
-            shadowOpacity: 0.5,
+            shadowOpacity: 0,
             shadowRadius: 5,
             shadowColor: "#000",
             shadowOffset: { height: 2, width: 0 },
@@ -71,7 +71,7 @@ const DreamsScreenStack = () => {
           headerStyle: {
             backgroundColor: theme.colors.background,  // Use theme colors
             elevation: 4,
-            shadowOpacity: 0.5,
+            shadowOpacity: 0,
             shadowRadius: 5,
             shadowColor: "#000",
             shadowOffset: { height: 2, width: 0 },

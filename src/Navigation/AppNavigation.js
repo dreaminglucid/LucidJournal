@@ -29,7 +29,7 @@ const TabNavigator = () => {
             backgroundColor: theme.colors.background, // use theme background color
             borderTopColor: theme.colors.background, // use theme background color
             elevation: 4,
-            shadowOpacity: 0.5,
+            shadowOpacity: 0.22,
             shadowRadius: 5,
             shadowColor: "#000",
             shadowOffset: { height: 2, width: 0 },
@@ -79,7 +79,7 @@ const AppNavigation = () => {
                     headerStyle: {
                         backgroundColor: theme.colors.background, // use theme background color
                         elevation: 4,
-                        shadowOpacity: 0.5,
+                        shadowOpacity: 0.22,
                         shadowRadius: 5,
                         shadowColor: "#000",
                         shadowOffset: { height: 2, width: 0 },
