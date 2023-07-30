@@ -393,35 +393,35 @@ const getStyles = (theme) => StyleSheet.create({
         fontSize: 18,
         fontWeight: "bold",
         marginBottom: 5,
-        color: theme.colors.primary,  // Changed this line
+        color: theme.colors.primary,
     },
     dreamTitle: {
         fontSize: 20,
         marginBottom: 10,
-        color: theme.colors.text,  // Changed this line
+        color: theme.colors.text,
         fontWeight: "bold",
     },
     dreamDate: {
         fontSize: 18,
         marginBottom: 10,
-        color: theme.colors.text,  // Changed this line
+        color: theme.colors.text,
         fontWeight: "bold",
     },
     dreamEntry: {
         fontSize: 18,
         marginBottom: 10,
-        color: theme.colors.text,  // Changed this line
+        color: theme.colors.text,
     },
     analysisLabel: {
         fontSize: 20,
         fontWeight: "bold",
         marginBottom: 5,
-        color: theme.colors.primary,  // Changed this line
+        color: theme.colors.primary,
     },
     analysisResult: {
         fontSize: 18,
         marginBottom: 10,
-        color: theme.colors.text,  // Changed this line
+        color: theme.colors.text,
     },
 
     loadingIndicator: {

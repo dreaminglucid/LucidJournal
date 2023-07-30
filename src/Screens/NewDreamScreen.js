@@ -160,7 +160,7 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#00ADB5", // hardcoded blue color
+    color: "#00ADB5",
   },
   input: {
     flex: 1,

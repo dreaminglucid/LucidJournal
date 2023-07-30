@@ -1,7 +1,7 @@
 // App.js
 
 import React from "react";
-import { ThemeProvider } from './Contexts/ThemeContext';  // Import ThemeProvider
+import { ThemeProvider } from './Contexts/ThemeContext';
 import { GitHubAuthProvider } from './Contexts/GithubAuthContext';
 import AppNavigation from "./Navigation/AppNavigation";
 

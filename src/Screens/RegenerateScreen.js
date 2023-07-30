@@ -343,7 +343,7 @@ const RegenerateScreen = ({ route, navigation }) => {
             <Button
               mode="contained"
               onPress={() => setShouldRegenerateAnalysis(true)}
-              style={{ ...styles.regenerateButton, marginBottom: 10 }} // Added marginBottom here
+              style={{ ...styles.regenerateButton, marginBottom: 10 }}
               labelStyle={styles.regenerateButtonText}
             >
               Regenerate Analysis
@@ -351,7 +351,7 @@ const RegenerateScreen = ({ route, navigation }) => {
             <Button
               mode="contained"
               onPress={() => setShouldRegenerateImage(true)}
-              style={{ ...styles.regenerateButton, marginBottom: 10 }} // Added marginBottom here
+              style={{ ...styles.regenerateButton, marginBottom: 10 }}
               labelStyle={styles.regenerateButtonText}
             >
               Regenerate Image
@@ -400,7 +400,7 @@ const getStyles = (theme) => StyleSheet.create({
   loadingMessage: {
     fontSize: 20,
     color: theme.colors.text,
-  },  
+  },
   loadingContainer: {
     position: "absolute",
     left: 0,

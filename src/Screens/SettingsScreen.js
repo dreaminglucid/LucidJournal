@@ -2,7 +2,7 @@ import React, { useContext } from 'react';
 import { StyleSheet, View, Animated } from 'react-native';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Text, Switch } from 'react-native-paper'; // Import from react-native-paper
+import { Text, Switch } from 'react-native-paper';
 
 const SettingsScreen = () => {
   const { theme, toggleTheme } = useContext(ThemeContext);
@@ -11,10 +11,10 @@ const SettingsScreen = () => {
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.text, { color: theme.colors.text }]}>Settings</Text>
       <View style={styles.switchContainer}>
-        <MaterialCommunityIcons 
-          name={theme.dark ? "weather-night" : "weather-sunny"} 
-          color={theme.colors.text} 
-          size={32} 
+        <MaterialCommunityIcons
+          name={theme.dark ? "weather-night" : "weather-sunny"}
+          color={theme.colors.text}
+          size={32}
         />
         <Switch
           color={theme.colors.text}

@@ -128,7 +128,7 @@ const DreamsScreen = ({ navigation }) => {
             { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
           ]}
         >
-          {!isInputFocused && <MaterialCommunityIcons name="magnify" color="#888" size={22} style={styles.searchIcon} />}
+          {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color="#888" size={22} style={styles.searchIcon} />}
           <TextInput
             style={styles.input}
             value={searchText}
@@ -169,14 +169,14 @@ const DreamsScreen = ({ navigation }) => {
             keyExtractor={(item) => (item && item.id ? item.id.toString() : "")}
             renderItem={renderDreamItem}
             style={styles.list}
-            contentContainerStyle={{ paddingBottom: 80 }} // Increased padding at the bottom
+            contentContainerStyle={{ paddingBottom: 80 }}
             showsVerticalScrollIndicator={false}
             refreshControl={
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={fetchDreams}
-                colors={["#00ADB5"]} // Add this line to change the color of the refresh indicator
-                tintColor={"#00ADB5"} // This line changes the color for iOS
+                colors={["#00ADB5"]}
+                tintColor={"#00ADB5"}
               />
             }
           />
@@ -250,7 +250,7 @@ const getStyles = (theme) => StyleSheet.create({
   dreamItemText: {
     fontSize: 18,
     fontWeight: "500",
-    color: theme.colors.text // Dynamic text color
+    color: theme.colors.text
   },
   dreamItemDate: {
     color: "#6B7280",
@@ -281,7 +281,7 @@ const getStyles = (theme) => StyleSheet.create({
     right: 10,
     backgroundColor: "transparent",
     width: 30,
-    height: 30,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
     top: "50%",
@@ -331,13 +331,13 @@ const getStyles = (theme) => StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 20, // Add some padding to ensure the text doesn't touch the sides
+    padding: 20,
   },
   emptyText: {
     marginTop: 10,
     fontSize: 18,
     color: '#888',
-    textAlign: 'center', // This will center align the text
+    textAlign: 'center',
   },
 });
 
