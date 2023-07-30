@@ -27,6 +27,26 @@ const predefinedPrompts = {
         responseHandler: (responseData) =>
             responseData["arguments"]["future_dreams"],
     },
+    "What techniques can I use to achieve lucidity in my dreams?": {
+        function_name: "discuss_lucidity_techniques",
+        responseHandler: (responseData) =>
+            responseData["arguments"]["lucidity_techniques"],
+    },
+    "Can you create a personalized plan for me to achieve lucidity?": {
+        function_name: "create_lucidity_plan",
+        responseHandler: (responseData) =>
+            responseData["arguments"]["lucidity_plan"],
+    },
+    "What are the recurring themes in my dreams that could serve as dream signs?": {
+        function_name: "analyze_dream_signs",
+        responseHandler: (responseData) =>
+            responseData["arguments"]["dream_signs"],
+    },
+    "How much progress have I made towards achieving lucidity?": {
+        function_name: "track_lucidity_progress",
+        responseHandler: (responseData) =>
+            responseData["arguments"]["lucidity_progress"],
+    },
 };
 
 const ChatScreen = () => {
@@ -80,26 +100,31 @@ const ChatScreen = () => {
     };
 
     const generateNewPrompts = () => {
-        // If there are not enough available prompts, reset the lists
-        if (availablePrompts.length < 2) {
-            setLastUsedPrompts([]);
-            setAvailablePrompts(Object.keys(predefinedPrompts));
-            return;
-        }
-
-        // Select two prompts at random from the available ones
         let newPrompts = [];
         let remainingPrompts = [...availablePrompts];
-        for (let i = 0; i < 2; i++) {
-            const randomIndex = Math.floor(Math.random() * remainingPrompts.length);
-            newPrompts.push(remainingPrompts[randomIndex]);
-            remainingPrompts.splice(randomIndex, 1); // Remove the selected prompt from the remaining ones
+    
+        // If there are not enough available prompts, use what's left and reset the lists
+        if (remainingPrompts.length < 2) {
+            newPrompts = [...remainingPrompts];  // Add the remaining prompts to newPrompts
+            remainingPrompts = [];  // Clear remainingPrompts
+        } else {
+            // Select two prompts at random from the available ones
+            for (let i = 0; i < 2; i++) {
+                const randomIndex = Math.floor(Math.random() * remainingPrompts.length);
+                newPrompts.push(remainingPrompts[randomIndex]);
+                remainingPrompts.splice(randomIndex, 1);
+            }
         }
-
+    
         // Update the last used prompts and available prompts
         setLastUsedPrompts(newPrompts);
         setAvailablePrompts(remainingPrompts);
-    };
+    
+        // If remainingPrompts is empty, reset the available prompts
+        if (remainingPrompts.length === 0) {
+            setAvailablePrompts(Object.keys(predefinedPrompts));
+        }
+    };    
 
     const timeoutPromise = (timeout) => {
         return new Promise((resolve, reject) => {
@@ -456,7 +481,7 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.colors.card,
     },
     retryText: {
-        color: "#FF0000",
+        color: theme.colors.text,
         fontSize: 14,
         fontWeight: "bold",
     },
