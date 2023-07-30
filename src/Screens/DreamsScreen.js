@@ -273,7 +273,7 @@ const getStyles = (theme) => StyleSheet.create({
   searchIcon: {
     position: "absolute",
     right: 10,
-    height: 40,
+    height: 30,
     zIndex: 1,
   },
   clearButton: {
