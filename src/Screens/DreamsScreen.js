@@ -214,7 +214,7 @@ const getStyles = (theme) => StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1.22,
-    borderColor: "#123",
+    borderColor: theme.colors.card,
     borderRadius: 20,
     padding: 10,
     marginBottom: 10,
