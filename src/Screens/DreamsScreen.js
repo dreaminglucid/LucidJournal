@@ -217,7 +217,7 @@ const getStyles = (theme) => StyleSheet.create({
     borderColor: "#123",
     borderRadius: 20,
     padding: 10,
-    marginBottom: 20,
+    marginBottom: 10,
     color: theme.colors.text,
     backgroundColor: theme.colors.background,
     fontSize: 18,
