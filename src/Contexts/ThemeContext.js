@@ -21,24 +21,24 @@ export const ThemeProvider = ({ children }) => {
 
 const lightTheme = {
   ...DefaultTheme,
-  dark: false, // Add this line
+  dark: false,
   colors: {
     ...DefaultTheme.colors,
     background: "#F0F0F0",
-    primary: "#00ADB5",  // Add this line
+    primary: "#00ADB5",
     text: "#333333",
-    card: "#FFFFFF", // Add this line for light theme card color
+    card: "#D0D0D0", // Slightly darker color for light theme
   },
 };
 
 const darkTheme = {
   ...DefaultTheme,
-  dark: true, // Add this line
+  dark: true,
   colors: {
     ...DefaultTheme.colors,
     background: "#0C0E17",
-    primary: "#00ADB5",  // Add this line
+    primary: "#00ADB5",
     text: "#A0AEC0",
-    card: "#0C0E17", // Add this line for dark theme card color
+    card: "#1C1E27", // Slightly lighter color for dark theme
   },
-}; 
+};

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useContext } from "react";
 import {
     StyleSheet,
     View,
@@ -12,6 +12,8 @@ import {
     KeyboardAvoidingView,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+
+import { ThemeContext } from '../Contexts/ThemeContext';
 
 import { API_URL } from "../config";
 
@@ -28,6 +30,8 @@ const predefinedPrompts = {
 };
 
 const ChatScreen = () => {
+    const { theme } = useContext(ThemeContext);
+    const styles = getStyles(theme);
     const [message, setMessage] = useState("");
     const [chatHistory, setChatHistory] = useState([
         {
@@ -316,10 +320,11 @@ const ChatScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
     container: {
         flexGrow: 1,
         padding: 20,
+        backgroundColor: theme.colors.background,
     },
     chatInputContainer: {
         flexDirection: "row",
@@ -327,17 +332,17 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         paddingHorizontal: 7,
         paddingVertical: 3,
-        borderWidth: 2,
-        borderColor: "#123",
+        borderWidth: 0,
+        borderColor: theme.colors.text,
         borderRadius: 22,
-        backgroundColor: "#272B3B",
+        backgroundColor: theme.colors.card,
         marginBottom: 10,
         marginTop: 2.2,
     },
     chatInput: {
         flex: 1,
         fontSize: 18,
-        color: "#FFFFFF",
+        color: theme.colors.text,
         marginRight: 10,
         minHeight: 33,
         maxHeight: 160,
@@ -350,13 +355,6 @@ const styles = StyleSheet.create({
         height: 33,
         justifyContent: "center",
         alignItems: "center",
-        borderWidth: 1,
-        borderColor: "#006a79",
-        shadowColor: "#008c9e",
-        shadowOffset: { width: -1, height: -1 },
-        shadowOpacity: 0.8,
-        shadowRadius: 1,
-        elevation: 5,
     },
     clearChatButton: {
         backgroundColor: '#FF0000',
@@ -426,7 +424,6 @@ const styles = StyleSheet.create({
         borderRadius: 30,
         paddingHorizontal: 10,
         paddingVertical: 5,
-        backgroundColor: "#272B3B",
         width: "100%",
         minHeight: 33,
         maxHeight: 66,
@@ -436,9 +433,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     predefinedPromptButtonText: {
-        color: "#fff",
-        fontSize: 12,
+        color: theme.colors.text,
+        fontSize: 13,
         textAlign: "center",
+        fontWeight: "500",
     },
     nextPromptButton: {
         backgroundColor: "transparent",
@@ -448,8 +446,8 @@ const styles = StyleSheet.create({
     },
     retryButton: {
         alignSelf: "center",
-        borderWidth: 3.33,
-        borderColor: "#FFA500",
+        borderWidth: 1,
+        borderColor: "#123",
         borderRadius: 20,
         paddingHorizontal: 33,
         paddingVertical: 5,
@@ -457,7 +455,7 @@ const styles = StyleSheet.create({
         marginBottom: 20,
     },
     retryText: {
-        color: "#FFA500",
+        color: "#FF0000",
         fontSize: 14,
         fontWeight: "bold",
     },

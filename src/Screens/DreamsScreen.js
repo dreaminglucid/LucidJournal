@@ -213,7 +213,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderWidth: 2.22,
+    borderWidth: 1.22,
     borderColor: "#123",
     borderRadius: 20,
     padding: 10,
@@ -226,12 +226,19 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderWidth: 2.22,
     borderColor: "#123",
     borderRadius: 22,
     marginBottom: 15,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.card,
     padding: 15,
+    shadowColor: "#123",
+    shadowOffset: {
+        width: 0,
+        height: 2,
+    },
+    shadowOpacity: 0.23,
+    shadowRadius: 2.62,
+    elevation: 4
   },
   dreamItemImage: {
     width: 60,
