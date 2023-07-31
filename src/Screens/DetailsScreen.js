@@ -14,7 +14,7 @@ import {
 import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeContext } from '../Contexts/ThemeContext';
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 
 const DetailsScreen = ({ route, navigation }) => {
     const { theme } = useContext(ThemeContext);

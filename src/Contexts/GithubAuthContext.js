@@ -3,7 +3,7 @@ import React, { createContext, useState } from 'react';
 import axios from 'axios';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri, useAuthRequest } from 'expo-auth-session';
-import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../config';
+import { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } from '../../config';
 
 WebBrowser.maybeCompleteAuthSession();
 

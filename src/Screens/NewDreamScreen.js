@@ -19,7 +19,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from '../Contexts/ThemeContext';
 
 // Application Specific Imports
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 
 const NewDreamScreen = () => {
   const { theme } = useContext(ThemeContext);

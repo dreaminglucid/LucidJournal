@@ -18,7 +18,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeContext } from '../Contexts/ThemeContext';
 
 // Application Specific Imports
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 
 const RegenerateScreen = ({ route, navigation }) => {
   const { theme } = useContext(ThemeContext);
