@@ -19,8 +19,8 @@ web-build/
 # Temporary files created by Metro to check the health of the file watcher
 .metro-health-check*
 
-# secret files
-
+# secret files (REMOVE WHEN BUILDING TO IOS)
+config.js
 
 # Chromadb
 .chroma
