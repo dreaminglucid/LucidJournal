@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { View, Text, Button, StyleSheet } from 'react-native';
-import { GitHubAuthContext } from '../Contexts/GithubAuthContext';
+import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 import { ThemeContext } from '../Contexts/ThemeContext';
 
 export default function AccountScreen() {
-  const { user, handleLogout } = useContext(GitHubAuthContext);
+  const { user, handleLogout } = useContext(AppleAuthContext);
   const { theme } = useContext(ThemeContext);
 
   if (!user) {
@@ -14,7 +14,7 @@ export default function AccountScreen() {
   return (
     <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <Text style={{color: theme.colors.text}}>Email: {user.email}</Text>
-      <Text style={{color: theme.colors.text}}>Name: {user.login}</Text>
+      <Text style={{color: theme.colors.text}}>Name: {user.fullName.givenName} {user.fullName.familyName}</Text>
       <Button title="Logout" onPress={handleLogout} color={theme.colors.text} />
     </View>
   );

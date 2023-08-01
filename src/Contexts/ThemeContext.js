@@ -36,7 +36,7 @@ const darkTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    background: "#333333",
+    background: "#000000",
     primary: "#00ADB5",
     text: "#A0AEC0",
     card: "#222222",

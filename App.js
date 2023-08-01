@@ -2,15 +2,15 @@
 
 import React from "react";
 import { ThemeProvider } from './src/Contexts/ThemeContext';
-import { GitHubAuthProvider } from './src/Contexts/GithubAuthContext';
+import { AppleAuthProvider } from './src/Contexts/AppleAuthContext';
 import AppNavigation from "./src/Navigation/AppNavigation";
 
 const App = () => {
   return (
     <ThemeProvider>
-      <GitHubAuthProvider>
+      <AppleAuthProvider>
         <AppNavigation />
-      </GitHubAuthProvider>
+      </AppleAuthProvider>
     </ThemeProvider>
   );
 };

@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
 import { Button, View, StyleSheet } from 'react-native';
-import { GitHubAuthContext } from '../Contexts/GithubAuthContext';
+import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 import { ThemeContext } from '../Contexts/ThemeContext';
 
 export default function LoginScreen() {
-  const { user, promptAsync } = useContext(GitHubAuthContext);
+  const { user, handleAppleLogin } = useContext(AppleAuthContext);
   const { theme } = useContext(ThemeContext);
 
   if (user) {
@@ -14,12 +14,9 @@ export default function LoginScreen() {
   return (
     <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
       <Button
-        title="Login with GitHub"
+        title="Login with Apple"
         color={theme.colors.text}
-        // disabled // DISABLED UNTILL APPLE DEV IS APPROVED
-        onPress={() => {
-          promptAsync();
-        }}
+        onPress={handleAppleLogin}
       />
     </View>
   );

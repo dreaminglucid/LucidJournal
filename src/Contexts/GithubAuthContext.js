@@ -17,7 +17,7 @@ export const GitHubAuthContext = createContext();
 
 const redirectUri = makeRedirectUri({
   scheme: 'lucidjournal',
-  path: 'redirect',
+  path: 'expo-development-client/?url=https://u.expo.dev/ca62a3da-e797-4f07-aec8-f5f27ea698c5?channel-name=main',
   useProxy: false, // Here's the change
 });
 
