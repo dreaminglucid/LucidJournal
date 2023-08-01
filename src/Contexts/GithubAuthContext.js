@@ -24,7 +24,7 @@ const redirectUri = makeRedirectUri({
 export const GitHubAuthProvider = ({ children }) => {
   const [request, response, promptAsync] = useAuthRequest(
     {
-      clientId: 'CLIENT_ID',
+      clientId: GITHUB_CLIENT_ID,
       scopes: ['identity'],
       redirectUri,
     },
