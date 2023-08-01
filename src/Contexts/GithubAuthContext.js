@@ -18,6 +18,7 @@ export const GitHubAuthContext = createContext();
 const redirectUri = makeRedirectUri({
   scheme: 'lucidjournal',
   path: 'redirect',
+  useProxy: false, // Here's the change
 });
 
 export const GitHubAuthProvider = ({ children }) => {
@@ -25,10 +26,7 @@ export const GitHubAuthProvider = ({ children }) => {
     {
       clientId: 'CLIENT_ID',
       scopes: ['identity'],
-      redirectUri: makeRedirectUri({
-        scheme: 'lucidjournal',
-        useProxy: true,
-      }),
+      redirectUri,
     },
     discovery
   );
