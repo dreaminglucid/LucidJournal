@@ -16,7 +16,7 @@ export default function LoginScreen() {
       <Button
         title="Login with GitHub"
         color={theme.colors.text}
-        disabled // DISABLED UNTILL APPLE DEV IS APPROVED
+        // disabled // DISABLED UNTILL APPLE DEV IS APPROVED
         onPress={() => {
           promptAsync();
         }}
