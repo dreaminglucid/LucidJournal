@@ -1,30 +1,38 @@
 import React, { useContext } from 'react';
-import { StyleSheet, View, Animated } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Text, Switch } from 'react-native-paper';
+import { Text } from 'react-native-paper';
 
 const SettingsScreen = () => {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme, changeTheme } = useContext(ThemeContext);
+
+  const themeSwitches = [
+    { theme: 'dark', icon: 'weather-night' },
+    { theme: 'light', icon: 'weather-sunny' },
+    { theme: 'forest', icon: 'pine-tree' },
+    { theme: 'galaxy', icon: 'space-station' },
+  ];
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Text style={[styles.text, { color: theme.colors.text }]}>Settings</Text>
-      <View style={styles.switchContainer}>
-        <MaterialCommunityIcons
-          name={theme.dark ? "weather-night" : "weather-sunny"}
-          color={theme.colors.text}
-          size={32}
-        />
-        <Switch
-          color={theme.colors.text}
-          value={theme.dark}
-          onValueChange={toggleTheme}
-          trackColor={{ true: theme.colors.text, false: '#767577' }}
-          thumbColor={theme.colors.background}
-          style={styles.switch}
-        />
-      </View>
+      {themeSwitches.map(({ theme: themeName, icon }) => (
+        <TouchableOpacity
+          style={styles.themeContainer}
+          key={themeName}
+          onPress={() => changeTheme(themeName)}
+        >
+          <MaterialCommunityIcons
+            name={icon}
+            color={theme.colors.text}
+            size={32}
+          />
+          <Text style={[styles.themeName, { color: theme.colors.text }]}>
+            {themeName.charAt(0).toUpperCase() + themeName.slice(1)} {/* Capitalize first letter */}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 };
@@ -39,18 +47,23 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 28,
     fontWeight: 'bold',
+    marginBottom: 20,
   },
-  switchContainer: {
+  themeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 40,
+    justifyContent: 'center', 
+    marginTop: 10,
     borderWidth: 1,
     borderColor: '#ddd',
     padding: 10,
     borderRadius: 10,
+    width: '60%', 
+    height: 50, 
   },
-  switch: {
+  themeName: {
     marginLeft: 10,
+    fontSize: 18,
   },
 });
 

@@ -4,16 +4,27 @@ import { DefaultTheme } from '@react-navigation/native';
 export const ThemeContext = createContext(null);
 
 export const ThemeProvider = ({ children }) => {
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [theme, setTheme] = useState(darkTheme);
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
+  const changeTheme = (themeType) => {
+    switch(themeType) {
+      case 'light':
+        setTheme(lightTheme);
+        break;
+      case 'forest':
+        setTheme(forestTheme);
+        break;
+      case 'galaxy':
+        setTheme(galaxyTheme);
+        break;
+      default:  // default is 'dark'
+        setTheme(darkTheme);
+        break;
+    }
   };
 
-  const theme = isDarkMode ? darkTheme : lightTheme;
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, changeTheme }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -40,5 +51,29 @@ const darkTheme = {
     primary: "#00ADB5",
     text: "#A0AEC0",
     card: "#222222",
+  },
+};
+
+const forestTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#063537", // Deep evergreen
+    primary: "#387D38", // Fresh green
+    text: "#E8F4E1", // Dappled sunlight
+    card: "#305A30", // Darker leaf green
+  },
+};
+
+const galaxyTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#1B2735", // dark blue
+    primary: "#6F9CBB", // light blue
+    text: "#E0E5EC", // almost white
+    card: "#4F517D", // purple
   },
 };
