@@ -178,7 +178,14 @@ const RegenerateScreen = ({ route, navigation }) => {
   };
 
   const generateDreamAnalysis = async () => {
-    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
+
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`, {
+      headers: {
+        "Authorization": `Bearer ${user.id_token}`,  // Add this line
+      },
+    });
     if (!response.ok) {
       throw new Error("Failed to generate dream analysis.");
     }
@@ -198,7 +205,14 @@ const RegenerateScreen = ({ route, navigation }) => {
   };
 
   const generateDreamImage = async () => {
-    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
+
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`, {
+      headers: {
+        "Authorization": `Bearer ${user.id_token}`,  // Add this line
+      },
+    });
     if (!response.ok) {
       throw new Error("Failed to generate dream image.");
     }
@@ -210,7 +224,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     try {
       const userJson = await SecureStore.getItemAsync('appleUser');
       const user = JSON.parse(userJson);
-  
+
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
         method: "PUT",
         headers: {
@@ -219,7 +233,7 @@ const RegenerateScreen = ({ route, navigation }) => {
         },
         body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
-  
+
       if (response.ok) {
         Alert.alert("Success", "Analysis and image overwritten successfully!");
         setDream({
@@ -236,7 +250,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error("Error:", error);
       Alert.alert("Error", "An unexpected error occurred.");
     }
-  };  
+  };
 
   const dot1 = animation.interpolate({
     inputRange: [0, 0.4, 0.8, 1],

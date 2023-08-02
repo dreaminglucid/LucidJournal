@@ -159,17 +159,18 @@ const DetailsScreen = ({ route, navigation }) => {
         setIsLoading(true);
         setLoadingStatus("Generating Analysis & Image"); // Set loading status
 
-        fetchDreamAnalysis()
-            .then((analysis) => {
+        Promise.all([fetchDreamAnalysis(), fetchDreamImage()])
+            .then(([analysis, image]) => {
                 setAnalysisResult(analysis);
-                if (!imageData) setIsLoading(false);  // Only set loading to false if image data has also been fetched
+                setImageData(image);
+                setIsLoading(false);
                 setLoadingStatus("");
             })
             .catch((error) => {
-                console.error("Error during analysis generation:", error);
+                console.error("Error during dream generation:", error);
                 Alert.alert(
                     "Error",
-                    "An unexpected error occurred during analysis generation.",
+                    "An unexpected error occurred during dream generation.",
                 );
                 setIsLoading(false);
                 setLoadingStatus("");
