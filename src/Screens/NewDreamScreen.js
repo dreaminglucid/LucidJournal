@@ -17,6 +17,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 // Other Libraries
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from '../Contexts/ThemeContext';
+import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 
 // Application Specific Imports
 import { API_URL } from "../../config";
@@ -29,6 +30,7 @@ const NewDreamScreen = () => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [entry, setEntry] = useState("");
   const [loading, setLoading] = useState(false);
+  const { user } = useContext(AppleAuthContext);
 
   const validateForm = () => {
     if (title.trim() === "") {
@@ -50,21 +52,21 @@ const NewDreamScreen = () => {
     if (!validateForm()) {
       return;
     }
-
+  
     const formattedDate = `${date.getMonth() + 1
       }/${date.getDate()}/${date.getFullYear()}`;
-
+  
     setLoading(true);
-
+  
     try {
       const response = await fetch(`${API_URL}/api/dreams`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, date: formattedDate, entry }),
-      });
-
+        body: JSON.stringify({ title, date: formattedDate, entry, id_token: user.id_token }), 
+      });      
+  
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
         setTitle("");
@@ -79,7 +81,7 @@ const NewDreamScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   return (
     <ScrollView contentContainerStyle={styles.container}>

@@ -33,9 +33,10 @@ export const AppleAuthProvider = ({ children }) => {
       const decodedToken = jwtDecode(credential.identityToken);
       console.log("Decoded Token: ", decodedToken);
   
-      // Save email to SecureStore
+      // Save email and id_token to SecureStore
       const user = {
         email: decodedToken.email,
+        id_token: credential.identityToken,
       };
       await SecureStore.setItemAsync('appleUser', JSON.stringify(user));
   

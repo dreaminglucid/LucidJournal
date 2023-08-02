@@ -20,6 +20,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 // Other Libraries
 import { useDebounce } from "use-debounce";
 import { ThemeContext } from '../Contexts/ThemeContext';
+import * as SecureStore from 'expo-secure-store';
 
 // Application Specific Imports
 import { API_URL } from "../../config";
@@ -48,7 +49,13 @@ const DreamsScreen = ({ navigation }) => {
 
   const fetchDreams = async () => {
     setIsRefreshing(true);
-    const response = await fetch(`${API_URL}/api/dreams`);
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
+    const response = await fetch(`${API_URL}/api/dreams`, {
+      headers: {
+        'Authorization': `Bearer ${user.id_token}`
+      }
+    });
     if (response.ok) {
       const dreamsData = await response.json();
       setDreams(dreamsData);
@@ -57,7 +64,7 @@ const DreamsScreen = ({ navigation }) => {
     }
     setIsRefreshing(false);
     setIsLoading(false);
-  };
+  };  
 
   const handleDreamSelection = async (dreamId) => {
     setIsLoading(true);
