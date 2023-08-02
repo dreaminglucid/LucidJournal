@@ -14,6 +14,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { ThemeContext } from '../Contexts/ThemeContext';
+import * as SecureStore from 'expo-secure-store';
 
 import { API_URL } from "../../config";
 
@@ -102,7 +103,7 @@ const ChatScreen = () => {
     const generateNewPrompts = () => {
         let newPrompts = [];
         let remainingPrompts = [...availablePrompts];
-    
+
         // If there are not enough available prompts, use what's left and reset the lists
         if (remainingPrompts.length < 2) {
             newPrompts = [...remainingPrompts];  // Add the remaining prompts to newPrompts
@@ -115,16 +116,16 @@ const ChatScreen = () => {
                 remainingPrompts.splice(randomIndex, 1);
             }
         }
-    
+
         // Update the last used prompts and available prompts
         setLastUsedPrompts(newPrompts);
         setAvailablePrompts(remainingPrompts);
-    
+
         // If remainingPrompts is empty, reset the available prompts
         if (remainingPrompts.length === 0) {
             setAvailablePrompts(Object.keys(predefinedPrompts));
         }
-    };    
+    };
 
     const timeoutPromise = (timeout) => {
         return new Promise((resolve, reject) => {
@@ -135,6 +136,11 @@ const ChatScreen = () => {
     const fetchResponse = async (message, userMessage) => {
         try {
             let endpoint, requestBody;
+            // Get the ID token from the SecureStore
+            const userJson = await SecureStore.getItemAsync('appleUser');
+            const user = JSON.parse(userJson);
+            const idToken = user.id_token;
+
             if (predefinedPrompts.hasOwnProperty(message)) {
                 endpoint = `${API_URL}/api/dreams/search-chat`;
                 requestBody = {
@@ -153,6 +159,7 @@ const ChatScreen = () => {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
+                        "Authorization": `Bearer ${idToken}`,
                     },
                     body: JSON.stringify(requestBody),
                 }),
