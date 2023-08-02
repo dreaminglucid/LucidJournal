@@ -66,9 +66,15 @@ const DreamsScreen = ({ navigation }) => {
     setIsLoading(false);
   };  
 
-  const handleDreamSelection = async (dreamId) => {
+const handleDreamSelection = async (dreamId) => {
     setIsLoading(true);
-    const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
+    const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+        headers: {
+            'Authorization': `Bearer ${user.id_token}`,
+        },
+    });
     if (response.ok) {
       const dreamData = await response.json();
       navigation.navigate("Details", { dreamId, dreamData });
@@ -76,7 +82,7 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert("Error", "Failed to fetch dream details.");
     }
     setIsLoading(false);
-  };
+};
 
   const handleSearch = async () => {
     setIsLoading(true);
