@@ -26,10 +26,14 @@ const SettingsScreen = () => {
         >
           <MaterialCommunityIcons
             name={icon}
-            color={theme.colors.text}
+            color={theme.colors.primary}
             size={32}
           />
-          <Text style={[styles.themeName, { color: theme.colors.text }]}>
+          <Text style={[
+            styles.themeName, 
+            { color: theme.colors.text },
+            themeName === theme.themeName ? styles.selectedTheme : null, // New line
+          ]}>
             {themeName.charAt(0).toUpperCase() + themeName.slice(1)} {/* Capitalize first letter */}
           </Text>
         </TouchableOpacity>
@@ -53,7 +57,7 @@ const styles = StyleSheet.create({
   themeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center', 
+    justifyContent: 'space-between', 
     marginTop: 10,
     borderWidth: 1,
     borderColor: '#ddd',
@@ -63,9 +67,11 @@ const styles = StyleSheet.create({
     height: 50, 
   },
   themeName: {
-    marginLeft: 10,
     fontSize: 18,
   },
+  selectedTheme: { // New style
+    fontWeight: '900',
+  }
 });
 
 export default SettingsScreen;

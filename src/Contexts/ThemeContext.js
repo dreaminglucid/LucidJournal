@@ -35,6 +35,7 @@ export const ThemeProvider = ({ children }) => {
 
 const lightTheme = {
   ...DefaultTheme,
+  themeName: 'light',
   dark: false,
   colors: {
     ...DefaultTheme.colors,
@@ -48,6 +49,7 @@ const lightTheme = {
 const darkTheme = {
   ...DefaultTheme,
   dark: true,
+  themeName: 'dark',
   colors: {
     ...DefaultTheme.colors,
     background: "#000000",
@@ -57,9 +59,11 @@ const darkTheme = {
   },
 };
 
+
 const forestTheme = {
   ...DefaultTheme,
   dark: true,
+  themeName: 'forest',
   colors: {
     ...DefaultTheme.colors,
     background: "#063537", // Deep evergreen
@@ -71,6 +75,7 @@ const forestTheme = {
 
 const galaxyTheme = {
   ...DefaultTheme,
+  themeName: 'galaxy',
   dark: true,
   colors: {
     ...DefaultTheme.colors,
@@ -83,6 +88,7 @@ const galaxyTheme = {
 
 const woodlandTheme = {
   ...DefaultTheme,
+  themeName: 'woodland',
   dark: true,
   colors: {
     ...DefaultTheme.colors,
