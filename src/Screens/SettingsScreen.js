@@ -12,6 +12,7 @@ const SettingsScreen = () => {
     { theme: 'light', icon: 'weather-sunny' },
     { theme: 'forest', icon: 'pine-tree' },
     { theme: 'galaxy', icon: 'space-station' },
+    { theme: 'woodland', icon: 'pine-tree-box' },
   ];
 
   return (

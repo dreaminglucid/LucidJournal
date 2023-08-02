@@ -7,7 +7,7 @@ export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(darkTheme);
 
   const changeTheme = (themeType) => {
-    switch(themeType) {
+    switch (themeType) {
       case 'light':
         setTheme(lightTheme);
         break;
@@ -16,6 +16,9 @@ export const ThemeProvider = ({ children }) => {
         break;
       case 'galaxy':
         setTheme(galaxyTheme);
+        break;
+      case 'woodland':
+        setTheme(woodlandTheme);
         break;
       default:  // default is 'dark'
         setTheme(darkTheme);
@@ -77,3 +80,16 @@ const galaxyTheme = {
     card: "#4F517D", // purple
   },
 };
+
+const woodlandTheme = {
+  ...DefaultTheme,
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#333333", // dark gray
+    primary: "#81B214", // light green
+    text: "#F7F9F9", // off white
+    card: "#222222", // darker gray
+  },
+};
+
