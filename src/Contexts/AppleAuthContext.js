@@ -1,10 +1,25 @@
+// AppleAuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import * as SecureStore from 'expo-secure-store';
 
 export const AppleAuthContext = createContext();
 
 export const AppleAuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+
+  // On component mount, try to fetch stored user credentials
+  useEffect(() => {
+    const fetchCredentials = async () => {
+      const credentialString = await SecureStore.getItemAsync('apple-credentials');
+      if (credentialString) {
+        const credential = JSON.parse(credentialString);
+        setUser(credential);
+      }
+    };
+
+    fetchCredentials();
+  }, []);
 
   const handleAppleLogin = async () => {
     try {
@@ -15,21 +30,20 @@ export const AppleAuthProvider = ({ children }) => {
         ],
       });
 
-      // If successful, set the user state with the credential data
       setUser(credential);
+      await SecureStore.setItemAsync('apple-credentials', JSON.stringify(credential));
     } catch (e) {
       if (e.code === 'ERR_CANCELED') {
-        // handle that the user canceled the sign-in flow
         console.log('User canceled sign-in flow');
       } else {
-        // handle other errors
         console.error(e);
       }
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setUser(null);
+    await SecureStore.deleteItemAsync('apple-credentials');
   };
 
   return (

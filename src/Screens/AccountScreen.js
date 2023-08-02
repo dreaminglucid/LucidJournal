@@ -13,8 +13,12 @@ export default function AccountScreen() {
 
   return (
     <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
-      <Text style={{color: theme.colors.text}}>Email: {user.email}</Text>
-      <Text style={{color: theme.colors.text}}>Name: {user.fullName.givenName} {user.fullName.familyName}</Text>
+      {user.email && <Text style={{color: theme.colors.text}}>Email: {user.email}</Text>}
+      {user.fullName && (
+        <Text style={{color: theme.colors.text}}>
+          Name: {user.fullName.givenName} {user.fullName.familyName}
+        </Text>
+      )}
       <Button title="Logout" onPress={handleLogout} color={theme.colors.text} />
     </View>
   );
