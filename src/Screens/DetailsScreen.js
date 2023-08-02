@@ -14,6 +14,7 @@ import {
 import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeContext } from '../Contexts/ThemeContext';
+import * as SecureStore from 'expo-secure-store';
 import { API_URL } from "../../config";
 
 const DetailsScreen = ({ route, navigation }) => {
@@ -110,7 +111,15 @@ const DetailsScreen = ({ route, navigation }) => {
             // If no data was passed, fetch the dream data as before
             try {
                 setIsRefreshing(true);
-                const response = await fetch(`${API_URL}/api/dreams/${dreamId}`);
+                const userJson = await SecureStore.getItemAsync('appleUser');
+                const user = JSON.parse(userJson);
+
+                const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+                    headers: {
+                        "Authorization": `Bearer ${user.id_token}`,
+                    },
+                });
+
                 if (response.ok) {
                     let dreamData = await response.json();
                     if ("analysis" in dreamData) {
@@ -192,7 +201,15 @@ const DetailsScreen = ({ route, navigation }) => {
 
     const fetchDreamAnalysis = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`);
+            const userJson = await SecureStore.getItemAsync('appleUser');
+            const user = JSON.parse(userJson);
+
+            const response = await fetch(`${API_URL}/api/dreams/${dreamId}/analysis`, {
+                headers: {
+                    "Authorization": `Bearer ${user.id_token}`,
+                },
+            });
+
             if (!response.ok) {
                 throw new Error("Failed to fetch dream analysis.");
             }
@@ -220,7 +237,15 @@ const DetailsScreen = ({ route, navigation }) => {
 
     const fetchDreamImage = async () => {
         try {
-            const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`);
+            const userJson = await SecureStore.getItemAsync('appleUser');
+            const user = JSON.parse(userJson);
+
+            const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`, {
+                headers: {
+                    "Authorization": `Bearer ${user.id_token}`,
+                },
+            });
+
             if (response.ok) {
                 const imageData = await response.json();
                 return imageData.image;
@@ -500,7 +525,7 @@ const getStyles = (theme) => StyleSheet.create({
     loadingMessage: {
         fontSize: 20,
         color: theme.colors.text,
-      }, 
+    },
     loadingDots: {
         flexDirection: "row",
         alignItems: "center",

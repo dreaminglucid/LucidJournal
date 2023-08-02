@@ -16,6 +16,7 @@ import { Button, Card, Subheading, FAB } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { ThemeContext } from '../Contexts/ThemeContext';
+import * as SecureStore from 'expo-secure-store';
 
 // Application Specific Imports
 import { API_URL } from "../../config";
@@ -207,14 +208,18 @@ const RegenerateScreen = ({ route, navigation }) => {
 
   const handleOverwriteSave = async () => {
     try {
+      const userJson = await SecureStore.getItemAsync('appleUser');
+      const user = JSON.parse(userJson);
+  
       const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.id_token}`,  // Add this line
         },
         body: JSON.stringify({ analysis: analysisResult, image: imageData }),
       });
-
+  
       if (response.ok) {
         Alert.alert("Success", "Analysis and image overwritten successfully!");
         setDream({
@@ -231,7 +236,7 @@ const RegenerateScreen = ({ route, navigation }) => {
       console.error("Error:", error);
       Alert.alert("Error", "An unexpected error occurred.");
     }
-  };
+  };  
 
   const dot1 = animation.interpolate({
     inputRange: [0, 0.4, 0.8, 1],
