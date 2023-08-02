@@ -1,5 +1,5 @@
 import React, { useContext, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -27,17 +27,58 @@ export default function AccountScreen() {
   const email = user.email || "No email available";
 
   return (
-    <View style={[styles.container, {backgroundColor: theme.colors.background}]}>
-      <Text style={{color: theme.colors.text}}>Email: {email}</Text>
-      <Button title="Logout" onPress={handleUserLogout} color={theme.colors.text} />
+    <View style={styles(theme).container}>
+      <View style={styles(theme).card}>
+        <Text style={styles(theme).cardTitle}>Account Information</Text>
+        <Text style={styles(theme).cardText}>Email: {email}</Text>
+        <TouchableOpacity style={styles(theme).button} onPress={handleUserLogout}>
+          <Text style={styles(theme).buttonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
+    alignItems: 'center',
     justifyContent: 'center',
-    padding: 16,
+  },
+  card: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: "#123",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.26,
+    shadowRadius: 2,
+    elevation: 4,
+    width: '90%',
+  },
+  cardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: theme.colors.text,
+    marginBottom: 20,
+  },
+  cardText: {
+    fontSize: 18,
+    color: theme.colors.text,
+    marginBottom: 20,
+  },
+  button: {
+    backgroundColor: '#00ADB5',
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: theme.colors.background,
+    fontSize: 18,
   },
 });
