@@ -8,9 +8,11 @@ import {
   ActivityIndicator,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  InputAccessoryView,  // <-- Import here
+  Button,  // <-- Import here
 } from "react-native";
-import { Button } from "react-native-paper";
+import { Button as PaperButton } from "react-native-paper";  // <-- Import here
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from '../Contexts/ThemeContext';
@@ -29,6 +31,7 @@ const NewDreamScreen = () => {
   const { user } = useContext(AppleAuthContext);
   const navigation = useNavigation();
   const scrollViewRef = useRef();
+  const inputAccessoryViewID = 'doneButton';
 
   const validateForm = () => {
     if (title.trim() === "") {
@@ -67,10 +70,7 @@ const NewDreamScreen = () => {
 
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
-
-        // After saving the dream, navigate back to the DreamScreen
-        navigation.navigate('App', { screen: 'Dreams' });
-
+        navigation.goBack(); // Navigate back to the previous screen
         setTitle("");
         setDate(new Date());
         setEntry("");
@@ -95,7 +95,7 @@ const NewDreamScreen = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 122 : 20}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
       style={{ flex: 1 }}
     >
       <ScrollView 
@@ -151,18 +151,23 @@ const NewDreamScreen = () => {
           multiline
           placeholder="Write your dream here"
           placeholderTextColor="#888"
+          returnKeyType="default"
+          inputAccessoryViewID={inputAccessoryViewID}
         />
+        <InputAccessoryView nativeID={inputAccessoryViewID}>
+          <Button title="Done" onPress={handleSaveDream} />
+        </InputAccessoryView>
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          <Button
+          <PaperButton
             mode="contained"
             onPress={handleSaveDream}
             style={styles.saveButton}
             labelStyle={styles.saveButtonText}
           >
-            "Save Dream"
-          </Button>
+            Save Dream
+          </PaperButton>
         )}
       </ScrollView>
     </KeyboardAvoidingView>
