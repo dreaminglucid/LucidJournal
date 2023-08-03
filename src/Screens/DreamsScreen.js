@@ -64,16 +64,16 @@ const DreamsScreen = ({ navigation }) => {
     }
     setIsRefreshing(false);
     setIsLoading(false);
-  };  
+  };
 
-const handleDreamSelection = async (dreamId) => {
+  const handleDreamSelection = async (dreamId) => {
     setIsLoading(true);
     const userJson = await SecureStore.getItemAsync('appleUser');
     const user = JSON.parse(userJson);
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
-        headers: {
-            'Authorization': `Bearer ${user.id_token}`,
-        },
+      headers: {
+        'Authorization': `Bearer ${user.id_token}`,
+      },
     });
     if (response.ok) {
       const dreamData = await response.json();
@@ -82,14 +82,17 @@ const handleDreamSelection = async (dreamId) => {
       Alert.alert("Error", "Failed to fetch dream details.");
     }
     setIsLoading(false);
-};
+  };
 
   const handleSearch = async () => {
     setIsLoading(true);
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
     const response = await fetch(`${API_URL}/api/dreams/search`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        'Authorization': `Bearer ${user.id_token}`
       },
       body: JSON.stringify({ query: debouncedSearchText }),
     });
@@ -246,8 +249,8 @@ const getStyles = (theme) => StyleSheet.create({
     padding: 15,
     shadowColor: "#123",
     shadowOffset: {
-        width: 0,
-        height: 1,
+      width: 0,
+      height: 1,
     },
     shadowOpacity: 0.26,
     shadowRadius: 2,
