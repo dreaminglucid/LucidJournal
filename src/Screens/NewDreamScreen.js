@@ -1,5 +1,4 @@
-// React and React Native Libraries
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useRef } from "react";
 import {
   StyleSheet,
   Text,
@@ -8,19 +7,16 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
-
-// UI Component Libraries
 import { Button } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-
-// Other Libraries
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { AppleAuthContext } from '../Contexts/AppleAuthContext';
-
-// Application Specific Imports
 import { API_URL } from "../../config";
+import { useNavigation } from '@react-navigation/native';
 
 const NewDreamScreen = () => {
   const { theme } = useContext(ThemeContext);
@@ -31,6 +27,8 @@ const NewDreamScreen = () => {
   const [entry, setEntry] = useState("");
   const [loading, setLoading] = useState(false);
   const { user } = useContext(AppleAuthContext);
+  const navigation = useNavigation();
+  const scrollViewRef = useRef();
 
   const validateForm = () => {
     if (title.trim() === "") {
@@ -52,23 +50,27 @@ const NewDreamScreen = () => {
     if (!validateForm()) {
       return;
     }
-  
+
     const formattedDate = `${date.getMonth() + 1
       }/${date.getDate()}/${date.getFullYear()}`;
-  
+
     setLoading(true);
-  
+
     try {
       const response = await fetch(`${API_URL}/api/dreams`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ title, date: formattedDate, entry, id_token: user.id_token }), 
-      });      
-  
+        body: JSON.stringify({ title, date: formattedDate, entry, id_token: user.id_token }),
+      });
+
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
+
+        // After saving the dream, navigate back to the DreamScreen
+        navigation.navigate('App', { screen: 'Dreams' });
+
         setTitle("");
         setDate(new Date());
         setEntry("");
@@ -81,74 +83,89 @@ const NewDreamScreen = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
+
+  const handleEntryChange = (text) => {
+    setEntry(text);
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 100);
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.label}>Dream Date</Text>
-      <TouchableOpacity
-        style={styles.datePicker}
-        onPress={() => setShowDatePicker(true)}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 122 : 20}
+      style={{ flex: 1 }}
+    >
+      <ScrollView 
+        contentContainerStyle={styles.container}
+        ref={scrollViewRef}
       >
+        <Text style={styles.label}>Dream Date</Text>
+        <TouchableOpacity
+          style={styles.datePicker}
+          onPress={() => setShowDatePicker(true)}
+        >
+          <TextInput
+            style={[styles.dateText, { flex: 1 }]}
+            value={`${date.getMonth() + 1
+              }/${date.getDate()}/${date.getFullYear()}`}
+            editable={false}
+            placeholder="MM/DD/YYYY"
+            placeholderTextColor="#888"
+          />
+          <MaterialCommunityIcons
+            style={styles.dateIcon}
+            name="calendar-blank"
+            size={24}
+          />
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={date}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+            }}
+          />
+        )}
+        <Text style={styles.label}>Dream Title</Text>
         <TextInput
-          style={[styles.dateText, { flex: 1 }]}
-          value={`${date.getMonth() + 1
-            }/${date.getDate()}/${date.getFullYear()}`}
-          editable={false}
-          placeholder="MM/DD/YYYY"
+          style={styles.input}
+          value={title}
+          onChangeText={setTitle}
+          placeholder="Enter dream title"
           placeholderTextColor="#888"
         />
-        <MaterialCommunityIcons
-          style={styles.dateIcon}
-          name="calendar-blank"
-          size={24}
+        <Text style={styles.label}>Dream Entry</Text>
+        <TextInput
+          style={[styles.input, styles.tallerInput]}
+          value={entry}
+          onChangeText={handleEntryChange}
+          multiline
+          placeholder="Write your dream here"
+          placeholderTextColor="#888"
         />
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            setShowDatePicker(false);
-            if (selectedDate) {
-              setDate(selectedDate);
-            }
-          }}
-        />
-      )}
-      <Text style={styles.label}>Dream Title</Text>
-      <TextInput
-        style={styles.input}
-        value={title}
-        onChangeText={setTitle}
-        placeholder="Enter dream title"
-        placeholderTextColor="#888"
-      />
-      <Text style={styles.label}>Dream Entry</Text>
-      <TextInput
-        style={[styles.input, styles.tallerInput]}
-        value={entry}
-        onChangeText={setEntry}
-        multiline
-        placeholder="Write your dream here"
-        placeholderTextColor="#888"
-      />
-      <Button
-        mode="contained"
-        onPress={handleSaveDream}
-        style={styles.saveButton}
-        labelStyle={styles.saveButtonText}
-        disabled={loading}
-      >
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
         ) : (
-          "Save Dream"
+          <Button
+            mode="contained"
+            onPress={handleSaveDream}
+            style={styles.saveButton}
+            labelStyle={styles.saveButtonText}
+          >
+            "Save Dream"
+          </Button>
         )}
-      </Button>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
