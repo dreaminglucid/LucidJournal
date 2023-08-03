@@ -9,10 +9,11 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
-  InputAccessoryView,  // <-- Import here
-  Button,  // <-- Import here
+  Button,
+  InputAccessoryView,
+  View
 } from "react-native";
-import { Button as PaperButton } from "react-native-paper";  // <-- Import here
+import { Button as PaperButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { ThemeContext } from '../Contexts/ThemeContext';
@@ -85,8 +86,7 @@ const NewDreamScreen = () => {
     }
   };
 
-  const handleEntryChange = (text) => {
-    setEntry(text);
+  const handleEntryFocus = () => {
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
@@ -101,6 +101,7 @@ const NewDreamScreen = () => {
       <ScrollView 
         contentContainerStyle={styles.container}
         ref={scrollViewRef}
+        onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
       >
         <Text style={styles.label}>Dream Date</Text>
         <TouchableOpacity
@@ -147,15 +148,18 @@ const NewDreamScreen = () => {
         <TextInput
           style={[styles.input, styles.tallerInput]}
           value={entry}
-          onChangeText={handleEntryChange}
+          onChangeText={setEntry}
           multiline
           placeholder="Write your dream here"
           placeholderTextColor="#888"
           returnKeyType="default"
+          onFocus={handleEntryFocus}
           inputAccessoryViewID={inputAccessoryViewID}
         />
         <InputAccessoryView nativeID={inputAccessoryViewID}>
-          <Button title="Done" onPress={handleSaveDream} />
+          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+            <Button title="Done" onPress={() => setEntry(entry + '\n')} />
+          </View>
         </InputAccessoryView>
         {loading ? (
           <ActivityIndicator size="small" color="#FFFFFF" />
