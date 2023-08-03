@@ -51,19 +51,24 @@ const DreamsScreen = ({ navigation }) => {
     setIsRefreshing(true);
     const userJson = await SecureStore.getItemAsync('appleUser');
     const user = JSON.parse(userJson);
-    const response = await fetch(`${API_URL}/api/dreams`, {
-      headers: {
-        'Authorization': `Bearer ${user.id_token}`
+    try {
+      const response = await fetch(`${API_URL}/api/dreams`, {
+        headers: {
+          'Authorization': `Bearer ${user.id_token}`
+        }
+      });
+      if (response.ok) {
+        const dreamsData = await response.json();
+        setDreams(dreamsData);
+      } else {
+        Alert.alert("Error", "Failed to fetch dreams.");
       }
-    });
-    if (response.ok) {
-      const dreamsData = await response.json();
-      setDreams(dreamsData);
-    } else {
+    } catch (error) {
       Alert.alert("Error", "Failed to fetch dreams.");
+    } finally {
+      setIsRefreshing(false);
+      setIsLoading(false);
     }
-    setIsRefreshing(false);
-    setIsLoading(false);
   };
 
   const handleDreamSelection = async (dreamId) => {
@@ -135,6 +140,15 @@ const DreamsScreen = ({ navigation }) => {
     );
   };
 
+  const renderEmptyComponent = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <MaterialCommunityIcons name="alert-circle-outline" size={50} color="#00ADB5" />
+        <Text style={styles.emptyText}>No dreams found. Tap on '+' to create a new dream.</Text>
+      </View>
+    );
+  };
+
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View style={styles.container}>
@@ -174,11 +188,6 @@ const DreamsScreen = ({ navigation }) => {
             color="#00ADB5"
             style={styles.loadingIndicator}
           />
-        ) : dreams.length === 0 ? ( // Check if dreams array is empty
-          <View style={styles.emptyContainer}>
-            <MaterialCommunityIcons name="alert-circle-outline" size={50} color="#00ADB5" />
-            <Text style={styles.emptyText}>No dreams found. Tap on '+' to create a new dream.</Text>
-          </View>
         ) : (
           <FlatList
             data={searchResults.length > 0 ? searchResults : dreams}
@@ -195,6 +204,7 @@ const DreamsScreen = ({ navigation }) => {
                 tintColor={"#00ADB5"}
               />
             }
+            ListEmptyComponent={renderEmptyComponent}
           />
         )}
       </View>
@@ -220,7 +230,6 @@ const DreamsScreen = ({ navigation }) => {
     </View>
   );
 };
-
 
 const getStyles = (theme) => StyleSheet.create({
   container: {
@@ -344,11 +353,11 @@ const getStyles = (theme) => StyleSheet.create({
     marginHorizontal: 5,
   },
   emptyContainer: {
-    flex: 1,
+    height: '333%', // Adjust this percentage as per your need
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-  },
+  },  
   emptyText: {
     marginTop: 10,
     fontSize: 18,

@@ -333,15 +333,17 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-                            <Card style={styles.card}>
-                                <Card.Content>
-                                    <View style={styles.infoBlock}>
-                                        <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
-                                        <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
-                                        <Text style={styles.analysisResult}>{analysisResult}</Text>
-                                    </View>
-                                </Card.Content>
-                            </Card>
+                            {analysisResult && (
+                                <Card style={styles.card}>
+                                    <Card.Content>
+                                        <View style={styles.infoBlock}>
+                                            <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
+                                            <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+                                            <Text style={styles.analysisResult}>{analysisResult}</Text>
+                                        </View>
+                                    </Card.Content>
+                                </Card>
+                            )}
                         </>
                     )}
                     {imageData && (
