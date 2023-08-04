@@ -395,7 +395,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 22,
         marginBottom: 5,
         padding: 15,
-        backgroundColor: theme.colors.primary,
+        backgroundColor: theme.colors.card,
         marginLight: 40,
         width: 300,
     },
@@ -425,7 +425,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     systemTimestamp: {
         fontSize: 12,
-        color: "#6B7280",
+        color: theme.colors.text,
         alignSelf: "flex-start",
         paddingLeft: 15,
         paddingBottom: 22,

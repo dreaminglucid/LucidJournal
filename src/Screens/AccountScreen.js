@@ -80,5 +80,6 @@ const styles = (theme) => StyleSheet.create({
   buttonText: {
     color: theme.colors.background,
     fontSize: 18,
+    fontWeight: "bold",
   },
 });

@@ -76,5 +76,6 @@ const styles = (theme) => StyleSheet.create({
   loginButtonText: {
     color: theme.colors.background,
     fontSize: 18,
+    fontWeight: "bold",
   },
 });
