@@ -36,14 +36,18 @@ const DreamsScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
+  const [isInitialRender, setIsInitialRender] = useState(true);
 
   useEffect(() => {
     fetchDreams();
   }, []);
 
   useEffect(() => {
-    if (debouncedSearchText) {
+    if (debouncedSearchText && !isInitialRender) {
       handleSearch();
+    }
+    if (isInitialRender) {
+      setIsInitialRender(false);
     }
   }, [debouncedSearchText]);
 
@@ -90,7 +94,7 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   const handleSearch = async () => {
-    if (debouncedSearchText.trim() === "") {
+    if (searchText.trim() === "") {
       Alert.alert("Warning", "Please enter a search term.");
       return;
     }
@@ -104,7 +108,7 @@ const DreamsScreen = ({ navigation }) => {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${user.id_token}`
       },
-      body: JSON.stringify({ query: debouncedSearchText }),
+      body: JSON.stringify({ query: searchText }), // use searchText instead of debouncedSearchText
     });
   
     if (response.ok) {
@@ -114,7 +118,7 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert("Error", "Failed to perform search.");
     }
     setIsLoading(false);
-  };
+  };  
   
   const handleClearSearch = () => {
     setSearchText("");
