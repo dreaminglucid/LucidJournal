@@ -25,7 +25,6 @@ import * as SecureStore from 'expo-secure-store';
 // Application Specific Imports
 import { API_URL } from "../../config";
 
-
 const DreamsScreen = ({ navigation }) => {
   const { theme } = useContext(ThemeContext);
   const styles = getStyles(theme);
@@ -37,6 +36,7 @@ const DreamsScreen = ({ navigation }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInitialRender, setIsInitialRender] = useState(true);
+  const [isNavigatingToDream, setIsNavigatingToDream] = useState(false);  // Add this line
 
   useEffect(() => {
     fetchDreams();
@@ -76,6 +76,7 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   const handleDreamSelection = async (dreamId) => {
+    setIsNavigatingToDream(true);  // Add this line
     setIsLoading(true);
     const userJson = await SecureStore.getItemAsync('appleUser');
     const user = JSON.parse(userJson);
@@ -91,6 +92,7 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert("Error", "Failed to fetch dream details.");
     }
     setIsLoading(false);
+    setIsNavigatingToDream(false);  // Add this line
   };
 
   const handleSearch = async () => {
@@ -98,7 +100,7 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert("Warning", "Please enter a search term.");
       return;
     }
-  
+
     setIsLoading(true);
     const userJson = await SecureStore.getItemAsync('appleUser');
     const user = JSON.parse(userJson);
@@ -108,9 +110,9 @@ const DreamsScreen = ({ navigation }) => {
         "Content-Type": "application/json",
         'Authorization': `Bearer ${user.id_token}`
       },
-      body: JSON.stringify({ query: searchText }), // use searchText instead of debouncedSearchText
+      body: JSON.stringify({ query: searchText }),
     });
-  
+
     if (response.ok) {
       const results = await response.json();
       setSearchResults(results);
@@ -119,7 +121,7 @@ const DreamsScreen = ({ navigation }) => {
     }
     setIsLoading(false);
   };  
-  
+
   const handleClearSearch = () => {
     setSearchText("");
     setSearchResults([]);
@@ -161,36 +163,38 @@ const DreamsScreen = ({ navigation }) => {
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <View style={styles.container}>
-        <View
-          style={[
-            styles.searchBar,
-            { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-          ]}
-        >
-          {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color={theme.colors.button} size={22} style={styles.searchIcon} />}
-          <TextInput
-            style={styles.input}
-            value={searchText}
-            onChangeText={(text) => setSearchText(text)}
-            placeholder="Search for dreams"
-            placeholderTextColor={theme.colors.text}
-            onSubmitEditing={handleSearch}
-            onFocus={() => setIsInputFocused(true)}
-            onBlur={() => setIsInputFocused(false)}
-          />
-          {searchText.length > 0 && (
-            <TouchableOpacity
-              onPress={handleClearSearch}
-              style={styles.clearButton}
-            >
-              <MaterialCommunityIcons
-                name="close-circle"
-                color={theme.colors.button}
-                size={26}
-              />
-            </TouchableOpacity>
-          )}
-        </View>
+        {!isNavigatingToDream && (
+          <View
+            style={[
+              styles.searchBar,
+              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+            ]}
+          >
+            {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color={theme.colors.button} size={22} style={styles.searchIcon} />}
+            <TextInput
+              style={styles.input}
+              value={searchText}
+              onChangeText={(text) => setSearchText(text)}
+              placeholder="Search for dreams"
+              placeholderTextColor={theme.colors.text}
+              onSubmitEditing={handleSearch}
+              onFocus={() => setIsInputFocused(true)}
+              onBlur={() => setIsInputFocused(false)}
+            />
+            {searchText.length > 0 && (
+              <TouchableOpacity
+                onPress={handleClearSearch}
+                style={styles.clearButton}
+              >
+                <MaterialCommunityIcons
+                  name="close-circle"
+                  color={theme.colors.button}
+                  size={26}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
         {isLoading ? (
           <ActivityIndicator size="large" color={theme.colors.button} />
         ) : (
@@ -219,7 +223,7 @@ const DreamsScreen = ({ navigation }) => {
           margin: 16,
           right: 16,
           bottom: 0,
-          backgroundColor: theme.colors.button, // Use the custom button color
+          backgroundColor: theme.colors.button,
           elevation: 10,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -239,7 +243,7 @@ const DreamsScreen = ({ navigation }) => {
 const getStyles = (theme) => StyleSheet.create({
   container: {
     flexGrow: 1,
-    padding: 20,
+    backgroundColor: theme.colors.background,
   },
   input: {
     flex: 1,
@@ -251,37 +255,34 @@ const getStyles = (theme) => StyleSheet.create({
     color: theme.colors.text,
     backgroundColor: theme.colors.background,
     fontSize: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.33,
+    shadowRadius: 3,
+    elevation: 6,
   },
   dreamItem: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderColor: "#123",
-    borderRadius: 22,
-    marginBottom: 15,
-    backgroundColor: theme.colors.card,
-    padding: 15,
-    shadowColor: "#123",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.26,
-    shadowRadius: 2,
-    elevation: 4
+    borderBottomColor: theme.colors.button,
+    borderBottomWidth: 0.5,
+    paddingTop: 15,
+    paddingBottom: 15,
+    marginLeft: 20,
+    marginRight: 20,
+    
   },
   dreamItemImage: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    marginLeft: 15,
-    ...this.engravedShadow,
-  },
+  },  
   dreamItemText: {
     fontSize: 18,
     fontWeight: "700",
-    color: theme.colors.text
-  },
+    color: theme.colors.text,
+  },  
   dreamItemDate: {
     color: theme.colors.button,
     fontSize: 13,
@@ -299,7 +300,9 @@ const getStyles = (theme) => StyleSheet.create({
     marginBottom: 0,
     borderRadius: 20,
     padding: 0,
-  },
+    marginLeft: 20,
+    marginRight: 20,
+  },  
   searchIcon: {
     position: "absolute",
     right: 10,

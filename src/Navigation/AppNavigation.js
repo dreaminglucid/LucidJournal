@@ -52,8 +52,12 @@ const TabNavigator = () => {
                 name="Dreams"
                 component={DreamsScreenStack}
                 options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="cloud" color={color} size={size} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <MaterialCommunityIcons
+                            name={focused ? "cloud" : "cloud-outline"}
+                            color={color}
+                            size={size}
+                        />
                     ),
                 }}
             />
@@ -61,13 +65,17 @@ const TabNavigator = () => {
                 name="Emris"
                 component={ChatScreen}
                 options={{
-                    tabBarIcon: ({ color, size }) => (
-                        <MaterialCommunityIcons name="chat" color={color} size={size} />
+                    tabBarIcon: ({ color, size, focused }) => (
+                        <MaterialCommunityIcons
+                            name={focused ? "chat" : "chat-outline"}
+                            color={color}
+                            size={size}
+                        />
                     ),
                 }}
             />
         </Tab.Navigator>
-    );    
+    );
 };
 
 const AppNavigation = () => {

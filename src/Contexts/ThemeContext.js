@@ -45,11 +45,11 @@ const lightTheme = {
   dark: false,
   colors: {
     ...DefaultTheme.colors,
-    background: "#F8F8F8",
-    primary: "#00ADB5",
-    text: "#333333",
-    card: "#E8E8E8",
-    button: "#003D66", // dark blue
+    background: "#F8F8F8",  // Light gray for background
+    primary: "#3C3C3C",  // Dark gray for primary actions and emphasis
+    text: "#3C3C3C",  // Dark gray for text
+    card: "#E8E8E8",  // Slightly darker than background for cards
+    button: "#3C3C3C",  // Dark gray for buttons
   },
 };
 
@@ -59,11 +59,11 @@ const darkTheme = {
   themeName: 'dark',
   colors: {
     ...DefaultTheme.colors,
-    background: "#000000",
-    primary: "#00ADB5",
-    text: "#A0AEC0",
-    card: "#222222",
-    button: "#00ADB5", // bright teal
+    background: "#121212",  // Dark gray almost black for background
+    primary: "#E0E0E0",  // Light gray for primary actions and emphasis
+    text: "#E0E0E0",  // Light gray for text
+    card: "#1F1F1F",  // Slightly lighter than background for cards
+    button: "#E0E0E0",  // Light gray for buttons
   },
 };
 
