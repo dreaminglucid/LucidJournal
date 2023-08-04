@@ -90,6 +90,11 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   const handleSearch = async () => {
+    if (debouncedSearchText.trim() === "") {
+      Alert.alert("Warning", "Please enter a search term.");
+      return;
+    }
+  
     setIsLoading(true);
     const userJson = await SecureStore.getItemAsync('appleUser');
     const user = JSON.parse(userJson);
@@ -101,7 +106,7 @@ const DreamsScreen = ({ navigation }) => {
       },
       body: JSON.stringify({ query: debouncedSearchText }),
     });
-
+  
     if (response.ok) {
       const results = await response.json();
       setSearchResults(results);
@@ -110,11 +115,11 @@ const DreamsScreen = ({ navigation }) => {
     }
     setIsLoading(false);
   };
-
+  
   const handleClearSearch = () => {
     setSearchText("");
     setSearchResults([]);
-  };
+  };  
 
   const navigateToNewDream = () => {
     navigation.navigate("New Dream");
