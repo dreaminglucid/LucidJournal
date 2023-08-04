@@ -255,7 +255,7 @@ const ChatScreen = () => {
                             {lastUsedPrompts.map(renderPredefinedPrompt)}
                         </View>
                         <TouchableOpacity style={styles.nextPromptButton} onPress={generateNewPrompts}>
-                            <MaterialCommunityIcons name="refresh" color="#00ADB5" size={24} />
+                            <MaterialCommunityIcons name="arrow-right" color={theme.colors.button} size={24} />
                         </TouchableOpacity>
                     </View>
                 )}
@@ -320,11 +320,7 @@ const ChatScreen = () => {
             />
 
             {isTyping && (
-                <ActivityIndicator
-                    size="small"
-                    color="#00ADB5"
-                    style={styles.TypingIndicator}
-                />
+                <ActivityIndicator size="small" color={theme.colors.button} />
             )}
 
             <View style={styles.chatInputContainer}>
@@ -333,7 +329,7 @@ const ChatScreen = () => {
                     value={message}
                     onChangeText={(text) => setMessage(text)}
                     placeholder="Type a message"
-                    placeholderTextColor="#888"
+                    placeholderTextColor={theme.colors.text}
                     onSubmitEditing={handleSendMessage}
                     multiline={true}
                     numberOfLines={4}
@@ -399,7 +395,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderRadius: 22,
         marginBottom: 5,
         padding: 15,
-        backgroundColor: "#00ADB5",
+        backgroundColor: theme.colors.primary,
         marginLight: 40,
         width: 300,
     },
@@ -413,7 +409,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: 300,
     },
     userMessageText: {
-        color: "#FFFFFF",
+        color: theme.colors.text,
         fontSize: 18,
     },
     systemMessageText: {
@@ -422,7 +418,7 @@ const getStyles = (theme) => StyleSheet.create({
     },
     userTimestamp: {
         fontSize: 12,
-        color: "#6B7280",
+        color: theme.colors.text,
         alignSelf: "flex-end",
         paddingRight: 15,
         paddingBottom: 22,

@@ -72,7 +72,7 @@ const styles = (theme) => StyleSheet.create({
     marginBottom: 20,
   },
   button: {
-    backgroundColor: '#00ADB5',
+    backgroundColor: theme.colors.button,
     padding: 15,
     borderRadius: 20,
     alignItems: 'center',

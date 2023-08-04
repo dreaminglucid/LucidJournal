@@ -67,7 +67,7 @@ const styles = (theme) => StyleSheet.create({
     textAlign: 'center',
   },
   loginButton: {
-    backgroundColor: '#00ADB5',
+    backgroundColor: theme.colors.button,
     padding: 15,
     borderRadius: 20,
     width: '90%',

@@ -143,7 +143,7 @@ const DreamsScreen = ({ navigation }) => {
   const renderEmptyComponent = () => {
     return (
       <View style={styles.emptyContainer}>
-        <MaterialCommunityIcons name="alert-circle-outline" size={50} color="#00ADB5" />
+        <MaterialCommunityIcons name="alert-circle-outline" size={50} color={theme.colors.button} />
         <Text style={styles.emptyText}>No dreams found. Tap on '+' to create a new dream.</Text>
       </View>
     );
@@ -158,13 +158,13 @@ const DreamsScreen = ({ navigation }) => {
             { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
           ]}
         >
-          {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color="#888" size={22} style={styles.searchIcon} />}
+          {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color={theme.colors.button} size={22} style={styles.searchIcon} />}
           <TextInput
             style={styles.input}
             value={searchText}
             onChangeText={(text) => setSearchText(text)}
             placeholder="Search for dreams"
-            placeholderTextColor="#888"
+            placeholderTextColor={theme.colors.text}
             onSubmitEditing={handleSearch}
             onFocus={() => setIsInputFocused(true)}
             onBlur={() => setIsInputFocused(false)}
@@ -176,18 +176,14 @@ const DreamsScreen = ({ navigation }) => {
             >
               <MaterialCommunityIcons
                 name="close-circle"
-                color="#00ADB5"
+                color={theme.colors.button}
                 size={26}
               />
             </TouchableOpacity>
           )}
         </View>
         {isLoading ? (
-          <ActivityIndicator
-            size="large"
-            color="#00ADB5"
-            style={styles.loadingIndicator}
-          />
+          <ActivityIndicator size="large" color={theme.colors.button} />
         ) : (
           <FlatList
             data={searchResults.length > 0 ? searchResults : dreams}
@@ -200,8 +196,8 @@ const DreamsScreen = ({ navigation }) => {
               <RefreshControl
                 refreshing={isRefreshing}
                 onRefresh={fetchDreams}
-                colors={["#00ADB5"]}
-                tintColor={"#00ADB5"}
+                colors={[theme.colors.button]}
+                tintColor={theme.colors.button}
               />
             }
             ListEmptyComponent={renderEmptyComponent}
@@ -274,12 +270,12 @@ const getStyles = (theme) => StyleSheet.create({
   },
   dreamItemText: {
     fontSize: 18,
-    fontWeight: "500",
-    color: theme.colors.button
+    fontWeight: "700",
+    color: theme.colors.text
   },
   dreamItemDate: {
-    color: theme.colors.text,
-    fontSize: 14,
+    color: theme.colors.button,
+    fontSize: 13,
   },
   list: {
     marginBottom: 30,
@@ -336,7 +332,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   loadingMessage: {
-    color: "#00ADB5",
+    color: theme.colors.text,
     fontSize: 18,
   },
 
@@ -348,7 +344,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
 
   loadingDot: {
-    color: "#00ADB5",
+    color: theme.colors.button,
     fontSize: 20,
     marginHorizontal: 5,
   },

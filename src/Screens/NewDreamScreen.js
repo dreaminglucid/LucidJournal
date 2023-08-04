@@ -113,8 +113,6 @@ const NewDreamScreen = () => {
             value={`${date.getMonth() + 1
               }/${date.getDate()}/${date.getFullYear()}`}
             editable={false}
-            placeholder="MM/DD/YYYY"
-            placeholderTextColor="#888"
           />
           <MaterialCommunityIcons
             style={styles.dateIcon}
@@ -144,7 +142,7 @@ const NewDreamScreen = () => {
           value={title}
           onChangeText={setTitle}
           placeholder="Enter dream title"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.colors.text}
         />
         <Text style={styles.label}>Dream Entry</Text>
         <TextInput
@@ -153,7 +151,7 @@ const NewDreamScreen = () => {
           onChangeText={setEntry}
           multiline
           placeholder="Write your dream here"
-          placeholderTextColor="#888"
+          placeholderTextColor={theme.colors.text}
           returnKeyType="default"
           onFocus={handleEntryFocus}
           inputAccessoryViewID={inputAccessoryViewID}
@@ -164,7 +162,7 @@ const NewDreamScreen = () => {
           </View>
         </InputAccessoryView>
         {loading ? (
-          <ActivityIndicator size="small" color="#FFFFFF" />
+          <ActivityIndicator size="large" color={theme.colors.button} />
         ) : (
           <PaperButton
             mode="contained"
@@ -190,7 +188,7 @@ const getStyles = (theme) => StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
-    color: "#00ADB5",
+    color: theme.colors.button,
   },
   input: {
     flex: 1,
@@ -239,7 +237,7 @@ const getStyles = (theme) => StyleSheet.create({
   dreamEntry: {
     fontSize: 18,
     marginBottom: 10,
-    color: "#A0AEC0",
+    color: theme.colors.text,
   },
   saveButton: {
     marginBottom: 15,

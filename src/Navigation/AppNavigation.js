@@ -44,7 +44,7 @@ const TabNavigator = () => {
                     fontWeight: "bold",
                     color: theme.colors.text, // use theme text color
                 },
-                tabBarActiveTintColor: theme.colors.primary, // use theme primary color
+                tabBarActiveTintColor: theme.colors.button, // use theme primary color
                 tabBarInactiveTintColor: theme.colors.text, // use theme text color
             }}
         >

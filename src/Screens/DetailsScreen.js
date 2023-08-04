@@ -294,7 +294,7 @@ const DetailsScreen = ({ route, navigation }) => {
         >
             {isLoading ? (
                 <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color="#00ADB5" />
+                    <ActivityIndicator size="large" color={theme.colors.button} />
                     <View style={styles.loadingMessageContainer}>
                         <Text style={styles.loadingMessage}>{loadingStatus}</Text>
                         <Animated.Text style={[styles.loadingDot, { opacity: dot1 }]}>.</Animated.Text>
@@ -548,7 +548,7 @@ const getStyles = (theme) => StyleSheet.create({
         marginTop: 10,
     },
     loadingDot: {
-        color: "#00ADB5",
+        color: theme.colors.button,
         fontSize: 20,
         marginHorizontal: 5,
     },

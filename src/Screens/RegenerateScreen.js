@@ -275,7 +275,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     <ScrollView contentContainerStyle={styles.container}>
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#00ADB5" />
+          <ActivityIndicator size="large" color={theme.colors.button} />
           <View style={styles.loadingMessageContainer}>
             <Text style={styles.loadingMessage}>{loadingStatus}</Text>
             <Animated.Text style={[styles.loadingDot, animationStyles.dot1]}>
@@ -295,62 +295,52 @@ const RegenerateScreen = ({ route, navigation }) => {
             <>
               <Card style={styles.card}>
                 <Card.Content>
-                  <View style={styles.infoBlock}>
-                    <MaterialCommunityIcons
-                      name="book"
-                      color="#00ADB5"
-                      size={24}
-                    />
-                    <Subheading style={styles.subLabel}>Dream Title</Subheading>
-                    <Text style={styles.dreamTitle}>
-                      {dream.metadata.title}
-                    </Text>
+                  <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <MaterialCommunityIcons name="book" color={theme.colors.button} size={24} />
+                      <Subheading style={[styles.subLabel, { marginLeft: 10, color: theme.colors.button }]}>Dream Title</Subheading>
+                    </View>
+                    <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
                   </View>
                 </Card.Content>
               </Card>
+
               <Card style={styles.card}>
                 <Card.Content>
-                  <View style={styles.infoBlock}>
-                    <MaterialCommunityIcons
-                      name="calendar"
-                      color="#00ADB5"
-                      size={24}
-                    />
-                    <Subheading style={styles.subLabel}>Dream Date</Subheading>
+                  <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <MaterialCommunityIcons name="calendar" color={theme.colors.button} size={24} />
+                      <Subheading style={[styles.subLabel, { marginLeft: 10, color: theme.colors.button }]}>Dream Date</Subheading>
+                    </View>
                     <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
                   </View>
                 </Card.Content>
               </Card>
+
               <Card style={styles.card}>
                 <Card.Content>
-                  <View style={styles.infoBlock}>
-                    <MaterialCommunityIcons
-                      name="note-text"
-                      color="#00ADB5"
-                      size={24}
-                    />
-                    <Subheading style={styles.subLabel}>Dream Entry</Subheading>
-                    <Text style={styles.dreamEntry}>
-                      {dream.metadata.entry}
-                    </Text>
+                  <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <MaterialCommunityIcons name="note-text" color={theme.colors.button} size={24} />
+                      <Subheading style={[styles.subLabel, { marginLeft: 10, color: theme.colors.button }]}>Dream Entry</Subheading>
+                    </View>
+                    <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
                   </View>
                 </Card.Content>
               </Card>
+
               <Card style={styles.card}>
                 <Card.Content>
-                  <View style={styles.infoBlock}>
-                    <MaterialCommunityIcons
-                      name="brain"
-                      color="#00ADB5"
-                      size={24}
-                    />
-                    <Subheading style={styles.analysisLabel}>
-                      Dream Analysis
-                    </Subheading>
+                  <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                      <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
+                      <Subheading style={[styles.analysisLabel, { marginLeft: 10, color: theme.colors.button }]}>Dream Analysis</Subheading>
+                    </View>
                     <Text style={styles.analysisResult}>{analysisResult}</Text>
                   </View>
                 </Card.Content>
               </Card>
+
               {imageData && (
                 <View style={styles.imageContainer}>
                   <Image source={{ uri: imageData }} style={styles.image} />
@@ -444,7 +434,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginTop: 10,
   },
   loadingDot: {
-    color: "#00ADB5",
+    color: theme.colors.button,
     fontSize: 20,
     marginHorizontal: 5,
   },
@@ -476,6 +466,7 @@ const getStyles = (theme) => StyleSheet.create({
     borderRadius: 35,
   },
   infoBlock: {
+    flexDirection: 'row',
     marginBottom: 0,
   },
   cardActions: {
@@ -483,21 +474,35 @@ const getStyles = (theme) => StyleSheet.create({
   },
   regenerateButton: {
     marginBottom: 15,
-    ...this.buttonStyle,
-    backgroundColor: "#7851A9",
+    borderRadius: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.33,
+    shadowRadius: 3,
+    elevation: 6,
+    backgroundColor: theme.colors.button,
     width: "100%",
   },
   overwriteButton: {
     marginTop: 15,
     marginBottom: 15,
-    ...this.buttonStyle,
-    backgroundColor: "#7851A9",
+    borderRadius: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.33,
+    shadowRadius: 3,
+    elevation: 6,
+    backgroundColor: theme.colors.button,
   },
   regenerateButtonText: {
-    ...this.buttonTextStyle,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   overwriteButtonText: {
-    ...this.buttonTextStyle,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   dreamTitle: {
     fontSize: 20,

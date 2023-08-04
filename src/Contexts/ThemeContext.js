@@ -131,8 +131,8 @@ const cipherProxyTheme = {
     ...DefaultTheme.colors,
     background: "#131314", // Deep Black
     primary: "#42dbf9", // Neon Blue
-    text: "#f9d342", // Cyber Yellow
+    text: "#F0E6D2", // Cyber Yellow
     card: "#101010", // Deep Black
-    button: "#42dbf9", // Neon Blue, same as primary
+    button: "#f9d342", // Neon Blue, same as primary
   },
 };
