@@ -44,8 +44,8 @@ const TabNavigator = () => {
                     fontWeight: "bold",
                     color: theme.colors.text, // use theme text color
                 },
-                tabBarActiveTintColor: "#00ADB5",
-                tabBarInactiveTintColor: "#6B7280",
+                tabBarActiveTintColor: theme.colors.primary, // use theme primary color
+                tabBarInactiveTintColor: theme.colors.text, // use theme text color
             }}
         >
             <Tab.Screen
@@ -67,7 +67,7 @@ const TabNavigator = () => {
                 }}
             />
         </Tab.Navigator>
-    );
+    );    
 };
 
 const AppNavigation = () => {

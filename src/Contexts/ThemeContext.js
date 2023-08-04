@@ -43,6 +43,7 @@ const lightTheme = {
     primary: "#00ADB5",
     text: "#333333",
     card: "#E8E8E8",
+    button: "#003D66", // dark blue
   },
 };
 
@@ -56,9 +57,9 @@ const darkTheme = {
     primary: "#00ADB5",
     text: "#A0AEC0",
     card: "#222222",
+    button: "#00ADB5", // bright teal
   },
 };
-
 
 const forestTheme = {
   ...DefaultTheme,
@@ -66,10 +67,11 @@ const forestTheme = {
   themeName: 'forest',
   colors: {
     ...DefaultTheme.colors,
-    background: "#063537", // Deep evergreen
-    primary: "#387D38", // Fresh green
-    text: "#E8F4E1", // Dappled sunlight
-    card: "#305A30", // Darker leaf green
+    background: "#00331A", // Deep evergreen
+    primary: "#4C9A2A", // Fresh green
+    text: "#D9EAD3", // Soft Green
+    card: "#1E5631", // Darker leaf green
+    button: "#6ABC45", // Slightly brighter green for contrast
   },
 };
 
@@ -79,10 +81,11 @@ const galaxyTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    background: "#1B2735", // dark blue
-    primary: "#6F9CBB", // light blue
-    text: "#E0E5EC", // almost white
-    card: "#4F517D", // purple
+    background: "#1D2951", // Deep Space Blue
+    primary: "#8797D6", // Soft Pastel Indigo
+    text: "#F0F0F3", // Soft White
+    card: "#303A52", // Darker Space Blue
+    button: "#98A4D3", // A bit more saturated indigo for contrast
   },
 };
 
@@ -92,10 +95,10 @@ const woodlandTheme = {
   dark: true,
   colors: {
     ...DefaultTheme.colors,
-    background: "#333333", // dark gray
-    primary: "#81B214", // light green
-    text: "#F7F9F9", // off white
-    card: "#222222", // darker gray
+    background: "#3C2F2F", // Deep Brown, reminiscent of a dark mahogany wood
+    primary: "#705D56", // Medium Brown, similar to walnut wood
+    text: "#D9C3B0", // Light Cream, like parchment or dried birch bark
+    card: "#5D4C46", // Darker Brown, like a shadowy oak wood
+    button: "#967259", // Warm Brown, like the glow of a campfire or autumn leaves
   },
 };
-

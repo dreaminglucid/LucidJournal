@@ -98,7 +98,7 @@ const NewDreamScreen = () => {
       keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 20}
       style={{ flex: 1 }}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.container}
         ref={scrollViewRef}
         onContentSizeChange={() => scrollViewRef.current.scrollToEnd({ animated: true })}
@@ -123,18 +123,20 @@ const NewDreamScreen = () => {
           />
         </TouchableOpacity>
         {showDatePicker && (
-          <DateTimePicker
-            testID="dateTimePicker"
-            value={date}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) {
-                setDate(selectedDate);
-              }
-            }}
-          />
+          <View style={styles.datePickerContainer}>
+            <DateTimePicker
+              testID="dateTimePicker"
+              value={date}
+              mode="date"
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowDatePicker(false);
+                if (selectedDate) {
+                  setDate(selectedDate);
+                }
+              }}
+            />
+          </View>
         )}
         <Text style={styles.label}>Dream Title</Text>
         <TextInput
@@ -157,7 +159,7 @@ const NewDreamScreen = () => {
           inputAccessoryViewID={inputAccessoryViewID}
         />
         <InputAccessoryView nativeID={inputAccessoryViewID}>
-          <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+          <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <Button title="Done" onPress={() => setEntry(entry + '\n')} />
           </View>
         </InputAccessoryView>
@@ -167,7 +169,7 @@ const NewDreamScreen = () => {
           <PaperButton
             mode="contained"
             onPress={handleSaveDream}
-            style={styles.saveButton}
+            style={[styles.saveButton, { backgroundColor: theme.colors.button }]}
             labelStyle={styles.saveButtonText}
           >
             Save Dream
@@ -223,6 +225,14 @@ const getStyles = (theme) => StyleSheet.create({
     color: theme.colors.text,
     fontSize: 18,
   },
+  datePickerContainer: {
+    borderColor: '#fff',
+    borderWidth: 0.1,
+    borderRadius: 10,
+    marginBottom: 20,
+    marginStart: 231.5,
+    backgroundColor: theme.themeName === 'light' ? 'transparent' : theme.colors.text,
+  },
   dateIcon: {
     color: "#888",
   },
@@ -233,12 +243,18 @@ const getStyles = (theme) => StyleSheet.create({
   },
   saveButton: {
     marginBottom: 15,
-    ...this.buttonStyle,
-    backgroundColor: "#00ADB5",
+    borderRadius: 50,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.8,
+    shadowRadius: 3,
+    elevation: 6,
     width: "100%",
   },
   saveButtonText: {
-    ...this.buttonTextStyle,
+    color: "#FFFFFF",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   emptyStateContainer: {
     flex: 1,
@@ -248,7 +264,7 @@ const getStyles = (theme) => StyleSheet.create({
   emptyStateText: {
     fontSize: 18,
     marginBottom: 25,
-    color: "#FFFFFF",
+    color: theme.colors.text,
   },
   // Reusable Styles
   dropShadow: {

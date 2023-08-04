@@ -214,7 +214,7 @@ const DreamsScreen = ({ navigation }) => {
           margin: 16,
           right: 16,
           bottom: 0,
-          backgroundColor: "rgba(0, 173, 181, 0.8)",
+          backgroundColor: theme.colors.button, // Use the custom button color
           elevation: 10,
           shadowColor: "#000",
           shadowOffset: { width: 0, height: 2 },
@@ -357,7 +357,7 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
-  },  
+  },
   emptyText: {
     marginTop: 10,
     fontSize: 18,
