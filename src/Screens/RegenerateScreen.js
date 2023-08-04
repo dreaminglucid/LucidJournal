@@ -495,12 +495,12 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.colors.button,
   },
   regenerateButtonText: {
-    color: "#FFFFFF",
+    color: theme.colors.background,
     fontWeight: "bold",
     fontSize: 18,
   },
   overwriteButtonText: {
-    color: "#FFFFFF",
+    color: theme.colors.background,
     fontWeight: "bold",
     fontSize: 18,
   },

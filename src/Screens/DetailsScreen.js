@@ -500,7 +500,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: "100%",
     },
     generateButtonText: {
-        color: "#FFFFFF",
+        color: theme.colors.background,
         fontWeight: "bold",
         fontSize: 18,
     },
@@ -516,7 +516,7 @@ const getStyles = (theme) => StyleSheet.create({
         width: "100%",
     },
     saveButtonText: {
-        color: "#FFFFFF",
+        color: theme.colors.background,
         fontWeight: "bold",
         fontSize: 18,
     },
