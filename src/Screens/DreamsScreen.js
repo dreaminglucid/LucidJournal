@@ -275,10 +275,10 @@ const getStyles = (theme) => StyleSheet.create({
   dreamItemText: {
     fontSize: 18,
     fontWeight: "500",
-    color: theme.colors.text
+    color: theme.colors.button
   },
   dreamItemDate: {
-    color: "#6B7280",
+    color: theme.colors.text,
     fontSize: 14,
   },
   list: {

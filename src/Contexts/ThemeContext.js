@@ -20,6 +20,12 @@ export const ThemeProvider = ({ children }) => {
       case 'woodland':
         setTheme(woodlandTheme);
         break;
+        case 'royal':
+          setTheme(royalTheme);
+          break;
+          case 'cipherProxy':
+            setTheme(cipherProxyTheme);
+            break;
       default:  // default is 'dark'
         setTheme(darkTheme);
         break;
@@ -100,5 +106,33 @@ const woodlandTheme = {
     text: "#D9C3B0", // Light Cream, like parchment or dried birch bark
     card: "#5D4C46", // Darker Brown, like a shadowy oak wood
     button: "#967259", // Warm Brown, like the glow of a campfire or autumn leaves
+  },
+};
+
+const royalTheme = {
+  ...DefaultTheme,
+  themeName: 'royal',
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#1A1334", // Deeper Royal Blue
+    primary: "#2A225A", // Darker Royal Blue
+    text: "#F0E6D2", // Soft Gold
+    card: "#241663", // Original Deep Royal Blue
+    button: "#BFA431", // More realistic gold
+  },
+};
+
+const cipherProxyTheme = {
+  ...DefaultTheme,
+  themeName: 'cipherProxy',
+  dark: true,
+  colors: {
+    ...DefaultTheme.colors,
+    background: "#131314", // Deep Black
+    primary: "#42dbf9", // Neon Blue
+    text: "#f9d342", // Cyber Yellow
+    card: "#101010", // Deep Black
+    button: "#42dbf9", // Neon Blue, same as primary
   },
 };

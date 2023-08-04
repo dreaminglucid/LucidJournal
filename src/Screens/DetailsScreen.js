@@ -308,37 +308,48 @@ const DetailsScreen = ({ route, navigation }) => {
                         <>
                             <Card style={styles.card}>
                                 <Card.Content>
-                                    <View style={styles.infoBlock}>
-                                        <MaterialCommunityIcons name="book" color="#00ADB5" size={24} />
-                                        <Subheading style={styles.subLabel}>Dream Title</Subheading>
+                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                            <MaterialCommunityIcons name="book" color={theme.colors.button} size={24} />
+                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Title</Subheading>
+                                        </View>
                                         <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
                                     </View>
                                 </Card.Content>
                             </Card>
+
                             <Card style={styles.card}>
                                 <Card.Content>
-                                    <View style={styles.infoBlock}>
-                                        <MaterialCommunityIcons name="calendar" color="#00ADB5" size={24} />
-                                        <Subheading style={styles.subLabel}>Dream Date</Subheading>
+                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                            <MaterialCommunityIcons name="calendar" color={theme.colors.button} size={24} />
+                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Date</Subheading>
+                                        </View>
                                         <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
                                     </View>
                                 </Card.Content>
                             </Card>
+
                             <Card style={styles.card}>
                                 <Card.Content>
-                                    <View style={styles.infoBlock}>
-                                        <MaterialCommunityIcons name="note-text" color="#00ADB5" size={24} />
-                                        <Subheading style={styles.subLabel}>Dream Entry</Subheading>
+                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                            <MaterialCommunityIcons name="note-text" color={theme.colors.button} size={24} />
+                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Entry</Subheading>
+                                        </View>
                                         <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
                                     </View>
                                 </Card.Content>
                             </Card>
+
                             {analysisResult && (
                                 <Card style={styles.card}>
                                     <Card.Content>
-                                        <View style={styles.infoBlock}>
-                                            <MaterialCommunityIcons name="brain" color="#00ADB5" size={24} />
-                                            <Subheading style={styles.analysisLabel}>Dream Analysis</Subheading>
+                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
+                                                <Subheading style={[styles.analysisLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Analysis</Subheading>
+                                            </View>
                                             <Text style={styles.analysisResult}>{analysisResult}</Text>
                                         </View>
                                     </Card.Content>
@@ -415,6 +426,7 @@ const getStyles = (theme) => StyleSheet.create({
         elevation: 4,
     },
     infoBlock: {
+        flexDirection: 'row',
         marginBottom: 0,
     },
     subLabel: {
@@ -484,7 +496,7 @@ const getStyles = (theme) => StyleSheet.create({
         shadowOpacity: 0.33,
         shadowRadius: 3,
         elevation: 6,
-        backgroundColor: "#00ADB5",
+        backgroundColor: theme.colors.button,
         width: "100%",
     },
     generateButtonText: {
@@ -500,7 +512,7 @@ const getStyles = (theme) => StyleSheet.create({
         shadowOpacity: 0.33,
         shadowRadius: 3,
         elevation: 6,
-        backgroundColor: "#00ADB5",
+        backgroundColor: theme.colors.button,
         width: "100%",
     },
     saveButtonText: {
