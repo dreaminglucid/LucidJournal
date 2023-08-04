@@ -28,7 +28,7 @@ const SettingsScreen = () => {
         >
           <MaterialCommunityIcons
             name={icon}
-            color={theme.colors.primary}
+            color={theme.colors.button}
             size={32}
           />
           <Text style={[
