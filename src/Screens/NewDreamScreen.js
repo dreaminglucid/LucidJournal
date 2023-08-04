@@ -193,7 +193,7 @@ const getStyles = (theme) => StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: theme.colors.card,
+    borderColor: theme.colors.text,
     borderRadius: 20,
     padding: 10,
     paddingTop: 10,
@@ -211,7 +211,7 @@ const getStyles = (theme) => StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: theme.colors.card,
+    borderColor: theme.colors.text,
     borderRadius: 20,
     padding: 10,
     paddingTop: 10,
