@@ -224,7 +224,7 @@ const DreamsScreen = ({ navigation }) => {
           borderRadius: 33,
         }}
         icon={() => (
-          <MaterialCommunityIcons name="plus" color="white" size={26} />
+          <MaterialCommunityIcons name="plus" color={theme.colors.background} size={26} />
         )}
         onPress={navigateToNewDream}
       />
@@ -239,8 +239,8 @@ const getStyles = (theme) => StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderWidth: 1.22,
-    borderColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.text,
     borderRadius: 20,
     padding: 10,
     marginBottom: 10,
