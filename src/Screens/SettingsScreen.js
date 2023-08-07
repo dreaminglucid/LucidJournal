@@ -46,6 +46,16 @@ const SettingsScreen = () => {
     fetchInitialData();
   }, []);
 
+  const toggleThemeOptions = () => {
+    setShowThemeOptions(prev => !prev);
+    setShowImageStyleOptions(false);
+  };
+
+  const toggleImageStyleOptions = () => {
+    setShowImageStyleOptions(prev => !prev);
+    setShowThemeOptions(false);
+  };
+
   const updateImageStyle = async (style) => {
     if (!userToken) {
       Alert.alert("Error", "Failed to fetch user token.");
@@ -83,7 +93,7 @@ const SettingsScreen = () => {
 
       <Text style={[styles.subHeader, { color: theme.colors.text }]}>Appearance</Text>
 
-      <TouchableOpacity onPress={() => setShowThemeOptions(!showThemeOptions)} style={styles.listItem}>
+      <TouchableOpacity onPress={toggleThemeOptions} style={styles.listItem}>
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Theme</Text>
         <MaterialCommunityIcons name={showThemeOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
@@ -102,7 +112,7 @@ const SettingsScreen = () => {
 
       <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
 
-      <TouchableOpacity onPress={() => setShowImageStyleOptions(!showImageStyleOptions)} style={styles.listItem}>
+      <TouchableOpacity onPress={toggleImageStyleOptions} style={styles.listItem}>
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Style</Text>
         <MaterialCommunityIcons name={showImageStyleOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
@@ -126,6 +136,8 @@ const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    marginLeft: 20,
+    marginRight: 20,
   },
   header: {
     fontSize: 28,
@@ -146,12 +158,13 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 0.5,
-    borderColor: theme.colors.text,
+    borderColor: theme.colors.button,
   },
   listItemText: {
     fontSize: 16,
     marginLeft: 12,
     flex: 1,
+    fontWeight: 700,
   },
   optionItem: {
     flexDirection: 'row',
@@ -159,7 +172,7 @@ const getStyles = (theme) => StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderBottomWidth: 0.5,
-    borderColor: theme.colors.text,
+    borderColor: theme.colors.button,
   },
   optionText: {
     fontSize: 16,
