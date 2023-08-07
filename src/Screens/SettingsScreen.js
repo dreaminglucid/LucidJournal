@@ -33,9 +33,9 @@ const SettingsScreen = () => {
   ];
 
   const imageQualities = [
-    { quality: 'low', resolution: '256x256', description: 'Low' },
-    { quality: 'medium', resolution: '512x512', description: 'Medium' },
-    { quality: 'high', resolution: '1024x1024', description: 'High' },
+    { quality: 'low', resolution: '256x256', description: 'Low', icon: 'blur' },
+    { quality: 'medium', resolution: '512x512', description: 'Medium', icon: 'blur-linear' },
+    { quality: 'high', resolution: '1024x1024', description: 'High', icon: 'brightness-6' },
   ];
 
   useEffect(() => {
@@ -64,18 +64,18 @@ const SettingsScreen = () => {
     setShowImageStyleOptions(false);
     setShowImageQualityOptions(false);
   };
-  
+
   const toggleImageStyleOptions = () => {
     setShowImageStyleOptions(prev => !prev);
     setShowThemeOptions(false);
     setShowImageQualityOptions(false);
   };
-  
+
   const toggleImageQualityOptions = () => {
     setShowImageQualityOptions(prev => !prev);
     setShowThemeOptions(false);
     setShowImageStyleOptions(false);
-  };  
+  };
 
   const updateImageStyle = async (style) => {
     if (!userToken) {
@@ -189,8 +189,9 @@ const SettingsScreen = () => {
         <MaterialCommunityIcons name={showImageQualityOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
 
-      {showImageQualityOptions && imageQualities.map(({ quality, description }) => (
+      {showImageQualityOptions && imageQualities.map(({ quality, description, icon }) => (
         <TouchableOpacity key={quality} style={styles.optionItem} onPress={() => updateImageQuality(quality)}>
+          <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
           <Text style={[
             styles.optionText,
             { color: theme.colors.text, fontWeight: quality === currentImageQuality ? '900' : 'normal' }
