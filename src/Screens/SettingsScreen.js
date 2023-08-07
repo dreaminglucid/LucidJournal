@@ -94,6 +94,7 @@ const SettingsScreen = () => {
       <Text style={[styles.subHeader, { color: theme.colors.text }]}>Appearance</Text>
 
       <TouchableOpacity onPress={toggleThemeOptions} style={styles.listItem}>
+        <MaterialCommunityIcons name="palette" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Theme</Text>
         <MaterialCommunityIcons name={showThemeOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
@@ -113,6 +114,7 @@ const SettingsScreen = () => {
       <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
 
       <TouchableOpacity onPress={toggleImageStyleOptions} style={styles.listItem}>
+        <MaterialCommunityIcons name="image" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Style</Text>
         <MaterialCommunityIcons name={showImageStyleOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
@@ -142,12 +144,12 @@ const getStyles = (theme) => StyleSheet.create({
   header: {
     fontSize: 28,
     fontWeight: 'bold',
-    padding: 16,
+    paddingBottom: 16,
+    paddingTop: 16,
   },
   subHeader: {
     fontSize: 18,
     fontWeight: '500',
-    paddingLeft: 16,
     paddingBottom: 8,
   },
   listItem: {
@@ -157,12 +159,10 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.colors.background,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    borderBottomWidth: 0.5,
     borderColor: theme.colors.button,
   },
   listItemText: {
     fontSize: 16,
-    marginLeft: 12,
     flex: 1,
     fontWeight: 700,
   },
@@ -171,13 +171,15 @@ const getStyles = (theme) => StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderBottomWidth: 0.5,
     borderColor: theme.colors.button,
   },
   optionText: {
     fontSize: 16,
     marginLeft: 12,
     flex: 1,
+  },
+  icon: {
+    marginRight: 8,
   }
 });
 
