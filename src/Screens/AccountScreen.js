@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function AccountScreen() {
   const { user, handleLogout } = useContext(AppleAuthContext);
@@ -13,28 +14,30 @@ export default function AccountScreen() {
     console.log("User in AccountScreen: ", user);
   }, [user]);
 
-  console.log("User: ", user);
-
   if (!user) {
     return null; // If user is not logged in, don't show account screen
   }
 
   const handleUserLogout = async () => {
     await handleLogout();
-    navigation.navigate('Login');  // replace 'Login' with your actual LoginScreen name in the navigation stack
+    navigation.navigate('Login');
   };
 
   const email = user.email || "No email available";
 
   return (
     <View style={styles(theme).container}>
-      <View style={styles(theme).card}>
-        <Text style={styles(theme).cardTitle}>Account Information</Text>
-        <Text style={styles(theme).cardText}>Email: {email}</Text>
-        <TouchableOpacity style={styles(theme).button} onPress={handleUserLogout}>
-          <Text style={styles(theme).buttonText}>Logout</Text>
-        </TouchableOpacity>
+      <View style={styles(theme).header}>
+        <MaterialCommunityIcons name="account-circle" size={120} color={theme.colors.primary} style={styles(theme).iconShadow} />
+        <Text style={styles(theme).headerText}>Account</Text>
       </View>
+      <View style={styles(theme).infoContainer}>
+        <Text style={styles(theme).label}>Email</Text>
+        <Text style={styles(theme).emailText}>{email}</Text>
+      </View>
+      <TouchableOpacity style={styles(theme).button} onPress={handleUserLogout}>
+        <Text style={styles(theme).buttonText}>Logout</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -43,43 +46,68 @@ const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+    paddingTop: 50,
+    paddingHorizontal: 30,
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 20,
-    padding: 20,
-    shadowColor: "#123",
+  header: {
+    alignItems: 'center',
+    marginBottom: 50,
+  },
+  headerText: {
+    fontSize: 30,
+    fontWeight: '900',
+    color: theme.colors.text,
+    marginTop: 15,
+  },
+  iconShadow: {
+    shadowColor: "#aaa",
     shadowOffset: {
       width: 0,
-      height: 1,
+      height: 2,
     },
-    shadowOpacity: 0.26,
-    shadowRadius: 2,
-    elevation: 4,
-    width: '90%',
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
   },
-  cardTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.text,
-    marginBottom: 20,
+  infoContainer: {
+    width: '100%',
+    borderBottomWidth: 1,
+    borderColor: theme.colors.text,
+    paddingBottom: 25,
+    marginBottom: 25,
+    alignItems: 'center',
   },
-  cardText: {
+  label: {
     fontSize: 18,
     color: theme.colors.text,
+    marginBottom: 10,
+  },
+  emailText: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: theme.colors.text,
     marginBottom: 20,
+    textAlign: 'center',
   },
   button: {
     backgroundColor: theme.colors.button,
-    padding: 15,
-    borderRadius: 20,
+    paddingVertical: 15,
+    width: '100%',
+    borderRadius: 35,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 5,
+  },  
   buttonText: {
     color: theme.colors.background,
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: "bold",
   },
 });
