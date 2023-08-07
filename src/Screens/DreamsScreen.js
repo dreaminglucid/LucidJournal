@@ -256,7 +256,7 @@ const getStyles = (theme) => StyleSheet.create({
     backgroundColor: theme.colors.background,
     fontSize: 18,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 3 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.33,
     shadowRadius: 3,
     elevation: 6,
