@@ -1,5 +1,5 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,8 +8,11 @@ import { API_URL } from "../../config";
 
 const SettingsScreen = () => {
   const { theme, changeTheme } = useContext(ThemeContext);
+  const styles = getStyles(theme);
   const [currentImageStyle, setImageStyle] = useState('renaissance');
   const [userToken, setUserToken] = useState(null);
+  const [showThemeOptions, setShowThemeOptions] = useState(false);
+  const [showImageStyleOptions, setShowImageStyleOptions] = useState(false);
 
   const themeSwitches = [
     { theme: 'dark', icon: 'weather-night' },
@@ -22,9 +25,9 @@ const SettingsScreen = () => {
   ];
 
   const imageStyles = [
-    { style: 'renaissance', description: 'Renaissance' },
-    { style: 'abstract', description: 'Abstract' },
-    { style: 'modern', description: 'Modern' },
+    { style: 'renaissance', icon: 'artstation', description: 'Renaissance' },
+    { style: 'abstract', icon: 'shape-outline', description: 'Abstract' },
+    { style: 'modern', icon: 'image-filter-hdr', description: 'Modern' },
   ];
 
   useEffect(() => {
@@ -75,93 +78,93 @@ const SettingsScreen = () => {
   };
 
   return (
-    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Text style={[styles.text, { color: theme.colors.text }]}>Settings</Text>
+    <ScrollView style={styles.container}>
+      <Text style={[styles.header, { color: theme.colors.text }]}>Settings</Text>
 
-      {themeSwitches.map(({ theme: themeName, icon }) => (
-        <TouchableOpacity
-          style={styles.themeContainer}
-          key={themeName}
-          onPress={() => changeTheme(themeName)}
-        >
-          <MaterialCommunityIcons name={icon} color={theme.colors.button} size={32} />
+      <Text style={[styles.subHeader, { color: theme.colors.text }]}>Appearance</Text>
+
+      <TouchableOpacity onPress={() => setShowThemeOptions(!showThemeOptions)} style={styles.listItem}>
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Theme</Text>
+        <MaterialCommunityIcons name={showThemeOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
+      </TouchableOpacity>
+
+      {showThemeOptions && themeSwitches.map(({ theme: themeName, icon }) => (
+        <TouchableOpacity key={themeName} style={styles.optionItem} onPress={() => changeTheme(themeName)}>
+          <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
           <Text style={[
-            styles.themeName,
-            { color: theme.colors.text },
-            themeName === theme.themeName ? styles.selectedTheme : null,
+            styles.optionText,
+            { color: theme.colors.text, fontWeight: themeName === theme.themeName ? '900' : 'normal' }
           ]}>
             {themeName.charAt(0).toUpperCase() + themeName.slice(1)}
           </Text>
         </TouchableOpacity>
       ))}
 
-      <Text style={[styles.text, { color: theme.colors.text, marginTop: 20 }]}>Image Styles</Text>
-      {imageStyles.map(({ style, description }) => (
-        <TouchableOpacity
-          style={styles.styleContainer}
-          key={style}
-          onPress={() => updateImageStyle(style)}
-        >
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
+
+      <TouchableOpacity onPress={() => setShowImageStyleOptions(!showImageStyleOptions)} style={styles.listItem}>
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Style</Text>
+        <MaterialCommunityIcons name={showImageStyleOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
+      </TouchableOpacity>
+
+      {showImageStyleOptions && imageStyles.map(({ style, icon, description }) => (
+        <TouchableOpacity key={style} style={styles.optionItem} onPress={() => updateImageStyle(style)}>
+          <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
           <Text style={[
-            styles.styleName,
-            { color: theme.colors.text },
-            style === currentImageStyle ? styles.selectedStyle : null,
+            styles.optionText,
+            { color: theme.colors.text, fontWeight: style === currentImageStyle ? '900' : 'normal' }
           ]}>
             {description}
           </Text>
         </TouchableOpacity>
       ))}
-    </View>
+    </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
+    backgroundColor: theme.colors.background,
   },
-  text: {
+  header: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 20,
+    padding: 16,
   },
-  themeContainer: {
+  subHeader: {
+    fontSize: 18,
+    fontWeight: '500',
+    paddingLeft: 16,
+    paddingBottom: 8,
+  },
+  listItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    borderRadius: 10,
-    width: '60%',
-    height: 50,
+    backgroundColor: theme.colors.background,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderColor: theme.colors.text,
   },
-  themeName: {
-    fontSize: 18,
+  listItemText: {
+    fontSize: 16,
+    marginLeft: 12,
+    flex: 1,
   },
-  selectedTheme: {
-    fontWeight: '900',
-  },
-  styleContainer: {
+  optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 10,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    borderRadius: 10,
-    width: '60%',
-    height: 50,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 0.5,
+    borderColor: theme.colors.text,
   },
-  styleName: {
-    fontSize: 18,
-  },
-  selectedStyle: {
-    fontWeight: '900',
+  optionText: {
+    fontSize: 16,
+    marginLeft: 12,
+    flex: 1,
   }
 });
 
