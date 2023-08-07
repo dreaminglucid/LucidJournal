@@ -70,9 +70,6 @@ const styles = (theme) => StyleSheet.create({
     shadowRadius: 5,
   },
   infoContainer: {
-    width: '100%',
-    borderBottomWidth: 1,
-    borderColor: theme.colors.text,
     paddingBottom: 25,
     marginBottom: 25,
     alignItems: 'center',
