@@ -13,6 +13,8 @@ const SettingsScreen = () => {
   const [userToken, setUserToken] = useState(null);
   const [showThemeOptions, setShowThemeOptions] = useState(false);
   const [showImageStyleOptions, setShowImageStyleOptions] = useState(false);
+  const [currentImageQuality, setImageQuality] = useState('low');
+  const [showImageQualityOptions, setShowImageQualityOptions] = useState(false);
 
   const themeSwitches = [
     { theme: 'dark', icon: 'weather-night' },
@@ -30,6 +32,12 @@ const SettingsScreen = () => {
     { style: 'modern', icon: 'image-filter-hdr', description: 'Modern' },
   ];
 
+  const imageQualities = [
+    { quality: 'low', resolution: '256x256', description: 'Low' },
+    { quality: 'medium', resolution: '512x512', description: 'Medium' },
+    { quality: 'high', resolution: '1024x1024', description: 'High' },
+  ];
+
   useEffect(() => {
     const fetchInitialData = async () => {
       const userJson = await SecureStore.getItemAsync('appleUser');
@@ -41,6 +49,11 @@ const SettingsScreen = () => {
       if (savedImageStyle) {
         setImageStyle(savedImageStyle);
       }
+
+      const savedImageQuality = await SecureStore.getItemAsync('selectedImageQuality');
+      if (savedImageQuality) {
+        setImageQuality(savedImageQuality);
+      }
     };
 
     fetchInitialData();
@@ -49,12 +62,20 @@ const SettingsScreen = () => {
   const toggleThemeOptions = () => {
     setShowThemeOptions(prev => !prev);
     setShowImageStyleOptions(false);
+    setShowImageQualityOptions(false);
   };
-
+  
   const toggleImageStyleOptions = () => {
     setShowImageStyleOptions(prev => !prev);
     setShowThemeOptions(false);
+    setShowImageQualityOptions(false);
   };
+  
+  const toggleImageQualityOptions = () => {
+    setShowImageQualityOptions(prev => !prev);
+    setShowThemeOptions(false);
+    setShowImageStyleOptions(false);
+  };  
 
   const updateImageStyle = async (style) => {
     if (!userToken) {
@@ -87,6 +108,36 @@ const SettingsScreen = () => {
     }
   };
 
+  const updateImageQuality = async (quality) => {
+    if (!userToken) {
+      Alert.alert("Error", "Failed to fetch user token.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/user/image-quality`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({ quality })
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+
+      // Save the selected quality to SecureStore
+      await SecureStore.setItemAsync('selectedImageQuality', quality);
+
+      setImageQuality(quality);
+      Alert.alert("Success", "Image quality updated successfully.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to update image quality.");
+    }
+  };
+
   return (
     <ScrollView style={styles.container}>
       <Text style={[styles.header, { color: theme.colors.text }]}>Settings</Text>
@@ -110,9 +161,9 @@ const SettingsScreen = () => {
           </Text>
         </TouchableOpacity>
       ))}
-
       <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
 
+      {/* Image Style */}
       <TouchableOpacity onPress={toggleImageStyleOptions} style={styles.listItem}>
         <MaterialCommunityIcons name="image" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Style</Text>
@@ -125,6 +176,24 @@ const SettingsScreen = () => {
           <Text style={[
             styles.optionText,
             { color: theme.colors.text, fontWeight: style === currentImageStyle ? '900' : 'normal' }
+          ]}>
+            {description}
+          </Text>
+        </TouchableOpacity>
+      ))}
+
+      {/* Image Quality */}
+      <TouchableOpacity onPress={toggleImageQualityOptions} style={styles.listItem}>
+        <MaterialCommunityIcons name="quality-high" color={theme.colors.text} size={24} style={styles.icon} />
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Quality</Text>
+        <MaterialCommunityIcons name={showImageQualityOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
+      </TouchableOpacity>
+
+      {showImageQualityOptions && imageQualities.map(({ quality, description }) => (
+        <TouchableOpacity key={quality} style={styles.optionItem} onPress={() => updateImageQuality(quality)}>
+          <Text style={[
+            styles.optionText,
+            { color: theme.colors.text, fontWeight: quality === currentImageQuality ? '900' : 'normal' }
           ]}>
             {description}
           </Text>
