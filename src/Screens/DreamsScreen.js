@@ -247,7 +247,7 @@ const getStyles = (theme) => StyleSheet.create({
   },
   input: {
     flex: 1,
-    borderWidth: 1,
+    borderWidth: 0.5,
     borderColor: theme.colors.text,
     borderRadius: 20,
     padding: 10,
