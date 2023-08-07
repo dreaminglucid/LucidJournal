@@ -1,5 +1,5 @@
-import React, { useContext } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useContext, useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ImageBackground, Animated } from 'react-native';
 import { AppleAuthContext } from '../Contexts/AppleAuthContext';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { useNavigation } from '@react-navigation/native';
@@ -9,73 +9,114 @@ export default function LoginScreen() {
   const { theme } = useContext(ThemeContext);
   const navigation = useNavigation();
 
-  const handleLogin = async () => {
+  const [scaleValue] = useState(new Animated.Value(1));
+
+  const handleButtonPressIn = () => {
+    Animated.spring(scaleValue, {
+      toValue: 0.95,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleButtonPressOut = async () => {
+    Animated.spring(scaleValue, {
+      toValue: 1,
+      friction: 3,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+
     await handleAppleLogin();
-    navigation.navigate('App', { screen: 'Dreams' });  // Navigate to the 'Dreams' tab
+    navigation.navigate('App', { screen: 'Dreams' });
   };
 
   if (user) {
-    return null; // If user is already logged in, don't show login screen
+    return null;
   }
 
   return (
-    <View style={styles(theme).container}>
-      <View style={styles(theme).heroCard}>
-        <Text style={styles(theme).heroTitle}>Lucid Journal</Text>
-        <Text style={styles(theme).heroSubtitle}>Your AI Dream Journal Guide</Text>
+    <ImageBackground source={require('../../assets/image_background.png')} style={styles(theme).backgroundImage}>
+      <View style={styles(theme).overlay}>
+        <Image source={require('../../assets/icon.png')} style={styles(theme).logo} />
+        <View style={styles(theme).heroCard}>
+          <Text style={styles(theme).heroTitle}>Lucid Journal</Text>
+          <Text style={styles(theme).heroSubtitle}>Your AI Dream Journal Guide</Text>
+        </View>
+        <Animated.View style={[styles(theme).loginButton, { transform: [{ scale: scaleValue }] }]}>
+          <TouchableOpacity
+            activeOpacity={1}
+            onPressIn={handleButtonPressIn}
+            onPressOut={handleButtonPressOut}
+            style={styles(theme).loginButtonTouchable}
+          >
+            <Text style={styles(theme).loginButtonText}>Login with Apple</Text>
+          </TouchableOpacity>
+        </Animated.View>
       </View>
-      <TouchableOpacity style={styles(theme).loginButton} onPress={handleLogin}>
-        <Text style={styles(theme).loginButtonText}>Login with Apple</Text>
-      </TouchableOpacity>
-    </View>
+    </ImageBackground>
   );
 }
 
 const styles = (theme) => StyleSheet.create({
-  container: {
+  backgroundImage: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    resizeMode: "cover",
+    justifyContent: "center",
+    backgroundColor: '#e1e9ff',  // Gentle gradient
+  },
+  overlay: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',  // Soft overlay for depth
+  },
+  logo: {
+    width: 140,
+    height: 140,
+    marginBottom: 40,
+    borderRadius: 70,
+    backgroundColor: '#f0f4ff',
+    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
   },
   heroCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    borderRadius: 25,
+    padding: 24,
+    marginBottom: 40,
     width: '90%',
-    shadowColor: "#123",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.26,
-    shadowRadius: 2,
-    elevation: 4,
+    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
   },
   heroTitle: {
-    fontSize: 26,
+    fontSize: 30,
     fontWeight: 'bold',
-    color: theme.colors.text,
+    color: 'white',
     textAlign: 'center',
   },
   heroSubtitle: {
-    fontSize: 18,
-    color: theme.colors.text,
-    marginTop: 10,
+    fontSize: 19,
+    color: 'white',
+    marginTop: 20,
     textAlign: 'center',
+    lineHeight: 24,
   },
   loginButton: {
     backgroundColor: theme.colors.button,
-    padding: 15,
-    borderRadius: 20,
+    borderRadius: 35,
     width: '90%',
+    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
+  },
+  loginButtonTouchable: {
+    paddingVertical: 18,
+    borderRadius: 35,
     alignItems: 'center',
+    width: '100%',
   },
   loginButtonText: {
     color: theme.colors.background,
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
   },
 });
