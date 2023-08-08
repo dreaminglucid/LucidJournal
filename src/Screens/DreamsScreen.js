@@ -36,7 +36,7 @@ const DreamsScreen = ({ navigation }) => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInitialRender, setIsInitialRender] = useState(true);
-  const [isNavigatingToDream, setIsNavigatingToDream] = useState(false);  // Add this line
+  const [isNavigatingToDream, setIsNavigatingToDream] = useState(false);
 
   useEffect(() => {
     fetchDreams();
