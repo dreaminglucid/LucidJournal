@@ -141,15 +141,15 @@ const DreamsScreen = ({ navigation }) => {
           <Text style={styles.dreamItemText}>{item.metadata.title}</Text>
           <Text style={styles.dreamItemDate}>{item.metadata.date}</Text>
         </View>
-        {item.metadata.image && (
+        {item.image && (
           <Image
-            source={{ uri: item.metadata.image }}
+            source={{ uri: item.image }}
             style={styles.dreamItemImage}
           />
         )}
       </TouchableOpacity>
     );
-  };
+  };  
 
   const renderEmptyComponent = () => {
     return (

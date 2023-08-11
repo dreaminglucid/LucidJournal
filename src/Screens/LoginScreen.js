@@ -39,7 +39,9 @@ export default function LoginScreen() {
   return (
     <ImageBackground source={require('../../assets/image_background.png')} style={styles(theme).backgroundImage}>
       <View style={styles(theme).overlay}>
-        <Image source={require('../../assets/icon.png')} style={styles(theme).logo} />
+        <View style={styles(theme).logoContainer}>
+          <Image source={require('../../assets/icon.png')} style={styles(theme).logo} />
+        </View>
         <View style={styles(theme).heroCard}>
           <Text style={styles(theme).heroTitle}>Lucid Journal</Text>
           <Text style={styles(theme).heroSubtitle}>Your AI Dream Journal Guide</Text>
@@ -73,13 +75,19 @@ const styles = (theme) => StyleSheet.create({
     padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.1)',  // Soft overlay for depth
   },
-  logo: {
+  logoContainer: {
     width: 140,
     height: 140,
     marginBottom: 40,
     borderRadius: 70,
     backgroundColor: '#f0f4ff',
-    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logo: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 70,
   },
   heroCard: {
     backgroundColor: 'rgba(0,0,0,0.7)',
@@ -87,7 +95,11 @@ const styles = (theme) => StyleSheet.create({
     padding: 24,
     marginBottom: 40,
     width: '90%',
-    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
+    shadowColor: '#aaa',
+    shadowOffset: { width: 8, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 5,
   },
   heroTitle: {
     fontSize: 30,
@@ -106,7 +118,11 @@ const styles = (theme) => StyleSheet.create({
     backgroundColor: theme.colors.button,
     borderRadius: 35,
     width: '90%',
-    boxShadow: '8px 8px 16px #aaa, -8px -8px 16px #fff',  // Neumorphic shadow
+    shadowColor: '#aaa',
+    shadowOffset: { width: 8, height: 8 },
+    shadowOpacity: 0.5,
+    shadowRadius: 16,
+    elevation: 5,
   },
   loginButtonTouchable: {
     paddingVertical: 18,
