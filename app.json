@@ -17,6 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "usesIcloudStorage": true,
       "bundleIdentifier": "com.jamesfeura.lucidjournal"
     },
     "android": {
@@ -40,6 +41,11 @@
     },
     "updates": {
       "url": "https://u.expo.dev/ca62a3da-e797-4f07-aec8-f5f27ea698c5"
+    },
+    "notification": {
+      "icon": "./assets/icon.png",
+      "color": "#000000",
+      "iosDisplayInForeground": true
     }
   }
 }
