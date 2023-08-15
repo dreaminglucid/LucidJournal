@@ -20,33 +20,36 @@ export const TimerProvider = ({ children }) => {
         }
     };
 
+    const scheduleRepeatingNotification = async (notificationContent, timeInterval, isRandom, awakeTime, sleepTime) => {
+        const trigger = getNextTrigger(timeInterval, isRandom, awakeTime, sleepTime);
+        const identifier = await Notifications.scheduleNotificationAsync({
+            content: notificationContent,
+            trigger,
+        });
+        await AsyncStorage.setItem('notificationIdentifier', identifier);
+    };
+
     const toggleTimer = async (value, notificationContent, timeInterval, isRandom, awakeTime, sleepTime) => {
         await cancelAllScheduledNotifications();
         setIsTimerActive(value);
 
         if (value) {
-            const scheduleRepeatingNotification = async () => {
-                const trigger = getNextTrigger(timeInterval, isRandom, awakeTime, sleepTime);
-                const identifier = await Notifications.scheduleNotificationAsync({
-                    content: notificationContent,
-                    trigger,
-                });
-                await AsyncStorage.setItem('notificationIdentifier', identifier);
-            };
-
-            await scheduleRepeatingNotification();
+            await scheduleRepeatingNotification(notificationContent, timeInterval, isRandom, awakeTime, sleepTime);
 
             // Reschedule on notification received
             if (notificationListener.current) {
                 Notifications.removeNotificationSubscription(notificationListener.current);
             }
-            notificationListener.current = Notifications.addNotificationResponseReceivedListener(scheduleRepeatingNotification);
+            notificationListener.current = Notifications.addNotificationResponseReceivedListener(
+                () => scheduleRepeatingNotification(notificationContent, timeInterval, isRandom, awakeTime, sleepTime)
+            );
 
             Alert.alert('Reality Check Timer Activated', 'You have successfully activated the reality check timer.');
         } else {
             Alert.alert('Reality Check Timer Deactivated', 'You have successfully deactivated the reality check timer.');
         }
     };
+
 
     // Helper function to calculate the next trigger time
     const getNextTrigger = (timeInterval, isRandom, awakeTime, sleepTime) => {

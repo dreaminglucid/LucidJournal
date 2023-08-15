@@ -16,6 +16,7 @@ import AccountScreen from "../Screens/AccountScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import ToolsScreen from '../Screens/ToolsScreen';
 import RealityCheckTimer from '../Components/RealityCheckTimer';
+import MorningReminder from '../Components/MorningReminder';
 
 const RootStack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -136,6 +137,7 @@ const AppNavigation = () => {
                         <RootStack.Screen name="Account" component={AccountScreen} />
                         <RootStack.Screen name="Settings" component={SettingsScreen} />
                         <RootStack.Screen name="RealityCheckTimer" component={RealityCheckTimer} />
+                        <RootStack.Screen name="MorningReminder" component={MorningReminder} />
                     </React.Fragment>
                 ) : (
                     <RootStack.Screen
