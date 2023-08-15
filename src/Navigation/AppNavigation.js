@@ -15,7 +15,7 @@ import SettingsScreen from "../Screens/SettingsScreen";
 import AccountScreen from "../Screens/AccountScreen";
 import LoginScreen from "../Screens/LoginScreen";
 import ToolsScreen from '../Screens/ToolsScreen';
-import RealityCheckTimer from '../Components/RealityCheckTimer'; // Update path if needed
+import RealityCheckTimer from '../Components/RealityCheckTimer';
 
 const RootStack = createStackNavigator();
 const Tab = createBottomTabNavigator();
