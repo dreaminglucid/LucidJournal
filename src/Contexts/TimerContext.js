@@ -1,50 +1,94 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useRef, useEffect, useContext } from 'react';
 import { Alert } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const TimerContext = createContext();
 
 export const TimerProvider = ({ children }) => {
-  const [isTimerActive, setIsTimerActive] = useState(false);
+    const [isTimerActive, setIsTimerActive] = useState(false);
+    const notificationListener = useRef(null);
 
-  const cancelAllScheduledNotifications = async () => {
-    const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
-    await Promise.all(scheduledNotifications.map(notification => 
-      Notifications.cancelScheduledNotificationAsync(notification.identifier)
-    ));
-  };
+    const cancelAllScheduledNotifications = async () => {
+        const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
+        await Promise.all(scheduledNotifications.map(notification =>
+            Notifications.cancelScheduledNotificationAsync(notification.identifier)
+        ));
+        if (notificationListener.current) {
+            Notifications.removeNotificationSubscription(notificationListener.current);
+            notificationListener.current = null;
+        }
+    };
 
-  const toggleTimer = async (value, notificationContent, timeInterval, isRandom) => {
-    await cancelAllScheduledNotifications(); // Cancel all scheduled notifications
+    const toggleTimer = async (value, notificationContent, timeInterval, isRandom, awakeTime, sleepTime) => {
+        await cancelAllScheduledNotifications();
+        setIsTimerActive(value);
 
-    setIsTimerActive(value);
+        if (value) {
+            const scheduleRepeatingNotification = async () => {
+                const trigger = getNextTrigger(timeInterval, isRandom, awakeTime, sleepTime);
+                const identifier = await Notifications.scheduleNotificationAsync({
+                    content: notificationContent,
+                    trigger,
+                });
+                await AsyncStorage.setItem('notificationIdentifier', identifier);
+            };
 
-    if (value) {
-      // Schedule notifications
-      let interval = isRandom ? Math.floor(Math.random() * (timeInterval - 5 + 1) + 5) : timeInterval;
+            await scheduleRepeatingNotification();
 
-      await Notifications.scheduleNotificationAsync({
-        content: notificationContent,
-        trigger: { seconds: interval * 60, repeats: true },
-      });
+            // Reschedule on notification received
+            if (notificationListener.current) {
+                Notifications.removeNotificationSubscription(notificationListener.current);
+            }
+            notificationListener.current = Notifications.addNotificationResponseReceivedListener(scheduleRepeatingNotification);
 
-      Alert.alert('Reality Check Timer set successfully.');
-    } else {
-      Alert.alert('Reality Check Timer canceled.');
-    }
-  };
+            Alert.alert('Reality Check Timer Activated', 'You have successfully activated the reality check timer.');
+        } else {
+            Alert.alert('Reality Check Timer Deactivated', 'You have successfully deactivated the reality check timer.');
+        }
+    };
 
-  return (
-    <TimerContext.Provider value={{ isTimerActive, toggleTimer }}>
-      {children}
-    </TimerContext.Provider>
-  );
+    // Helper function to calculate the next trigger time
+    const getNextTrigger = (timeInterval, isRandom, awakeTime, sleepTime) => {
+        const currentTime = new Date();
+        let interval = isRandom ? Math.floor(Math.random() * (timeInterval - 5 + 1) + 5) : timeInterval;
+
+        if (currentTime >= awakeTime && currentTime <= sleepTime) {
+            return { seconds: interval * 60 };
+        }
+
+        let nextAwakeTime = new Date(awakeTime);
+        if (nextAwakeTime < currentTime) {
+            nextAwakeTime.setDate(nextAwakeTime.getDate() + 1);
+        }
+        return { date: nextAwakeTime };
+    };
+
+    // Load previous state
+    useEffect(() => {
+        const loadPreviousState = async () => {
+            const savedIsActive = await AsyncStorage.getItem('isTimerActive');
+            setIsTimerActive(savedIsActive === 'true');
+        };
+        loadPreviousState();
+    }, []);
+
+    // Save current state
+    useEffect(() => {
+        AsyncStorage.setItem('isTimerActive', isTimerActive.toString());
+    }, [isTimerActive]);
+
+    return (
+        <TimerContext.Provider value={{ isTimerActive, toggleTimer }}>
+            {children}
+        </TimerContext.Provider>
+    );
 };
 
 export const useTimer = () => {
-  const context = useContext(TimerContext);
-  if (context === undefined) {
-    throw new Error('useTimer must be used within a TimerProvider');
-  }
-  return context;
+    const context = useContext(TimerContext);
+    if (context === undefined) {
+        throw new Error('useTimer must be used within a TimerProvider');
+    }
+    return context;
 };
