@@ -35,12 +35,12 @@ const ToolsScreen = ({ navigation }) => {
     const handleToggleReminder = async (value) => {
         const savedTime = await AsyncStorage.getItem('reminderTime');
         const reminderDate = savedTime ? new Date(savedTime) : new Date();
-    
+
         // If the reminder time is in the past, schedule it for the next day
         if (reminderDate.getTime() <= Date.now()) {
             reminderDate.setDate(reminderDate.getDate() + 1);
         }
-    
+
         toggleReminder(value, reminderDate);
     };
 
@@ -76,7 +76,7 @@ const ToolsScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <View style={styles.section}>
-                <Text style={styles.sectionHeader}>Notifications</Text>
+                <Text style={styles.sectionHeader}>Alarms & Reminders</Text>
                 <View style={styles.card}>
                     <View style={styles.cardHeader}>
                         <View style={styles.titleContainer}>
