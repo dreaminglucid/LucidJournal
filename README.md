@@ -3,7 +3,7 @@
 ## Introduction
 Welcome to the Lucid Journal project! This master README provides an overview of both the Lucid Journal app and the backend server. The project aims to create a comprehensive platform for exploring and understanding dreams with the help of AI.
 
-![image](assets\journal.png)
+![image](assets/journal.png)
 
 ## What is it?
 Lucid Journal is a cutting-edge mobile application designed as a personal AI dream guide. It helps users understand their dreams better, providing insights, analysis, and image generation based on dream entries. The app uses React Native and integrates with a python backend server for various functionalities.
