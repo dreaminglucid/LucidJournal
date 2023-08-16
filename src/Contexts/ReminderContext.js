@@ -16,11 +16,21 @@ export const ReminderProvider = ({ children }) => {
   };
 
   const scheduleReminder = async (reminderTime) => {
-    const trigger = { date: reminderTime };
+    if (reminderTime <= Date.now()) {
+      reminderTime.setDate(reminderTime.getDate() + 1);
+    }
+
+    const trigger = {
+      hour: reminderTime.getHours(),
+      minute: reminderTime.getMinutes(),
+      repeats: true,
+    };
+
     await Notifications.scheduleNotificationAsync({
       content: {
         title: 'Dream Journal Reminder',
         body: 'Time to write in your dream journal!',
+        sound: 'default',
       },
       trigger,
     });
