@@ -11,16 +11,17 @@ import { AppleAuthProvider } from './src/Contexts/AppleAuthContext';
 // Notifications
 import { TimerProvider } from './src/Contexts/TimerContext';
 import { ReminderProvider } from './src/Contexts/ReminderContext';
-
+import { WBTBAlarmProvider } from './src/Contexts/WBTBAlarmContext';
 
 const App = () => {
   return (
-
     <ThemeProvider>
       <AppleAuthProvider>
         <TimerProvider>
           <ReminderProvider>
-            <AppNavigation />
+            <WBTBAlarmProvider>
+              <AppNavigation />
+            </WBTBAlarmProvider>
           </ReminderProvider>
         </TimerProvider>
       </AppleAuthProvider>

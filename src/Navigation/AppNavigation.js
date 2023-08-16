@@ -17,6 +17,7 @@ import LoginScreen from "../Screens/LoginScreen";
 import ToolsScreen from '../Screens/ToolsScreen';
 import RealityCheckTimer from '../Components/RealityCheckTimer';
 import MorningReminder from '../Components/MorningReminder';
+import WBTBAlarm from '../Components/WBTBAlarm';
 
 const RootStack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -138,6 +139,7 @@ const AppNavigation = () => {
                         <RootStack.Screen name="Settings" component={SettingsScreen} />
                         <RootStack.Screen name="RealityCheckTimer" component={RealityCheckTimer} />
                         <RootStack.Screen name="MorningReminder" component={MorningReminder} />
+                        <RootStack.Screen name="WBTBAlarm" component={WBTBAlarm} />
                     </React.Fragment>
                 ) : (
                     <RootStack.Screen

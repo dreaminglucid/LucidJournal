@@ -29,7 +29,7 @@ export const ReminderProvider = ({ children }) => {
   const toggleReminder = async (value, reminderTime) => {
     await cancelScheduledReminder();
     setIsReminderActive(value);
-
+  
     if (value) {
       await scheduleReminder(reminderTime);
       Alert.alert('Dream Journal Reminder Activated', 'Your reminder has been set.');

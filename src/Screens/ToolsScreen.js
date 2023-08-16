@@ -10,17 +10,38 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { useTimer } from '../Contexts/TimerContext';
 import { useReminder } from '../Contexts/ReminderContext';
+import { useWBTBAlarm } from '../Contexts/WBTBAlarmContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ToolsScreen = ({ navigation }) => {
     const { theme } = useContext(ThemeContext);
+    const styles = getStyles(theme);
     const { isTimerActive, toggleTimer } = useTimer();
     const { isReminderActive, toggleReminder } = useReminder();
-    const styles = getStyles(theme);
+    const { isAlarmActive, toggleAlarm } = useWBTBAlarm();
+
+    const handleToggleWBTBAlarm = async (value) => {
+        const savedTime = await AsyncStorage.getItem('alarmTime');
+        const alarmDate = savedTime ? new Date(savedTime) : new Date();
+
+        // Check if the alarm time is in the past, and add a day if so
+        if (alarmDate <= Date.now()) {
+            alarmDate.setDate(alarmDate.getDate() + 1);
+        }
+
+        toggleAlarm(value, alarmDate);
+    };
 
     const handleToggleReminder = async (value) => {
         const savedTime = await AsyncStorage.getItem('reminderTime');
-        toggleReminder(value, savedTime ? new Date(savedTime) : null);
+        const reminderDate = savedTime ? new Date(savedTime) : new Date();
+    
+        // If the reminder time is in the past, schedule it for the next day
+        if (reminderDate.getTime() <= Date.now()) {
+            reminderDate.setDate(reminderDate.getDate() + 1);
+        }
+    
+        toggleReminder(value, reminderDate);
     };
 
     const handleToggleTimer = async (value) => {
@@ -59,7 +80,7 @@ const ToolsScreen = ({ navigation }) => {
                 <View style={styles.card}>
                     <View style={styles.cardHeader}>
                         <View style={styles.titleContainer}>
-                            <Text style={styles.toolText}>Reality Check Timer</Text>
+                            <Text style={styles.toolText}>Reality Check</Text>
                             <TouchableOpacity onPress={() => navigation.navigate('RealityCheckTimer')}>
                                 <MaterialCommunityIcons name="pencil-outline" size={22} color={theme.colors.text} />
                             </TouchableOpacity>
@@ -84,6 +105,23 @@ const ToolsScreen = ({ navigation }) => {
                         <Switch
                             value={isReminderActive}
                             onValueChange={handleToggleReminder}
+                            thumbColor={theme.colors.button}
+                            trackColor={{ false: '#f0f0f0', true: theme.colors.button }}
+                        />
+                    </View>
+                </View>
+                {/* WBTB Alarm Card */}
+                <View style={styles.card}>
+                    <View style={styles.cardHeader}>
+                        <View style={styles.titleContainer}>
+                            <Text style={styles.toolText}>WBTB Alarm</Text>
+                            <TouchableOpacity onPress={() => navigation.navigate('WBTBAlarm')}>
+                                <MaterialCommunityIcons name="pencil-outline" size={22} color={theme.colors.text} />
+                            </TouchableOpacity>
+                        </View>
+                        <Switch
+                            value={isAlarmActive}
+                            onValueChange={handleToggleWBTBAlarm}
                             thumbColor={theme.colors.button}
                             trackColor={{ false: '#f0f0f0', true: theme.colors.button }}
                         />
