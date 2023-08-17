@@ -18,78 +18,74 @@ const TIMER_IDENTIFIER = 'TIMER_IDENTIFIER';
 const WBTBAlarmContext = createContext();
 
 export const WBTBAlarmProvider = ({ children }) => {
-    const [isAlarmActive, setIsAlarmActive] = useState(false);
+  const [isAlarmActive, setIsAlarmActive] = useState(false);
 
-    const cancelAlarm = async () => {
-        await Notifications.cancelScheduledNotificationAsync(WBTB_ALARM_IDENTIFIER);
+  const cancelAlarm = async () => {
+    await Notifications.cancelScheduledNotificationAsync(WBTB_ALARM_IDENTIFIER);
+  };
+
+  const scheduleAlarm = async (alarmTime) => {
+    if (alarmTime <= Date.now()) {
+      alarmTime.setDate(alarmTime.getDate() + 1);
+    }
+
+    const trigger = {
+      hour: alarmTime.getHours(),
+      minute: alarmTime.getMinutes(),
+      repeats: true,
     };
 
-    const scheduleAlarm = async (alarmTime) => {
-        if (alarmTime <= Date.now()) {
-            alarmTime.setDate(alarmTime.getDate() + 1);
-        }
+    await Notifications.scheduleNotificationAsync({
+      identifier: WBTB_ALARM_IDENTIFIER,
+      content: {
+        title: 'Wake Back to Bed Alarm',
+        body: 'Time for a quick awakening to enhance lucid dreaming!',
+        autoDismiss: true,
+        sound: 'default',
+      },
+      trigger,
+    });
+  };
 
-        const trigger = {
-            hour: alarmTime.getHours(),
-            minute: alarmTime.getMinutes(),
-            repeats: true,
-        };
+  const toggleAlarm = async (value, alarmTime) => {
+    await cancelAlarm();
+    setIsAlarmActive(value);
 
-        await Notifications.scheduleNotificationAsync({
-            identifier: WBTB_ALARM_IDENTIFIER,
-            content: {
-                title: 'Wake Back to Bed Alarm',
-                body: 'Time for a quick awakening to enhance lucid dreaming!',
-                autoDismiss: true,
-                sound: 'electronic-alarm-clock.mp3',
-            },
-            trigger,
-        });
-    };
+    // Save the state to AsyncStorage immediately after updating
+    await AsyncStorage.setItem('isAlarmActive', value.toString());
 
-    const toggleAlarm = async (value, alarmTime) => {
-        await cancelAlarm();
-        setIsAlarmActive(value);
+    if (value) {
+      await scheduleAlarm(alarmTime);
+      Alert.alert('Alarm Set', 'Your Wake Back to Bed Alarm has been scheduled successfully.');
+    } else {
+      Alert.alert('Alarm Cancelled', 'Your Wake Back to Bed Alarm has been cancelled.');
+    }
+  };
 
-        if (value) {
-            await scheduleAlarm(alarmTime);
-            Alert.alert('Alarm Set', 'Your Wake Back to Bed Alarm has been scheduled successfully.');
-        } else {
-            Alert.alert('Alarm Cancelled', 'Your Wake Back to Bed Alarm has been cancelled.');
-        }
-    };
+  useEffect(() => {
+    (async () => { // Use an immediately-invoked async function
+      try {
+        const savedIsActive = await AsyncStorage.getItem('isAlarmActive');
+        setIsAlarmActive(savedIsActive === 'true');
+      } catch (error) {
+        console.error("Error loading isAlarmActive from AsyncStorage:", error);
+      }
+    })();
+  }, []);
 
-    useEffect(() => {
-        AsyncStorage.setItem('isAlarmActive', isAlarmActive.toString());
-        console.log("Saved isAlarmActive to AsyncStorage:", isAlarmActive);
-    }, [isAlarmActive]);
-
-    useEffect(() => {
-        const loadPreviousState = async () => {
-            try {
-                const savedIsActive = await AsyncStorage.getItem('isAlarmActive');
-                console.log("Loaded isAlarmActive from AsyncStorage:", savedIsActive);
-                setIsAlarmActive(savedIsActive === 'true');
-            } catch (error) {
-                console.error("Error loading isAlarmActive from AsyncStorage:", error);
-            }
-        };
-        loadPreviousState();
-    }, []);
-
-    return (
-        <WBTBAlarmContext.Provider value={{ isAlarmActive, toggleAlarm }}>
-            {children}
-        </WBTBAlarmContext.Provider>
-    );
+  return (
+    <WBTBAlarmContext.Provider value={{ isAlarmActive, toggleAlarm }}>
+      {children}
+    </WBTBAlarmContext.Provider>
+  );
 };
 
 export const useWBTBAlarm = () => {
-    const context = useContext(WBTBAlarmContext);
-    if (context === undefined) {
-        throw new Error('useWBTBAlarm must be used within a WBTBAlarmProvider');
-    }
-    return context;
+  const context = useContext(WBTBAlarmContext);
+  if (context === undefined) {
+    throw new Error('useWBTBAlarm must be used within a WBTBAlarmProvider');
+  }
+  return context;
 };
 
 const TimerContext = createContext();
