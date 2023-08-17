@@ -45,15 +45,7 @@
     "notification": {
       "icon": "./assets/icon.png",
       "color": "#000000",
-      "iosDisplayInForeground": true
-    },
-    "plugins": [
-      [
-        "expo-notifications",
-        {
-          "sounds": ["./assets/sounds/electronic-alarm-clock.mp3"]
-        }
-      ]
-    ]
+      "iosDisplayInForeground": true,
+    }
   }
 }
