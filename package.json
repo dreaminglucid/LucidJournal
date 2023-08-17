@@ -22,6 +22,7 @@
     "expo": "~48.0.18",
     "expo-apple-authentication": "~6.0.1",
     "expo-auth-session": "~4.0.3",
+    "expo-av": "~13.2.1",
     "expo-dev-client": "~2.2.1",
     "expo-notifications": "~0.18.1",
     "expo-secure-store": "~12.1.1",
@@ -32,7 +33,6 @@
     "jwt-decode": "^3.1.2",
     "react": "18.2.0",
     "react-native": "0.71.8",
-    "react-native-background-timer": "^2.4.1",
     "react-native-btr": "^2.2.0",
     "react-native-dotenv": "^3.4.9",
     "react-native-elements": "^3.4.3",
@@ -43,8 +43,7 @@
     "react-native-sound": "^0.11.2",
     "react-native-url-polyfill": "^2.0.0",
     "react-native-vector-icons": "^9.2.0",
-    "use-debounce": "^9.0.4",
-    "expo-av": "~13.2.1"
+    "use-debounce": "^9.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

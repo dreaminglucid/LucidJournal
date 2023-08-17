@@ -14,7 +14,7 @@ import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { ThemeContext } from '../Contexts/ThemeContext';
-import { useTimer } from '../Contexts/TimerContext';
+import { useTimer } from '../Contexts/NotificationContext';
 import Slider from '@react-native-community/slider';
 
 const RealityCheckTimer = () => {

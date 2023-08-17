@@ -6,11 +6,12 @@ import {
     Text,
     TouchableOpacity,
     StyleSheet,
+    Animated,
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemeContext } from '../Contexts/ThemeContext';
-import { useReminder } from '../Contexts/ReminderContext';
+import { useReminder } from '../Contexts/NotificationContext';
 
 const MorningReminder = () => {
     const { theme } = useContext(ThemeContext);
@@ -22,8 +23,9 @@ const MorningReminder = () => {
 
     const [reminderTime, setReminderTime] = useState(defaultReminderTime);
     const [showReminderPicker, setShowReminderPicker] = useState(false);
+    const [showTips, setShowTips] = useState(false);
+    const tipsHeight = new Animated.Value(showTips ? 170 : 0);
 
-    // Function to load saved settings
     const loadSettings = async () => {
         try {
             const savedTime = await AsyncStorage.getItem('reminderTime');
@@ -35,7 +37,6 @@ const MorningReminder = () => {
         }
     };
 
-    // Function to save current settings
     const saveSettings = async () => {
         try {
             await AsyncStorage.setItem('reminderTime', reminderTime.toISOString());
@@ -44,10 +45,18 @@ const MorningReminder = () => {
         }
     };
 
-    // Load settings on component mount
     useEffect(() => {
         loadSettings();
     }, []);
+
+    const toggleTips = () => {
+        Animated.timing(tipsHeight, {
+            toValue: showTips ? 0 : 170,
+            duration: 500,
+            useNativeDriver: false,
+        }).start();
+        setShowTips((prev) => !prev);
+    };
 
     const scheduleReminder = () => {
         saveSettings();
@@ -58,8 +67,25 @@ const MorningReminder = () => {
         <ScrollView style={styles.container}>
             <View style={styles.card}>
                 <Text style={styles.title}>
+                    <MaterialCommunityIcons name="clock" size={22} color={theme.colors.text} />
+                    {' '}Why Morning Reminder?
+                </Text>
+                <Text style={styles.text}>
+                    The morning reminder helps you keep a consistent dream journaling practice. Recording your dreams right after waking up enhances dream recall and supports lucid dreaming.
+                </Text>
+                <TouchableOpacity onPress={toggleTips} style={styles.tipsButton}>
+                    <Text style={styles.tipsButtonText}>Tips {showTips ? '-' : '+'}</Text>
+                </TouchableOpacity>
+                <Animated.View style={[styles.tipsContainer, { height: tipsHeight }]}>
+                    <Text style={styles.tipText}>- Keep your dream journal close to your bed for easy access.</Text>
+                    <Text style={styles.tipText}>- Write down even vague or fragmented dreams.</Text>
+                    <Text style={styles.tipText}>- Use vivid and descriptive language to capture dream details.</Text>
+                </Animated.View>
+            </View>
+            <View style={styles.card}>
+                <Text style={styles.title}>
                     <MaterialCommunityIcons name="notebook-outline" size={22} color={theme.colors.text} />
-                    {' '}Set Dream Journal Reminder
+                    {' '}Set Morning Reminder
                 </Text>
                 <TouchableOpacity onPress={() => setShowReminderPicker(true)} style={styles.timeButton}>
                     <Text style={styles.timeText}>{reminderTime.toLocaleTimeString()}</Text>
@@ -91,42 +117,84 @@ const getStyles = (theme) => StyleSheet.create({
         backgroundColor: theme.colors.background,
     },
     card: {
+        borderRadius: 15,
         backgroundColor: theme.colors.card,
+        padding: 25,
         margin: 15,
-        padding: 15,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 10,
+        elevation: 5,
     },
     title: {
-        fontSize: 18,
-        fontWeight: 'bold',
+        flexDirection: 'row',
+        alignItems: 'center',
+        fontSize: 24,
+        fontWeight: '600',
+        marginBottom: 15,
         color: theme.colors.text,
-        marginBottom: 10,
+    },
+    text: {
+        fontSize: 18,
+        lineHeight: 24,
+        color: theme.colors.text,
+        marginBottom: 15,
+    },
+    tipsButton: {
+        alignItems: 'flex-end',
+    },
+    tipsButtonText: {
+        color: theme.colors.button,
+        fontSize: 16,
+        textDecorationLine: 'underline',
+    },
+    tipsContainer: {
+        overflow: 'hidden',
+        marginVertical: 10,
+    },
+    tipText: {
+        fontSize: 16,
+        marginBottom: 5,
+        color: theme.colors.text,
     },
     timeButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        paddingHorizontal: 15,
         paddingVertical: 10,
-        borderBottomWidth: 1,
-        borderColor: theme.colors.border,
+        borderRadius: 10,
+        borderWidth: 1,
+        borderColor: theme.colors.text,
+        marginTop: 10,
     },
     timeText: {
-        fontSize: 16,
+        fontSize: 18,
         color: theme.colors.text,
+        marginBottom: 15,
     },
     buttonContainer: {
-        alignItems: 'center',
-        marginVertical: 20,
+        padding: 25,
     },
     saveButton: {
         backgroundColor: theme.colors.button,
-        paddingHorizontal: 30,
-        paddingVertical: 15,
-        borderRadius: 8,
+        padding: 18,
+        borderRadius: 22,
+        marginBottom: 20,
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        shadowRadius: 5,
+        elevation: 3,
     },
     saveButtonText: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        color: theme.colors.buttonText,
+        fontSize: 18,
+        fontWeight: '600',
+        color: theme.colors.background,
+        textAlign: 'center',
     },
 });
 

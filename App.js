@@ -9,9 +9,7 @@ import { ThemeProvider } from './src/Contexts/ThemeContext';
 import { AppleAuthProvider } from './src/Contexts/AppleAuthContext';
 
 // Notifications
-import { TimerProvider } from './src/Contexts/TimerContext';
-import { ReminderProvider } from './src/Contexts/ReminderContext';
-import { WBTBAlarmProvider } from './src/Contexts/WBTBAlarmContext';
+import { TimerProvider, ReminderProvider, WBTBAlarmProvider } from "./src/Contexts/NotificationContext";
 
 const App = () => {
   return (

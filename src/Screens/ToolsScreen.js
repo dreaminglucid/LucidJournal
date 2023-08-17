@@ -8,9 +8,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemeContext } from '../Contexts/ThemeContext';
-import { useTimer } from '../Contexts/TimerContext';
-import { useReminder } from '../Contexts/ReminderContext';
-import { useWBTBAlarm } from '../Contexts/WBTBAlarmContext';
+import { useTimer, useReminder, useWBTBAlarm } from '../Contexts/NotificationContext';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ToolsScreen = ({ navigation }) => {
@@ -97,7 +95,7 @@ const ToolsScreen = ({ navigation }) => {
                 <View style={styles.card}>
                     <View style={styles.cardHeader}>
                         <View style={styles.titleContainer}>
-                            <Text style={styles.toolText}>Journal Reminder</Text>
+                            <Text style={styles.toolText}>Morning Reminder</Text>
                             <TouchableOpacity onPress={() => navigation.navigate('MorningReminder')}>
                                 <MaterialCommunityIcons name="pencil-outline" size={22} color={theme.colors.text} />
                             </TouchableOpacity>
@@ -165,6 +163,9 @@ const getStyles = (theme) => StyleSheet.create({
     titleContainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        justifyContent: 'space-between',
+        flex: 1,
+        paddingRight: 30
     },
     toolText: {
         fontSize: 18,
