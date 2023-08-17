@@ -1,8 +1,10 @@
 // App.js
 import React from "react";
 
-// Theme and Navigation
+// Navigation
 import AppNavigation from "./src/Navigation/AppNavigation";
+
+// Theme
 import { ThemeProvider } from './src/Contexts/ThemeContext';
 
 // Auth Providers

@@ -45,7 +45,7 @@
     "notification": {
       "icon": "./assets/icon.png",
       "color": "#000000",
-      "iosDisplayInForeground": true,
+      "iosDisplayInForeground": true
     }
   }
 }
