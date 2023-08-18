@@ -168,7 +168,7 @@ const RealityCheckTimer = () => {
         <Slider
           value={timeInterval}
           onValueChange={setTimeInterval}
-          minimumValue={1}
+          minimumValue={5}
           maximumValue={360}
           step={5}
           style={styles.slider}
