@@ -65,9 +65,10 @@ const NewDreamScreen = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${user.id_token}`, // Add this line
         },
         body: JSON.stringify({ title, date: formattedDate, entry, id_token: user.id_token }),
-      });
+      });      
 
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
