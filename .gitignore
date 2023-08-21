@@ -20,7 +20,7 @@ web-build/
 .metro-health-check*
 
 # secret files (REMOVE WHEN BUILDING TO IOS)
-# config.js
+config.js
 
 # Chromadb
 .chroma
