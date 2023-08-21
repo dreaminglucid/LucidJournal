@@ -26,3 +26,10 @@ To run the Dream Guide app on your local machine using Expo and ngrok, follow th
 - **DetailsScreen**: Shows detailed information about a specific dream entry, including the dream's analysis and the AI-generated dream image. Users can also regenerate the analysis and image.
 
 - **RegenerateScreen**: Provides options to regenerate dream analysis and images for a specific dream entry, giving users more insights into their dreams.
+
+
+### Useful Commands
+
+```
+npx expo start -c --dev-client --tunnel
+```

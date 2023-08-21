@@ -14,7 +14,7 @@ import {
 } from "react-native";
 
 // UI Component Libraries
-import { FAB } from "react-native-paper";
+import { FAB, Menu, Provider } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 // Other Libraries
@@ -37,6 +37,8 @@ const DreamsScreen = ({ navigation }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInitialRender, setIsInitialRender] = useState(true);
   const [isNavigatingToDream, setIsNavigatingToDream] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [selectedDreamId, setSelectedDreamId] = useState(null);
 
   useEffect(() => {
     fetchDreams();
@@ -95,6 +97,42 @@ const DreamsScreen = ({ navigation }) => {
     setIsNavigatingToDream(false);  // Add this line
   };
 
+  // Function to delete a dream
+  const deleteDream = async (dreamId) => {
+    const userJson = await SecureStore.getItemAsync('appleUser');
+    const user = JSON.parse(userJson);
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Bearer ${user.id_token}`,
+        },
+      });
+      console.log('Server response:', response.status, await response.text());
+
+      if (response.ok) {
+        fetchDreams(); // Refresh the list after deletion
+        Alert.alert("Success", "Dream deleted successfully.");
+      } else {
+        Alert.alert("Error", "Failed to delete the dream.");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Failed to delete the dream.");
+    }
+  };
+
+  // Function to confirm deletion
+  const confirmDeleteDream = (dreamId) => {
+    Alert.alert(
+      "Delete Dream",
+      "Are you sure you want to delete this dream?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", onPress: () => deleteDream(dreamId) },
+      ]
+    );
+  };
+
   const handleSearch = async () => {
     if (searchText.trim() === "") {
       Alert.alert("Warning", "Please enter a search term.");
@@ -120,36 +158,59 @@ const DreamsScreen = ({ navigation }) => {
       Alert.alert("Error", "Failed to perform search.");
     }
     setIsLoading(false);
-  };  
+  };
 
   const handleClearSearch = () => {
     setSearchText("");
     setSearchResults([]);
-  };  
+  };
 
   const navigateToNewDream = () => {
     navigation.navigate("New Dream");
   };
 
+  const renderDropdownMenu = (dreamId) => {
+    return menuVisible && selectedDreamId === dreamId ? (
+      <View style={styles.dropdownMenu}>
+        <TouchableOpacity onPress={() => confirmDeleteDream(dreamId)}>
+          <Text style={styles.dropdownMenuItem}>Delete</Text>
+        </TouchableOpacity>
+      </View>
+    ) : null;
+  };
+
   const renderDreamItem = ({ item }) => {
     return (
-      <TouchableOpacity
-        style={styles.dreamItem}
-        onPress={() => handleDreamSelection(item.id)}
-      >
-        <View style={styles.dreamTextContent}>
-          <Text style={styles.dreamItemText}>{item.metadata.title}</Text>
-          <Text style={styles.dreamItemDate}>{item.metadata.date}</Text>
-        </View>
-        {item.image && (
-          <Image
-            source={{ uri: item.image }}
-            style={styles.dreamItemImage}
-          />
-        )}
-      </TouchableOpacity>
+      <View style={styles.dreamItemContainer}>
+        <TouchableOpacity
+          style={styles.dreamContent}
+          onPress={() => handleDreamSelection(item.id)}
+        >
+          {item.image && (
+            <Image
+              source={{ uri: item.image }}
+              style={styles.dreamItemImage}
+              resizeMode="cover"
+            />
+          )}
+          <TouchableOpacity
+            onPress={() => {
+              setSelectedDreamId(item.id);
+              setMenuVisible(!menuVisible);
+            }}
+            style={styles.dotsButton}
+          >
+            <MaterialCommunityIcons name="dots-horizontal" size={24} color={theme.colors.button} />
+          </TouchableOpacity>
+          {renderDropdownMenu(item.id)}
+          <View style={styles.dreamTextContent}>
+            <Text style={styles.dreamItemText}>{item.metadata.title}</Text>
+            <Text style={styles.dreamItemDate}>{item.metadata.date}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
     );
-  };  
+  };
 
   const renderEmptyComponent = () => {
     return (
@@ -161,82 +222,84 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <View style={styles.container}>
-        {!isNavigatingToDream && (
-          <View
-            style={[
-              styles.searchBar,
-              { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-            ]}
-          >
-            {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color={theme.colors.button} size={22} style={styles.searchIcon} />}
-            <TextInput
-              style={styles.input}
-              value={searchText}
-              onChangeText={(text) => setSearchText(text)}
-              placeholder="Search for dreams"
-              placeholderTextColor={theme.colors.text}
-              onSubmitEditing={handleSearch}
-              onFocus={() => setIsInputFocused(true)}
-              onBlur={() => setIsInputFocused(false)}
-            />
-            {searchText.length > 0 && (
-              <TouchableOpacity
-                onPress={handleClearSearch}
-                style={styles.clearButton}
-              >
-                <MaterialCommunityIcons
-                  name="close-circle"
-                  color={theme.colors.button}
-                  size={26}
-                />
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-        {isLoading ? (
-          <ActivityIndicator size="large" color={theme.colors.button} />
-        ) : (
-          <FlatList
-            data={searchResults.length > 0 ? searchResults : dreams}
-            keyExtractor={(item) => (item && item.id ? item.id.toString() : "")}
-            renderItem={renderDreamItem}
-            style={styles.list}
-            contentContainerStyle={{ paddingBottom: 80 }}
-            showsVerticalScrollIndicator={false}
-            refreshControl={
-              <RefreshControl
-                refreshing={isRefreshing}
-                onRefresh={fetchDreams}
-                colors={[theme.colors.button]}
-                tintColor={theme.colors.button}
+    <Provider>
+      <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+        <View style={styles.container}>
+          {!isNavigatingToDream && (
+            <View
+              style={[
+                styles.searchBar,
+                { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+              ]}
+            >
+              {!isInputFocused && searchText.length === 0 && <MaterialCommunityIcons name="magnify" color={theme.colors.button} size={22} style={styles.searchIcon} />}
+              <TextInput
+                style={styles.input}
+                value={searchText}
+                onChangeText={(text) => setSearchText(text)}
+                placeholder="Search for dreams"
+                placeholderTextColor={theme.colors.text}
+                onSubmitEditing={handleSearch}
+                onFocus={() => setIsInputFocused(true)}
+                onBlur={() => setIsInputFocused(false)}
               />
-            }
-            ListEmptyComponent={renderEmptyComponent}
-          />
-        )}
+              {searchText.length > 0 && (
+                <TouchableOpacity
+                  onPress={handleClearSearch}
+                  style={styles.clearButton}
+                >
+                  <MaterialCommunityIcons
+                    name="close-circle"
+                    color={theme.colors.button}
+                    size={26}
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
+          {isLoading ? (
+            <ActivityIndicator size="large" color={theme.colors.button} />
+          ) : (
+            <FlatList
+              data={searchResults.length > 0 ? searchResults : dreams}
+              keyExtractor={(item) => (item && item.id ? item.id.toString() : "")}
+              renderItem={renderDreamItem}
+              style={styles.list}
+              contentContainerStyle={{ paddingBottom: 80 }}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl
+                  refreshing={isRefreshing}
+                  onRefresh={fetchDreams}
+                  colors={[theme.colors.button]}
+                  tintColor={theme.colors.button}
+                />
+              }
+              ListEmptyComponent={renderEmptyComponent}
+            />
+          )}
+        </View>
+        <FAB
+          style={{
+            position: "absolute",
+            margin: 16,
+            right: 16,
+            bottom: 0,
+            backgroundColor: theme.colors.button,
+            elevation: 10,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.5,
+            shadowRadius: 5,
+            borderRadius: 33,
+          }}
+          icon={() => (
+            <MaterialCommunityIcons name="plus" color={theme.colors.background} size={26} />
+          )}
+          onPress={navigateToNewDream}
+        />
       </View>
-      <FAB
-        style={{
-          position: "absolute",
-          margin: 16,
-          right: 16,
-          bottom: 0,
-          backgroundColor: theme.colors.button,
-          elevation: 10,
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.5,
-          shadowRadius: 5,
-          borderRadius: 33,
-        }}
-        icon={() => (
-          <MaterialCommunityIcons name="plus" color={theme.colors.background} size={26} />
-        )}
-        onPress={navigateToNewDream}
-      />
-    </View>
+    </Provider>
   );
 };
 
@@ -265,26 +328,79 @@ const getStyles = (theme) => StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    borderBottomColor: theme.colors.button,
-    borderBottomWidth: 0.5,
-    paddingTop: 15,
-    paddingBottom: 15,
-    marginLeft: 20,
-    marginRight: 20,
-    
+    borderRadius: 22,
+    overflow: 'hidden',
+  },
+  dreamItemContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+  },
+  dreamContent: {
+    borderRadius: 22,
+    overflow: 'hidden',
+    height: 120,
+    position: 'relative',
+  },
+  dotsButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    padding: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    borderRadius: 15,
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    right: 22,
+    top: 42,
+    backgroundColor: '#fff',
+    borderRadius: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  dropdownMenuItem: {
+    padding: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  touchableArea: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  menuContainer: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
   },
   dreamItemImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-  },  
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  dreamTextContent: {
+    position: 'absolute',
+    left: 10,
+    bottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingHorizontal: 5,
+  },
   dreamItemText: {
     fontSize: 18,
     fontWeight: "700",
     color: theme.colors.text,
-  },  
+  },
   dreamItemDate: {
-    color: theme.colors.button,
+    color: theme.colors.text,
     fontSize: 13,
   },
   list: {
@@ -302,7 +418,7 @@ const getStyles = (theme) => StyleSheet.create({
     padding: 0,
     marginLeft: 20,
     marginRight: 20,
-  },  
+  },
   searchIcon: {
     position: "absolute",
     right: 10,
@@ -361,7 +477,7 @@ const getStyles = (theme) => StyleSheet.create({
     marginHorizontal: 5,
   },
   emptyContainer: {
-    height: '333%', // Adjust this percentage as per your need
+    height: '333%',
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
