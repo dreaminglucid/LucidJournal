@@ -1,5 +1,7 @@
 import React, { useContext, useState, useEffect } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Alert, ScrollView, Linking } from 'react-native';
+import * as FileSystem from 'expo-file-system';
+import * as Sharing from 'expo-sharing';
 import * as SecureStore from 'expo-secure-store';
 import { ThemeContext } from '../Contexts/ThemeContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -138,18 +140,82 @@ const SettingsScreen = () => {
     }
   };
 
+  const exportDreamsToPDF = async () => {
+    console.log("Starting exportDreamsToPDF...");
+  
+    if (!userToken) {
+      console.error("User token not found!");
+      Alert.alert("Error", "Failed to fetch user token.");
+      return;
+    }
+  
+    console.log("User token found, initiating fetch request...");
+  
+    try {
+      const response = await fetch(`${API_URL}/api/dreams/export/pdf`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${userToken}`
+        },
+      });
+  
+      if (!response.ok) {
+        console.error(`Fetch failed with status: ${response.status}`);
+        throw new Error("Network response was not ok.");
+      }
+  
+      console.log("Response received, fetching blob...");
+      const blob = await response.blob();
+  
+      console.log("Blob received, converting to file...");
+      const uri = FileSystem.cacheDirectory + 'dreams.pdf';
+      const reader = new FileReader();
+      reader.onload = async () => {
+        const base64data = reader.result.split(',')[1];
+        await FileSystem.writeAsStringAsync(uri, base64data, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+        console.log("File written successfully to:", uri);
+  
+        // Check if sharing is available
+        if (!(await Sharing.isAvailableAsync())) {
+          Alert.alert(`Uh oh, sharing isn't available on your platform`);
+          return;
+        }
+  
+        // Share the file
+        const sharingResult = await Sharing.shareAsync(uri);
+  
+        // If the user dismissed the sharing dialog, delete the temporary file
+        if (sharingResult.dismissedAction) {
+          await FileSystem.deleteAsync(uri);
+          console.log("Sharing dismissed. Temporary file deleted.");
+          return;
+        }
+  
+        Alert.alert("Success", "Dreams exported successfully.");
+      };
+      reader.readAsDataURL(blob);
+    } catch (error) {
+      console.error("An error occurred:", error);
+      Alert.alert("Error", "Failed to export dreams to PDF.");
+    }
+  
+    console.log("exportDreamsToPDF finished.");
+  };  
+
   return (
     <ScrollView style={styles.container}>
       <Text style={[styles.header, { color: theme.colors.text }]}>Settings</Text>
 
       <Text style={[styles.subHeader, { color: theme.colors.text }]}>Appearance</Text>
 
+      {/* Theme Options */}
       <TouchableOpacity onPress={toggleThemeOptions} style={styles.listItem}>
         <MaterialCommunityIcons name="palette" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Theme</Text>
         <MaterialCommunityIcons name={showThemeOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
-
       {showThemeOptions && themeSwitches.map(({ theme: themeName, icon }) => (
         <TouchableOpacity key={themeName} style={styles.optionItem} onPress={() => changeTheme(themeName)}>
           <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
@@ -161,15 +227,14 @@ const SettingsScreen = () => {
           </Text>
         </TouchableOpacity>
       ))}
-      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
 
-      {/* Image Style */}
+      {/* Image Settings */}
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Image Settings</Text>
       <TouchableOpacity onPress={toggleImageStyleOptions} style={styles.listItem}>
         <MaterialCommunityIcons name="image" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Style</Text>
         <MaterialCommunityIcons name={showImageStyleOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
-
       {showImageStyleOptions && imageStyles.map(({ style, icon, description }) => (
         <TouchableOpacity key={style} style={styles.optionItem} onPress={() => updateImageStyle(style)}>
           <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
@@ -188,7 +253,6 @@ const SettingsScreen = () => {
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Image Quality</Text>
         <MaterialCommunityIcons name={showImageQualityOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
       </TouchableOpacity>
-
       {showImageQualityOptions && imageQualities.map(({ quality, description, icon }) => (
         <TouchableOpacity key={quality} style={styles.optionItem} onPress={() => updateImageQuality(quality)}>
           <MaterialCommunityIcons name={icon} color={theme.colors.button} size={28} />
@@ -200,6 +264,13 @@ const SettingsScreen = () => {
           </Text>
         </TouchableOpacity>
       ))}
+
+      {/* Export Options */}
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Export Options</Text>
+      <TouchableOpacity onPress={exportDreamsToPDF} style={styles.listItem}>
+        <MaterialCommunityIcons name="file" color={theme.colors.text} size={24} style={styles.icon} />
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Export Dreams to PDF</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
