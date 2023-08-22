@@ -6,10 +6,12 @@ import {
     Text,
     Alert,
     Image,
+    Modal,
     Animated,
     ActivityIndicator,
     ScrollView,
     RefreshControl,
+    TouchableOpacity,
 } from "react-native";
 import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -29,6 +31,7 @@ const DetailsScreen = ({ route, navigation }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingStatus, setLoadingStatus] = useState("");
     const [generationStatus, setGenerationStatus] = useState("idle");
+    const [isImageModalVisible, setImageModalVisible] = useState(false);
     const animation = new Animated.Value(0);
 
     // Similar loading animation logic as in RegenerateScreen
@@ -285,6 +288,51 @@ const DetailsScreen = ({ route, navigation }) => {
         }
     };
 
+    // Function to handle opening the image in a modal
+    const handleOpenImageModal = () => {
+        setImageModalVisible(true);
+    };
+
+    // Function to handle closing the image modal
+    const handleCloseImageModal = () => {
+        setImageModalVisible(false);
+    };
+
+    // Function to delete a dream
+    const deleteDream = async () => {
+        const userJson = await SecureStore.getItemAsync('appleUser');
+        const user = JSON.parse(userJson);
+        try {
+            const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+                method: "DELETE",
+                headers: {
+                    'Authorization': `Bearer ${user.id_token}`,
+                },
+            });
+
+            if (response.ok) {
+                Alert.alert("Success", "Dream deleted successfully.");
+                navigation.goBack(); // Navigate back after deletion
+            } else {
+                Alert.alert("Error", "Failed to delete the dream.");
+            }
+        } catch (error) {
+            Alert.alert("Error", "Failed to delete the dream.");
+        }
+    };
+
+    // Function to confirm deletion
+    const confirmDeleteDream = () => {
+        Alert.alert(
+            "Delete Dream",
+            "Are you sure you want to delete this dream?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", onPress: deleteDream },
+            ]
+        );
+    };
+
     return (
         <ScrollView
             contentContainerStyle={styles.container}
@@ -292,6 +340,21 @@ const DetailsScreen = ({ route, navigation }) => {
                 <RefreshControl refreshing={isRefreshing} onRefresh={fetchDream} />
             }
         >
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={isImageModalVisible}
+                onRequestClose={handleCloseImageModal}
+            >
+                <TouchableOpacity onPress={handleCloseImageModal} style={styles.expandedImageContainer}>
+                    <Image source={{ uri: imageData }} style={styles.expandedImage} resizeMode="contain" />
+                </TouchableOpacity>
+            </Modal>
+            {imageData && (
+                <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
+                    <Image source={{ uri: imageData }} style={styles.image} />
+                </TouchableOpacity>
+            )}
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={theme.colors.button} />
@@ -303,7 +366,7 @@ const DetailsScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             ) : (
-                <>
+                <View style={styles.detailsContainer}>
                     {dream && (
                         <>
                             <Card style={styles.card}>
@@ -317,7 +380,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-
+    
                             <Card style={styles.card}>
                                 <Card.Content>
                                     <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
@@ -329,7 +392,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-
+    
                             <Card style={styles.card}>
                                 <Card.Content>
                                     <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
@@ -341,7 +404,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-
+    
                             {analysisResult && (
                                 <Card style={styles.card}>
                                     <Card.Content>
@@ -357,12 +420,17 @@ const DetailsScreen = ({ route, navigation }) => {
                             )}
                         </>
                     )}
-                    {imageData && (
-                        <View style={styles.imageContainer}>
-                            <Image source={{ uri: imageData }} style={styles.image} />
-                        </View>
-                    )}
                     <View style={styles.buttonContainer}>
+                        {dream && dream.analysis && dream.image && (
+                            <Button
+                                mode="contained"
+                                onPress={confirmDeleteDream}
+                                style={styles.deleteButton}
+                                labelStyle={styles.deleteButtonText}
+                            >
+                                Delete
+                            </Button>
+                        )}
                         {dream && dream.analysis && dream.image ? (
                             <Button
                                 mode="contained"
@@ -398,7 +466,7 @@ const DetailsScreen = ({ route, navigation }) => {
                             </Button>
                         )}
                     </View>
-                </>
+                </View>
             )}
         </ScrollView>
     );
@@ -407,14 +475,19 @@ const DetailsScreen = ({ route, navigation }) => {
 const getStyles = (theme) => StyleSheet.create({
     container: {
         flexGrow: 1,
-        padding: 20,
         backgroundColor: theme.colors.background,
+    },
+    detailsContainer: {
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        backgroundColor: theme.colors.background,
+        padding: 20,
+        marginTop: -30,
     },
     card: {
         backgroundColor: theme.colors.card,
         marginBottom: 20,
         borderRadius: 22,
-        // borderWidth: 2.22,
         borderColor: "#123",
         shadowColor: "#000",
         shadowOffset: {
@@ -463,30 +536,53 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 10,
         color: theme.colors.text,
     },
-
     loadingIndicator: {
         justifyContent: "center",
         height: "90%",
     },
     imageContainer: {
-        alignItems: "center",
-        marginTop: 15,
-        marginBottom: 30,
+        width: "100%",
+        height: 375,
+        backgroundColor: theme.colors.primary,
+        overflow: 'hidden',
+    },
+    expandedImageContainer: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.9)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+    expandedImage: {
+        width: '100%', 
+        height: '100%', 
+        maxWidth: '100%', 
+        maxHeight: '100%', 
+        margin: 20,
+    },
+    image: {
+        width: "100%",
+        height: "100%",
+        resizeMode: "cover",
+    },
+    buttonContainer: {
+        marginBottom: 20,
+    },
+    deleteButton: {
+        marginBottom: 15,
+        borderRadius: 50,
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.33,
         shadowRadius: 3,
         elevation: 6,
+        backgroundColor: theme.colors.button,
+        width: "100%",
     },
-    image: {
-        width: 350,
-        height: 350,
-        resizeMode: "contain",
-        borderRadius: 35,
-
-    },
-    buttonContainer: {
-        marginBottom: 20,
+    deleteButtonText: {
+        color: theme.colors.background,
+        fontWeight: "bold",
+        fontSize: 18,
     },
     generateButton: {
         marginBottom: 15,

@@ -37,8 +37,6 @@ const DreamsScreen = ({ navigation }) => {
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [isInitialRender, setIsInitialRender] = useState(true);
   const [isNavigatingToDream, setIsNavigatingToDream] = useState(false);
-  const [menuVisible, setMenuVisible] = useState(false);
-  const [selectedDreamId, setSelectedDreamId] = useState(null);
 
   useEffect(() => {
     fetchDreams();
@@ -97,42 +95,6 @@ const DreamsScreen = ({ navigation }) => {
     setIsNavigatingToDream(false);  // Add this line
   };
 
-  // Function to delete a dream
-  const deleteDream = async (dreamId) => {
-    const userJson = await SecureStore.getItemAsync('appleUser');
-    const user = JSON.parse(userJson);
-    try {
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
-        method: "DELETE",
-        headers: {
-          'Authorization': `Bearer ${user.id_token}`,
-        },
-      });
-      console.log('Server response:', response.status, await response.text());
-
-      if (response.ok) {
-        fetchDreams(); // Refresh the list after deletion
-        Alert.alert("Success", "Dream deleted successfully.");
-      } else {
-        Alert.alert("Error", "Failed to delete the dream.");
-      }
-    } catch (error) {
-      Alert.alert("Error", "Failed to delete the dream.");
-    }
-  };
-
-  // Function to confirm deletion
-  const confirmDeleteDream = (dreamId) => {
-    Alert.alert(
-      "Delete Dream",
-      "Are you sure you want to delete this dream?",
-      [
-        { text: "Cancel", style: "cancel" },
-        { text: "Delete", onPress: () => deleteDream(dreamId) },
-      ]
-    );
-  };
-
   const handleSearch = async () => {
     if (searchText.trim() === "") {
       Alert.alert("Warning", "Please enter a search term.");
@@ -169,16 +131,6 @@ const DreamsScreen = ({ navigation }) => {
     navigation.navigate("New Dream");
   };
 
-  const renderDropdownMenu = (dreamId) => {
-    return menuVisible && selectedDreamId === dreamId ? (
-      <View style={styles.dropdownMenu}>
-        <TouchableOpacity onPress={() => confirmDeleteDream(dreamId)}>
-          <Text style={styles.dropdownMenuItem}>Delete</Text>
-        </TouchableOpacity>
-      </View>
-    ) : null;
-  };
-
   const renderDreamItem = ({ item }) => {
     return (
       <View style={styles.dreamItemContainer}>
@@ -193,16 +145,6 @@ const DreamsScreen = ({ navigation }) => {
               resizeMode="cover"
             />
           )}
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedDreamId(item.id);
-              setMenuVisible(!menuVisible);
-            }}
-            style={styles.dotsButton}
-          >
-            <MaterialCommunityIcons name="dots-horizontal" size={24} color={theme.colors.button} />
-          </TouchableOpacity>
-          {renderDropdownMenu(item.id)}
           <View style={styles.dreamTextContent}>
             <Text style={styles.dreamItemText}>{item.metadata.title}</Text>
             <Text style={styles.dreamItemDate}>{item.metadata.date}</Text>
@@ -341,42 +283,12 @@ const getStyles = (theme) => StyleSheet.create({
     height: 120,
     position: 'relative',
   },
-  dotsButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    padding: 5,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 15,
-  },
-  dropdownMenu: {
-    position: 'absolute',
-    right: 22,
-    top: 42,
-    backgroundColor: '#fff',
-    borderRadius: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-  dropdownMenuItem: {
-    padding: 10,
-    fontSize: 16,
-    color: '#333',
-  },
   touchableArea: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-  },
-  menuContainer: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
   },
   dreamItemImage: {
     position: 'absolute',
