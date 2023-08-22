@@ -467,7 +467,7 @@ const DetailsScreen = ({ route, navigation }) => {
                     </View>
                     {/* Delete Button */}
                     <TouchableOpacity onPress={handleOpenDeleteModal} style={styles.deleteButtonContainer}>
-                        <MaterialCommunityIcons name="arrow-down" size={24} color={theme.colors.background} />
+                        <MaterialCommunityIcons name="pencil" size={24} color={theme.colors.background} />
                     </TouchableOpacity>
 
                     {/* Delete Modal */}
