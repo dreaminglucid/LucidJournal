@@ -32,6 +32,7 @@ const DetailsScreen = ({ route, navigation }) => {
     const [loadingStatus, setLoadingStatus] = useState("");
     const [generationStatus, setGenerationStatus] = useState("idle");
     const [isImageModalVisible, setImageModalVisible] = useState(false);
+    const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
     const animation = new Animated.Value(0);
 
     // Similar loading animation logic as in RegenerateScreen
@@ -288,14 +289,22 @@ const DetailsScreen = ({ route, navigation }) => {
         }
     };
 
-    // Function to handle opening the image in a modal
-    const handleOpenImageModal = () => {
-        setImageModalVisible(true);
+    // Function to handle opening the delete modal
+    const handleOpenDeleteModal = () => {
+        setDeleteModalVisible(true);
     };
 
-    // Function to handle closing the image modal
+    // Function to handle closing the delete modal
+    const handleCloseDeleteModal = () => {
+        setDeleteModalVisible(false);
+    };
+
     const handleCloseImageModal = () => {
         setImageModalVisible(false);
+    };
+
+    const handleOpenImageModal = () => {
+        setImageModalVisible(true);
     };
 
     // Function to delete a dream
@@ -380,7 +389,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-    
+
                             <Card style={styles.card}>
                                 <Card.Content>
                                     <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
@@ -392,7 +401,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-    
+
                             <Card style={styles.card}>
                                 <Card.Content>
                                     <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
@@ -404,7 +413,7 @@ const DetailsScreen = ({ route, navigation }) => {
                                     </View>
                                 </Card.Content>
                             </Card>
-    
+
                             {analysisResult && (
                                 <Card style={styles.card}>
                                     <Card.Content>
@@ -421,16 +430,6 @@ const DetailsScreen = ({ route, navigation }) => {
                         </>
                     )}
                     <View style={styles.buttonContainer}>
-                        {dream && dream.analysis && dream.image && (
-                            <Button
-                                mode="contained"
-                                onPress={confirmDeleteDream}
-                                style={styles.deleteButton}
-                                labelStyle={styles.deleteButtonText}
-                            >
-                                Delete
-                            </Button>
-                        )}
                         {dream && dream.analysis && dream.image ? (
                             <Button
                                 mode="contained"
@@ -466,6 +465,32 @@ const DetailsScreen = ({ route, navigation }) => {
                             </Button>
                         )}
                     </View>
+                    {/* Delete Button */}
+                    <TouchableOpacity onPress={handleOpenDeleteModal} style={styles.deleteButtonContainer}>
+                        <MaterialCommunityIcons name="arrow-down" size={24} color={theme.colors.background} />
+                    </TouchableOpacity>
+
+                    {/* Delete Modal */}
+                    <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={isDeleteModalVisible}
+                        onRequestClose={handleCloseDeleteModal}
+                    >
+                        <View style={styles.deleteModalContainer}>
+                            <Button
+                                mode="contained"
+                                onPress={confirmDeleteDream}
+                                style={styles.deleteModalButton}
+                                labelStyle={styles.deleteModalButtonText}
+                            >
+                                Delete
+                            </Button>
+                            <Button onPress={handleCloseDeleteModal} style={styles.cancelModalButton}>
+                                Cancel
+                            </Button>
+                        </View>
+                    </Modal>
                 </View>
             )}
         </ScrollView>
@@ -482,6 +507,7 @@ const getStyles = (theme) => StyleSheet.create({
         borderTopRightRadius: 30,
         backgroundColor: theme.colors.background,
         padding: 20,
+        paddingTop: 40,
         marginTop: -30,
     },
     card: {
@@ -554,10 +580,10 @@ const getStyles = (theme) => StyleSheet.create({
         padding: 20,
     },
     expandedImage: {
-        width: '100%', 
-        height: '100%', 
-        maxWidth: '100%', 
-        maxHeight: '100%', 
+        width: '100%',
+        height: '100%',
+        maxWidth: '100%',
+        maxHeight: '100%',
         margin: 20,
     },
     image: {
@@ -568,21 +594,52 @@ const getStyles = (theme) => StyleSheet.create({
     buttonContainer: {
         marginBottom: 20,
     },
-    deleteButton: {
-        marginBottom: 15,
+    deleteButtonContainer: {
+        position: 'absolute',
+        right: 15,
+        top: 15,
+        zIndex: 2,
+    },
+    deleteModalContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: theme.colors.card,
+        padding: 20,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+    },
+    deleteModalButton: {
         borderRadius: 50,
+        marginBottom: 10,
+        backgroundColor: theme.colors.button,
+    },
+    deleteModalButtonText: {
+        color: theme.colors.background,
+        fontWeight: "bold",
+        fontSize: 18,
+    },
+    deleteButtonContainer: {
+        position: 'absolute',
+        right: 35, // Adjust this to change the button's horizontal position
+        top: -20, // Adjust this to change the button's vertical position
+        zIndex: 2,
+        width: 50, // Diameter of the button
+        height: 50, // Diameter of the button
+        borderRadius: 25, // Half the diameter to make it circular
+        backgroundColor: theme.colors.button, // Match the background color of the button
+        justifyContent: 'center',
+        alignItems: 'center',
         shadowColor: "#000",
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.33,
         shadowRadius: 3,
         elevation: 6,
-        backgroundColor: theme.colors.button,
-        width: "100%",
     },
-    deleteButtonText: {
-        color: theme.colors.background,
-        fontWeight: "bold",
-        fontSize: 18,
+    cancelModalButton: {
+        textAlign: 'center',
+        color: theme.colors.button,
     },
     generateButton: {
         marginBottom: 15,
