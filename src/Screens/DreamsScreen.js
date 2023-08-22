@@ -62,7 +62,15 @@ const DreamsScreen = ({ navigation }) => {
         }
       });
       if (response.ok) {
-        const dreamsData = await response.json();
+        let dreamsData = await response.json();
+  
+        // Sort the dreams by date in descending order (most recent first)
+        dreamsData.sort((a, b) => {
+          const dateA = a.metadata.date.split('/').reverse().join('-');
+          const dateB = b.metadata.date.split('/').reverse().join('-');
+          return new Date(dateB) - new Date(dateA);
+        });
+  
         setDreams(dreamsData);
       } else {
         Alert.alert("Error", "Failed to fetch dreams.");
@@ -73,7 +81,7 @@ const DreamsScreen = ({ navigation }) => {
       setIsRefreshing(false);
       setIsLoading(false);
     }
-  };
+  };  
 
   const handleDreamSelection = async (dreamId) => {
     setIsNavigatingToDream(true);  // Add this line

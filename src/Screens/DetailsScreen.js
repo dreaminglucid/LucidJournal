@@ -160,15 +160,19 @@ const DetailsScreen = ({ route, navigation }) => {
     };
 
     const handleGenerateDream = () => {
+        if (generationStatus === "generating") return; // If already generating, return
+      
+        setGenerationStatus("generating"); // Set status to generating
         setIsLoading(true);
         setLoadingStatus("Generating Analysis & Image"); // Set loading status
-
+      
         Promise.all([fetchDreamAnalysis(), fetchDreamImage()])
             .then(([analysis, image]) => {
                 setAnalysisResult(analysis);
                 setImageData(image);
                 setIsLoading(false);
                 setLoadingStatus("");
+                setGenerationStatus("success"); // Set status to success after generation
             })
             .catch((error) => {
                 console.error("Error during dream generation:", error);
@@ -178,24 +182,9 @@ const DetailsScreen = ({ route, navigation }) => {
                 );
                 setIsLoading(false);
                 setLoadingStatus("");
+                setGenerationStatus("idle"); // Reset status to idle on error
             });
-
-        fetchDreamImage()
-            .then((image) => {
-                setImageData(image);
-                if (!analysisResult) setIsLoading(false);  // Only set loading to false if analysis data has also been fetched
-                setLoadingStatus("");
-            })
-            .catch((error) => {
-                console.error("Error during image generation:", error);
-                Alert.alert(
-                    "Error",
-                    "An unexpected error occurred during image generation.",
-                );
-                setIsLoading(false);
-                setLoadingStatus("");
-            });
-    };
+      };      
 
     useEffect(() => {
         if (analysisResult && imageData) {
@@ -359,15 +348,6 @@ const DetailsScreen = ({ route, navigation }) => {
                     <Image source={{ uri: imageData }} style={styles.expandedImage} resizeMode="contain" />
                 </TouchableOpacity>
             </Modal>
-            {imageData ? (
-                <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
-                    <Image source={{ uri: imageData }} style={styles.image} />
-                </TouchableOpacity>
-            ) : (
-                <View style={styles.imagePlaceholder}>
-                    <MaterialCommunityIcons name="image-off" size={48} color="#aaa" />
-                </View>
-            )}
             {isLoading ? (
                 <View style={styles.loadingContainer}>
                     <ActivityIndicator size="large" color={theme.colors.button} />
@@ -379,129 +359,140 @@ const DetailsScreen = ({ route, navigation }) => {
                     </View>
                 </View>
             ) : (
-                <View style={styles.detailsContainer}>
-                    {dream && (
-                        <>
-                            <Card style={styles.card}>
-                                <Card.Content>
-                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                            <MaterialCommunityIcons name="book" color={theme.colors.button} size={24} />
-                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Title</Subheading>
-                                        </View>
-                                        <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
-                                    </View>
-                                </Card.Content>
-                            </Card>
-
-                            <Card style={styles.card}>
-                                <Card.Content>
-                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                            <MaterialCommunityIcons name="calendar" color={theme.colors.button} size={24} />
-                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Date</Subheading>
-                                        </View>
-                                        <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
-                                    </View>
-                                </Card.Content>
-                            </Card>
-
-                            <Card style={styles.card}>
-                                <Card.Content>
-                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                            <MaterialCommunityIcons name="note-text" color={theme.colors.button} size={24} />
-                                            <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Entry</Subheading>
-                                        </View>
-                                        <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
-                                    </View>
-                                </Card.Content>
-                            </Card>
-
-                            <Card style={styles.card}>
-                                <Card.Content>
-                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
-                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                            <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
-                                            <Subheading style={[styles.analysisLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Analysis</Subheading>
-                                        </View>
-                                        {analysisResult ? (
-                                            <Text style={styles.analysisResult}>{analysisResult}</Text>
-                                        ) : (
-                                            <Text style={styles.analysisPlaceholder}>No analysis generated</Text>
-                                        )}
-                                    </View>
-                                </Card.Content>
-                            </Card>
-                        </>
+                <>
+                    {imageData ? (
+                        <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
+                            <Image source={{ uri: imageData }} style={styles.image} />
+                        </TouchableOpacity>
+                    ) : (
+                        <View style={styles.imagePlaceholder}>
+                            <MaterialCommunityIcons name="image-off" size={48} color="#aaa" />
+                        </View>
                     )}
-                    <View style={styles.buttonContainer}>
-                        {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
-                            <Button
-                                mode="contained"
-                                onPress={handleSaveAnalysisAndImage}
-                                style={styles.saveButton}
-                                labelStyle={styles.saveButtonText}
-                            >
-                                Save
-                            </Button>
-                        )}
-                    </View>
-                    {/* Delete Button */}
-                    <TouchableOpacity onPress={handleOpenDeleteModal} style={styles.deleteButtonContainer}>
-                        <MaterialCommunityIcons name="pencil" size={24} color={theme.colors.background} />
-                    </TouchableOpacity>
+                    <View style={styles.detailsContainer}>
+                        {dream && (
+                            <>
+                                <Card style={styles.card}>
+                                    <Card.Content>
+                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <MaterialCommunityIcons name="book" color={theme.colors.button} size={24} />
+                                                <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Title</Subheading>
+                                            </View>
+                                            <Text style={styles.dreamTitle}>{dream.metadata.title}</Text>
+                                        </View>
+                                    </Card.Content>
+                                </Card>
 
-                    {/* Delete Modal */}
-                    <Modal
-                        animationType="slide"
-                        transparent={true}
-                        visible={isDeleteModalVisible}
-                        onRequestClose={handleCloseDeleteModal}
-                    >
-                        <View style={styles.deleteModalContainer}>
-                            {dream && dream.analysis && dream.image ? (
+                                <Card style={styles.card}>
+                                    <Card.Content>
+                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <MaterialCommunityIcons name="calendar" color={theme.colors.button} size={24} />
+                                                <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Date</Subheading>
+                                            </View>
+                                            <Text style={styles.dreamDate}>{dream.metadata.date}</Text>
+                                        </View>
+                                    </Card.Content>
+                                </Card>
+
+                                <Card style={styles.card}>
+                                    <Card.Content>
+                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <MaterialCommunityIcons name="note-text" color={theme.colors.button} size={24} />
+                                                <Subheading style={[styles.subLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Entry</Subheading>
+                                            </View>
+                                            <Text style={styles.dreamEntry}>{dream.metadata.entry}</Text>
+                                        </View>
+                                    </Card.Content>
+                                </Card>
+
+                                <Card style={styles.card}>
+                                    <Card.Content>
+                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                                <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
+                                                <Subheading style={[styles.analysisLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Analysis</Subheading>
+                                            </View>
+                                            {analysisResult ? (
+                                                <Text style={styles.analysisResult}>{analysisResult}</Text>
+                                            ) : (
+                                                <Text style={styles.analysisPlaceholder}>No analysis generated</Text>
+                                            )}
+                                        </View>
+                                    </Card.Content>
+                                </Card>
+                            </>
+                        )}
+                        <View style={styles.buttonContainer}>
+                            {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
                                 <Button
                                     mode="contained"
-                                    onPress={() => {
-                                        navigation.navigate("Regenerate", {
-                                            dreamId,
-                                            dreamData: dream,
-                                        });
-                                        handleCloseDeleteModal(); // Close modal after navigating
-                                    }}
-                                    style={styles.generateButton}
-                                    labelStyle={styles.generateButtonText}
+                                    onPress={handleSaveAnalysisAndImage}
+                                    style={styles.saveButton}
+                                    labelStyle={styles.saveButtonText}
                                 >
-                                    Edit
-                                </Button>
-                            ) : (
-                                <Button
-                                    mode="contained"
-                                    onPress={() => {
-                                        handleGenerateDream();
-                                        handleCloseDeleteModal(); // Close modal after generating
-                                    }}
-                                    style={styles.generateButton}
-                                    labelStyle={styles.generateButtonText}
-                                >
-                                    Generate
+                                    Save
                                 </Button>
                             )}
-                            <Button
-                                mode="contained"
-                                onPress={confirmDeleteDream}
-                                style={[styles.deleteModalButton, styles.deleteModalDeleteButton]} // Added specific style for delete button
-                                labelStyle={styles.deleteModalButtonText}
-                            >
-                                Delete
-                            </Button>
-                            <Button onPress={handleCloseDeleteModal} style={styles.cancelModalButton}>
-                                Cancel
-                            </Button>
                         </View>
-                    </Modal>
-                </View>
+                        {/* Delete Button */}
+                        <TouchableOpacity onPress={handleOpenDeleteModal} style={styles.deleteButtonContainer}>
+                            <MaterialCommunityIcons name="pencil" size={24} color={theme.colors.background} />
+                        </TouchableOpacity>
+
+                        {/* Delete Modal */}
+                        <Modal
+                            animationType="slide"
+                            transparent={true}
+                            visible={isDeleteModalVisible}
+                            onRequestClose={handleCloseDeleteModal}
+                        >
+                            <View style={styles.deleteModalContainer}>
+                                {dream && dream.analysis && dream.image ? (
+                                    <Button
+                                        mode="contained"
+                                        onPress={() => {
+                                            navigation.navigate("Regenerate", {
+                                                dreamId,
+                                                dreamData: dream,
+                                            });
+                                            handleCloseDeleteModal(); // Close modal after navigating
+                                        }}
+                                        style={styles.generateButton}
+                                        labelStyle={styles.generateButtonText}
+                                    >
+                                        Edit
+                                    </Button>
+                                ) : (
+                                    <Button
+                                        mode="contained"
+                                        onPress={() => {
+                                            handleGenerateDream();
+                                            handleCloseDeleteModal(); // Close modal after generating
+                                        }}
+                                        style={styles.generateButton}
+                                        labelStyle={styles.generateButtonText}
+                                    >
+                                        Generate
+                                    </Button>
+                                )}
+                                <Button
+                                    mode="contained"
+                                    onPress={confirmDeleteDream}
+                                    style={[styles.deleteModalButton, styles.deleteModalDeleteButton]} // Added specific style for delete button
+                                    labelStyle={styles.deleteModalButtonText}
+                                >
+                                    Delete
+                                </Button>
+                                <Button onPress={handleCloseDeleteModal} style={styles.cancelModalButton}>
+                                    Cancel
+                                </Button>
+                            </View>
+                        </Modal>
+                    </View>
+                </>
             )}
         </ScrollView>
     );
