@@ -359,10 +359,14 @@ const DetailsScreen = ({ route, navigation }) => {
                     <Image source={{ uri: imageData }} style={styles.expandedImage} resizeMode="contain" />
                 </TouchableOpacity>
             </Modal>
-            {imageData && (
+            {imageData ? (
                 <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
                     <Image source={{ uri: imageData }} style={styles.image} />
                 </TouchableOpacity>
+            ) : (
+                <View style={styles.imagePlaceholder}>
+                    <MaterialCommunityIcons name="image-off" size={48} color="#aaa" />
+                </View>
             )}
             {isLoading ? (
                 <View style={styles.loadingContainer}>
@@ -414,46 +418,24 @@ const DetailsScreen = ({ route, navigation }) => {
                                 </Card.Content>
                             </Card>
 
-                            {analysisResult && (
-                                <Card style={styles.card}>
-                                    <Card.Content>
-                                        <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
-                                            <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                                                <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
-                                                <Subheading style={[styles.analysisLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Analysis</Subheading>
-                                            </View>
-                                            <Text style={styles.analysisResult}>{analysisResult}</Text>
+                            <Card style={styles.card}>
+                                <Card.Content>
+                                    <View style={[styles.infoBlock, { flexDirection: 'column' }]}>
+                                        <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                                            <MaterialCommunityIcons name="brain" color={theme.colors.button} size={24} />
+                                            <Subheading style={[styles.analysisLabel, { color: theme.colors.button, marginLeft: 10 }]}>Dream Analysis</Subheading>
                                         </View>
-                                    </Card.Content>
-                                </Card>
-                            )}
+                                        {analysisResult ? (
+                                            <Text style={styles.analysisResult}>{analysisResult}</Text>
+                                        ) : (
+                                            <Text style={styles.analysisPlaceholder}>No analysis generated</Text>
+                                        )}
+                                    </View>
+                                </Card.Content>
+                            </Card>
                         </>
                     )}
                     <View style={styles.buttonContainer}>
-                        {dream && dream.analysis && dream.image ? (
-                            <Button
-                                mode="contained"
-                                onPress={() =>
-                                    navigation.navigate("Regenerate", {
-                                        dreamId,
-                                        dreamData: dream,
-                                    })
-                                }
-                                style={styles.generateButton}
-                                labelStyle={styles.generateButtonText}
-                            >
-                                Regenerate
-                            </Button>
-                        ) : (
-                            <Button
-                                mode="contained"
-                                onPress={handleGenerateDream}
-                                style={styles.generateButton}
-                                labelStyle={styles.generateButtonText}
-                            >
-                                Generate
-                            </Button>
-                        )}
                         {analysisResult && imageData && !(dream && dream.analysis && dream.image) && (
                             <Button
                                 mode="contained"
@@ -478,10 +460,38 @@ const DetailsScreen = ({ route, navigation }) => {
                         onRequestClose={handleCloseDeleteModal}
                     >
                         <View style={styles.deleteModalContainer}>
+                            {dream && dream.analysis && dream.image ? (
+                                <Button
+                                    mode="contained"
+                                    onPress={() => {
+                                        navigation.navigate("Regenerate", {
+                                            dreamId,
+                                            dreamData: dream,
+                                        });
+                                        handleCloseDeleteModal(); // Close modal after navigating
+                                    }}
+                                    style={styles.generateButton}
+                                    labelStyle={styles.generateButtonText}
+                                >
+                                    Edit
+                                </Button>
+                            ) : (
+                                <Button
+                                    mode="contained"
+                                    onPress={() => {
+                                        handleGenerateDream();
+                                        handleCloseDeleteModal(); // Close modal after generating
+                                    }}
+                                    style={styles.generateButton}
+                                    labelStyle={styles.generateButtonText}
+                                >
+                                    Generate
+                                </Button>
+                            )}
                             <Button
                                 mode="contained"
                                 onPress={confirmDeleteDream}
-                                style={styles.deleteModalButton}
+                                style={[styles.deleteModalButton, styles.deleteModalDeleteButton]} // Added specific style for delete button
                                 labelStyle={styles.deleteModalButtonText}
                             >
                                 Delete
@@ -551,6 +561,17 @@ const getStyles = (theme) => StyleSheet.create({
         marginBottom: 10,
         color: theme.colors.text,
     },
+    imagePlaceholder: {
+        width: "100%",
+        height: 375,
+        backgroundColor: "#ddd",
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    analysisPlaceholder: {
+        fontSize: 18,
+        color: "#aaa",
+    },
     analysisLabel: {
         fontSize: 20,
         fontWeight: "bold",
@@ -594,12 +615,6 @@ const getStyles = (theme) => StyleSheet.create({
     buttonContainer: {
         marginBottom: 20,
     },
-    deleteButtonContainer: {
-        position: 'absolute',
-        right: 15,
-        top: 15,
-        zIndex: 2,
-    },
     deleteModalContainer: {
         position: 'absolute',
         bottom: 0,
@@ -613,7 +628,7 @@ const getStyles = (theme) => StyleSheet.create({
     deleteModalButton: {
         borderRadius: 50,
         marginBottom: 10,
-        backgroundColor: theme.colors.button,
+        backgroundColor: 'red',
     },
     deleteModalButtonText: {
         color: theme.colors.background,
