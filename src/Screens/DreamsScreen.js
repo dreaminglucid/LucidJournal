@@ -14,8 +14,9 @@ import {
 } from "react-native";
 
 // UI Component Libraries
-import { FAB, Menu, Provider } from "react-native-paper";
+import { FAB, Provider } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as FileSystem from 'expo-file-system';
 
 // Other Libraries
 import { useDebounce } from "use-debounce";
@@ -71,6 +72,14 @@ const DreamsScreen = ({ navigation }) => {
           return new Date(dateB) - new Date(dateA);
         });
   
+        // Fetch local URIs
+        for (const dream of dreamsData) {
+          const localURI = await fetchLocalImageURI(dream.id);
+          if (localURI) {
+            dream.localImageURI = localURI;
+          }
+        }
+  
         setDreams(dreamsData);
       } else {
         Alert.alert("Error", "Failed to fetch dreams.");
@@ -81,6 +90,20 @@ const DreamsScreen = ({ navigation }) => {
       setIsRefreshing(false);
       setIsLoading(false);
     }
+  };
+  
+  const fetchLocalImageURI = async (dreamId) => {
+    try {
+      // Check for the file by dream ID in the local file system
+      const fileUri = FileSystem.documentDirectory + `image_${dreamId}.jpg`;
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        return fileUri;
+      }
+    } catch (error) {
+      console.error('Error fetching local image:', error);
+    }
+    return null;
   };  
 
   const handleDreamSelection = async (dreamId) => {
@@ -140,15 +163,16 @@ const DreamsScreen = ({ navigation }) => {
   };
 
   const renderDreamItem = ({ item }) => {
+    const imageURI = item.localImageURI || item.image; // Use local image if available, else use image from the server
     return (
       <View style={styles.dreamItemContainer}>
         <TouchableOpacity
           style={styles.dreamContent}
           onPress={() => handleDreamSelection(item.id)}
         >
-          {item.image && (
+          {imageURI && (
             <Image
-              source={{ uri: item.image }}
+              source={{ uri: imageURI }}
               style={styles.dreamItemImage}
               resizeMode="cover"
             />
@@ -160,7 +184,7 @@ const DreamsScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
     );
-  };
+  };  
 
   const renderEmptyComponent = () => {
     return (

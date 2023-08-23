@@ -17,7 +17,10 @@ import { Button, Card, Subheading } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ThemeContext } from '../Contexts/ThemeContext';
 import * as SecureStore from 'expo-secure-store';
+import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system';
 import { API_URL } from "../../config";
+import 'react-native-url-polyfill/auto';
 
 const DetailsScreen = ({ route, navigation }) => {
     const { theme } = useContext(ThemeContext);
@@ -34,6 +37,19 @@ const DetailsScreen = ({ route, navigation }) => {
     const [isImageModalVisible, setImageModalVisible] = useState(false);
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
     const animation = new Animated.Value(0);
+    // Local state for the local image URI
+    const [localImageURI, setLocalImageURI] = useState(null);
+
+    // Prefetch the image for caching
+    useEffect(() => {
+        if (localImageURI || (imageData && imageData.startsWith('http'))) {
+            const uriToPrefetch = localImageURI || imageData;
+            console.log("Prefetching image from URI:", uriToPrefetch);
+            Image.prefetch(uriToPrefetch).catch((error) =>
+                console.error("Error prefetching image:", error)
+            );
+        }
+    }, [imageData, localImageURI]);
 
     // Similar loading animation logic as in RegenerateScreen
     useEffect(() => {
@@ -87,6 +103,7 @@ const DetailsScreen = ({ route, navigation }) => {
     }, [generationStatus]);
 
     const fetchDream = async () => {
+        setLocalImageURI(null);
         // Check if dream data was passed from the previous screen
         if (route.params && route.params.dreamData) {
             // If yes, use the passed data
@@ -107,8 +124,12 @@ const DetailsScreen = ({ route, navigation }) => {
                 analysisText = analysisText.replace(/\\"/g, '"').replace(/\\n/g, "\n");
                 setAnalysisResult(analysisText);
             }
-            if ("image" in dreamData) {
-                setImageData(dreamData.image);
+            const localURI = await fetchLocalImageURI();
+            if (localURI) {
+                setLocalImageURI(localURI);
+                console.log("Image loaded from local URI:", localURI);
+            } else if (imageData) {
+                console.log("Image loaded from server:", imageData);
             }
             setIsRefreshing(false);
         } else {
@@ -161,11 +182,11 @@ const DetailsScreen = ({ route, navigation }) => {
 
     const handleGenerateDream = () => {
         if (generationStatus === "generating") return; // If already generating, return
-      
+
         setGenerationStatus("generating"); // Set status to generating
         setIsLoading(true);
         setLoadingStatus("Generating Analysis & Image"); // Set loading status
-      
+
         Promise.all([fetchDreamAnalysis(), fetchDreamImage()])
             .then(([analysis, image]) => {
                 setAnalysisResult(analysis);
@@ -184,7 +205,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 setLoadingStatus("");
                 setGenerationStatus("idle"); // Reset status to idle on error
             });
-      };      
+    };
 
     useEffect(() => {
         if (analysisResult && imageData) {
@@ -254,6 +275,7 @@ const DetailsScreen = ({ route, navigation }) => {
 
     const handleSaveAnalysisAndImage = async () => {
         try {
+            // Save the analysis and image to the server as before
             const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
                 method: "PUT",
                 headers: {
@@ -269,6 +291,9 @@ const DetailsScreen = ({ route, navigation }) => {
                     analysis: analysisResult,
                     image: imageData,
                 });
+
+                // Now, save the image to the "Dreams" album in the device's media library
+                saveImageToLibrary(imageData);
             } else {
                 Alert.alert("Error", "Failed to save analysis and image.");
             }
@@ -276,6 +301,57 @@ const DetailsScreen = ({ route, navigation }) => {
             console.error("Error:", error);
             Alert.alert("Error", "An unexpected error occurred.");
         }
+    };
+
+    const saveImageToLibrary = async (imageURI) => {
+        try {
+            // Ensure permissions
+            const { status } = await MediaLibrary.requestPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'Unable to access media library.');
+                return;
+            }
+
+            // Download if it's a URL
+            let localUri = imageURI;
+            if (imageURI.startsWith('http')) {
+                const { uri } = await FileSystem.downloadAsync(imageURI, FileSystem.documentDirectory + `image_${dreamId}.jpg`);
+                localUri = uri;
+            }
+
+            // Save to media library
+            const asset = await MediaLibrary.createAssetAsync(localUri);
+
+            // Check "Dreams" album
+            let album = await MediaLibrary.getAlbumAsync('Dreams');
+            if (album === null) {
+                album = await MediaLibrary.createAlbumAsync('Dreams', asset, false);
+            } else {
+                await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+            }
+
+            // Update the local image URI
+            setLocalImageURI(localUri);
+
+            Alert.alert('Success', 'Image saved to "Dreams" album!');
+        } catch (error) {
+            console.error('Error saving image:', error);
+            Alert.alert('Error', 'Failed to save image to library.');
+        }
+    };
+
+    const fetchLocalImageURI = async () => {
+        try {
+            // Check for the file by dream ID in the local file system
+            const fileUri = FileSystem.documentDirectory + `image_${dreamId}.jpg`;
+            const fileInfo = await FileSystem.getInfoAsync(fileUri);
+            if (fileInfo.exists) {
+                return fileUri;
+            }
+        } catch (error) {
+            console.error('Error fetching local image:', error);
+        }
+        return null;
     };
 
     // Function to handle opening the delete modal
@@ -331,6 +407,30 @@ const DetailsScreen = ({ route, navigation }) => {
         );
     };
 
+    const renderImage = () => {
+        let imageSource = localImageURI || imageData;
+        if (imageSource) {
+            return (
+                <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
+                    <Image
+                        source={{ uri: imageSource }}
+                        style={styles.image}
+                        resizeMode="contain"
+                        onError={(e) => {
+                            console.error("Error loading image:", e.nativeEvent.error);
+                        }}
+                    />
+                </TouchableOpacity>
+            );
+        } else {
+            return (
+                <View style={styles.imagePlaceholder}>
+                    <MaterialCommunityIcons name="image-off" size={48} color="#aaa" />
+                </View>
+            );
+        }
+    };
+
     return (
         <ScrollView
             contentContainerStyle={styles.container}
@@ -345,7 +445,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 onRequestClose={handleCloseImageModal}
             >
                 <TouchableOpacity onPress={handleCloseImageModal} style={styles.expandedImageContainer}>
-                    <Image source={{ uri: imageData }} style={styles.expandedImage} resizeMode="contain" />
+                    <Image source={{ uri: localImageURI || imageData }} style={styles.expandedImage} resizeMode="contain" />
                 </TouchableOpacity>
             </Modal>
             {isLoading ? (
@@ -360,15 +460,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 </View>
             ) : (
                 <>
-                    {imageData ? (
-                        <TouchableOpacity onPress={handleOpenImageModal} style={styles.imageContainer}>
-                            <Image source={{ uri: imageData }} style={styles.image} />
-                        </TouchableOpacity>
-                    ) : (
-                        <View style={styles.imagePlaceholder}>
-                            <MaterialCommunityIcons name="image-off" size={48} color="#aaa" />
-                        </View>
-                    )}
+                    {renderImage()}
                     <View style={styles.detailsContainer}>
                         {dream && (
                             <>
@@ -599,9 +691,8 @@ const getStyles = (theme) => StyleSheet.create({
         margin: 20,
     },
     image: {
-        width: "100%",
-        height: "100%",
-        resizeMode: "cover",
+        width: '100%',
+        height: 390,
     },
     buttonContainer: {
         marginBottom: 20,

@@ -17,6 +17,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import { ThemeContext } from '../Contexts/ThemeContext';
 import * as SecureStore from 'expo-secure-store';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 
 // Application Specific Imports
 import { API_URL } from "../../config";
@@ -73,6 +75,15 @@ const RegenerateScreen = ({ route, navigation }) => {
       handleRegenerateImage();
     }
   }, [dream, shouldRegenerateImage]);
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Error', 'Media Library permissions are required to move images.');
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     if (isLoading) {
@@ -159,6 +170,7 @@ const RegenerateScreen = ({ route, navigation }) => {
     setLoadingStatus("Regenerating Image");
     generateDreamImage()
       .then((newImageData) => {
+        // Just set the new image data without overwriting the existing one
         setImageData(newImageData);
         setShouldRegenerateImage(false);
         setCanSave(true);
@@ -175,6 +187,55 @@ const RegenerateScreen = ({ route, navigation }) => {
         setIsLoading(false);
         setLoadingStatus("");
       });
+  };
+
+  const overwriteSaveImage = async (dreamId, newImageData) => {
+    // Define a temporary URI for downloading
+    const tempUri = FileSystem.documentDirectory + `temp_image_${dreamId}.jpg`;
+
+    // If it's a URL, download the image to a temporary URI
+    let localUri = newImageData;
+    if (newImageData.startsWith('http')) {
+      const { uri } = await FileSystem.downloadAsync(newImageData, tempUri);
+      localUri = uri;
+    }
+
+    // Fetch the existing URI for the dream image
+    const oldImageURI = await fetchLocalImageURI(dreamId);
+    if (oldImageURI) {
+      // Move the old image to the "Old Dreams" album
+      await moveOldImage(oldImageURI);
+
+      // Copy the new image from the temporary URI to the old image URI
+      await FileSystem.copyAsync({
+        from: localUri,
+        to: oldImageURI,
+      });
+
+      // Delete the temporary file if it was downloaded
+      if (localUri !== newImageData) {
+        await FileSystem.deleteAsync(tempUri);
+      }
+
+      // Create asset from the new image URI
+      const newAsset = await MediaLibrary.createAssetAsync(oldImageURI);
+
+      // Retrieve or create the "Dreams" album
+      const dreamsAlbum = await MediaLibrary.getAlbumAsync('Dreams') || await MediaLibrary.createAlbumAsync('Dreams', newAsset, false);
+
+      // Add the new asset to the "Dreams" album
+      const success = await MediaLibrary.addAssetsToAlbumAsync([newAsset], dreamsAlbum, false);
+
+      if (!success) {
+        console.warn('Failed to add asset to "Dreams" album.');
+      }
+
+      console.log("New image saved to URI:", oldImageURI);
+      return oldImageURI;
+    } else {
+      console.error("Error: Could not find existing image for dreamId:", dreamId);
+      throw new Error("Failed to overwrite image. Existing image not found.");
+    }
   };
 
   const generateDreamAnalysis = async () => {
@@ -221,34 +282,115 @@ const RegenerateScreen = ({ route, navigation }) => {
   };
 
   const handleOverwriteSave = async () => {
-    try {
-      const userJson = await SecureStore.getItemAsync('appleUser');
-      const user = JSON.parse(userJson);
+    Alert.alert(
+      "Overwrite Confirmation",
+      "Are you sure you want to overwrite the save? Old images will not be lost.",
+      [
+        { text: "Cancel", onPress: () => { }, style: "cancel" },
+        {
+          text: "Yes",
+          onPress: async () => {
+            try {
+              // Overwrite the image with the new image data
+              const newImageURI = await overwriteSaveImage(dreamId, imageData);
 
-      const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id_token}`,  // Add this line
+              // Update the server with new analysis and new image URI
+              const userJson = await SecureStore.getItemAsync('appleUser');
+              const user = JSON.parse(userJson);
+
+              const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  "Authorization": `Bearer ${user.id_token}`,
+                },
+                body: JSON.stringify({ analysis: analysisResult, image: newImageURI }), // Use the newly generated image URI
+              });
+
+              if (response.ok) {
+                Alert.alert("Success", "Analysis and image overwritten successfully!");
+                setDream({
+                  ...dream,
+                  analysis: analysisResult,
+                  image: newImageURI, // The new URI now contains the new image
+                });
+                // Go back to DetailsScreen after successful save
+                navigation.navigate("Details", { dreamId, dreamUpdated: true });
+              } else {
+                Alert.alert("Error", "Failed to overwrite analysis and image.");
+              }
+            } catch (error) {
+              console.error("Error:", error);
+              Alert.alert("Error", "An unexpected error occurred.");
+            }
+          },
         },
-        body: JSON.stringify({ analysis: analysisResult, image: imageData }),
-      });
+      ],
+      { cancelable: false }
+    );
+  };
 
-      if (response.ok) {
-        Alert.alert("Success", "Analysis and image overwritten successfully!");
-        setDream({
-          ...dream,
-          analysis: analysisResult,
-          image: imageData,
-        });
-        // Go back to DetailsScreen after successful save
-        navigation.navigate("Details", { dreamId, dreamUpdated: true });
+  const fetchLocalImageURI = async (dreamId) => {
+    try {
+      const fileUri = FileSystem.documentDirectory + `image_${dreamId}.jpg`;
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (fileInfo.exists) {
+        console.log("Image found at URI:", fileUri);
+        return fileUri;
       } else {
-        Alert.alert("Error", "Failed to overwrite analysis and image.");
+        console.warn("Image does not exist at URI:", fileUri);
       }
     } catch (error) {
-      console.error("Error:", error);
-      Alert.alert("Error", "An unexpected error occurred.");
+      console.error('Error fetching local image:', error);
+    }
+    return null;
+  };
+
+  const createOldDreamsAlbum = async () => {
+    const albumName = 'Old Dreams';
+    const oldDreamsAlbum = await MediaLibrary.getAlbumAsync(albumName);
+    if (oldDreamsAlbum) {
+      return oldDreamsAlbum;
+    } else {
+      return await MediaLibrary.createAlbumAsync(albumName, false);
+    }
+  };
+
+  const moveOldImage = async (oldImageURI) => {
+    try {
+      // Create asset from the old image URI
+      const asset = await MediaLibrary.createAssetAsync(oldImageURI);
+
+      // Retrieve the "Dreams" album
+      const dreamsAlbum = await MediaLibrary.getAlbumAsync('Dreams');
+      if (!dreamsAlbum) {
+        console.warn('Dreams album not found.');
+        return null;
+      }
+
+      // Remove asset from the "Dreams" album
+      const successRemove = await MediaLibrary.removeAssetsFromAlbumAsync([asset], dreamsAlbum);
+      if (!successRemove) {
+        console.warn('Failed to remove asset from "Dreams" album.');
+      } else {
+        console.log('Successfully removed asset from "Dreams" album.');
+      }
+
+      // Create (or find) the album for old dreams
+      const oldDreamsAlbum = await createOldDreamsAlbum();
+
+      // Add asset to the old dreams album
+      const successAdd = await MediaLibrary.addAssetsToAlbumAsync([asset], oldDreamsAlbum, false);
+      if (!successAdd) {
+        console.warn('Failed to add asset to "Old Dreams" album:', oldDreamsAlbum.title);
+        return null;
+      }
+
+      console.log("Old image moved to album:", oldDreamsAlbum.title);
+      return oldImageURI;
+    } catch (error) {
+      console.error('Error moving old image:', error);
+      return null;
     }
   };
 
