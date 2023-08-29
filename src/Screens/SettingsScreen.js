@@ -17,6 +17,8 @@ const SettingsScreen = () => {
   const [showImageStyleOptions, setShowImageStyleOptions] = useState(false);
   const [currentImageQuality, setImageQuality] = useState('low');
   const [showImageQualityOptions, setShowImageQualityOptions] = useState(false);
+  const [currentIntelligenceLevel, setIntelligenceLevel] = useState('general');
+  const [showIntelligenceLevelOptions, setShowIntelligenceLevelOptions] = useState(false);
 
   const themeSwitches = [
     { theme: 'dark', icon: 'weather-night' },
@@ -39,9 +41,18 @@ const SettingsScreen = () => {
     { quality: 'medium', resolution: '512x512', description: 'Medium', icon: 'blur-linear' },
     { quality: 'high', resolution: '1024x1024', description: 'High', icon: 'brightness-6' },
   ];
+  // Intelligence level options
+  const intelligenceLevels = [
+    { level: 'simplified', description: 'Simplified' },
+    { level: 'general', description: 'General' },
+    { level: 'detailed', description: 'Detailed' },
+    { level: 'expert', description: 'Expert' },
+    { level: 'research', description: 'Research' },
+  ];
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      // Fetch user token
       const userJson = await SecureStore.getItemAsync('appleUser');
       const user = JSON.parse(userJson);
       setUserToken(user.id_token);
@@ -52,9 +63,16 @@ const SettingsScreen = () => {
         setImageStyle(savedImageStyle);
       }
 
+      // Fetch the saved image quality
       const savedImageQuality = await SecureStore.getItemAsync('selectedImageQuality');
       if (savedImageQuality) {
         setImageQuality(savedImageQuality);
+      }
+
+      // Fetch the saved intelligence level
+      const savedIntelligenceLevel = await SecureStore.getItemAsync('selectedIntelligenceLevel');
+      if (savedIntelligenceLevel) {
+        setIntelligenceLevel(savedIntelligenceLevel);
       }
     };
 
@@ -77,6 +95,13 @@ const SettingsScreen = () => {
     setShowImageQualityOptions(prev => !prev);
     setShowThemeOptions(false);
     setShowImageStyleOptions(false);
+  };
+
+  const toggleIntelligenceLevelOptions = () => {
+    setShowIntelligenceLevelOptions(prev => !prev);
+    setShowThemeOptions(false);
+    setShowImageStyleOptions(false);
+    setShowImageQualityOptions(false);
   };
 
   const updateImageStyle = async (style) => {
@@ -142,15 +167,15 @@ const SettingsScreen = () => {
 
   const exportDreamsToPDF = async () => {
     console.log("Starting exportDreamsToPDF...");
-  
+
     if (!userToken) {
       console.error("User token not found!");
       Alert.alert("Error", "Failed to fetch user token.");
       return;
     }
-  
+
     console.log("User token found, initiating fetch request...");
-  
+
     try {
       const response = await fetch(`${API_URL}/api/dreams/export/pdf`, {
         method: 'GET',
@@ -158,15 +183,15 @@ const SettingsScreen = () => {
           'Authorization': `Bearer ${userToken}`
         },
       });
-  
+
       if (!response.ok) {
         console.error(`Fetch failed with status: ${response.status}`);
         throw new Error("Network response was not ok.");
       }
-  
+
       console.log("Response received, fetching blob...");
       const blob = await response.blob();
-  
+
       console.log("Blob received, converting to file...");
       const uri = FileSystem.cacheDirectory + 'dreams.pdf';
       const reader = new FileReader();
@@ -176,23 +201,23 @@ const SettingsScreen = () => {
           encoding: FileSystem.EncodingType.Base64,
         });
         console.log("File written successfully to:", uri);
-  
+
         // Check if sharing is available
         if (!(await Sharing.isAvailableAsync())) {
           Alert.alert(`Uh oh, sharing isn't available on your platform`);
           return;
         }
-  
+
         // Share the file
         const sharingResult = await Sharing.shareAsync(uri);
-  
+
         // If the user dismissed the sharing dialog, delete the temporary file
         if (sharingResult.dismissedAction) {
           await FileSystem.deleteAsync(uri);
           console.log("Sharing dismissed. Temporary file deleted.");
           return;
         }
-  
+
         Alert.alert("Success", "Dreams exported successfully.");
       };
       reader.readAsDataURL(blob);
@@ -200,9 +225,38 @@ const SettingsScreen = () => {
       console.error("An error occurred:", error);
       Alert.alert("Error", "Failed to export dreams to PDF.");
     }
-  
+
     console.log("exportDreamsToPDF finished.");
-  };  
+  };
+
+  const updateIntelligenceLevel = async (level) => {
+    if (!userToken) {
+      Alert.alert("Error", "Failed to fetch user token.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/api/user/intelligence-level`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userToken}`
+        },
+        body: JSON.stringify({ level })
+      });
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok.");
+      }
+
+      await SecureStore.setItemAsync('selectedIntelligenceLevel', level);
+      setIntelligenceLevel(level);
+      Alert.alert("Success", "Intelligence level updated successfully.");
+    } catch (error) {
+      Alert.alert("Error", "Failed to update intelligence level.");
+    }
+  };
+
 
   return (
     <ScrollView style={styles.container}>
@@ -271,9 +325,29 @@ const SettingsScreen = () => {
         <MaterialCommunityIcons name="file" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Export Dreams to PDF</Text>
       </TouchableOpacity>
+
+      {/* Intelligence Level */}
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Intelligence Level</Text>
+      <TouchableOpacity onPress={toggleIntelligenceLevelOptions} style={styles.listItem}>
+        <MaterialCommunityIcons name="brain" color={theme.colors.text} size={24} style={styles.icon} />
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Intelligence Level</Text>
+        <MaterialCommunityIcons name={showIntelligenceLevelOptions ? "chevron-up" : "chevron-down"} color={theme.colors.button} size={24} />
+      </TouchableOpacity>
+      {showIntelligenceLevelOptions && intelligenceLevels.map(({ level, description }) => (
+        <TouchableOpacity key={level} style={styles.optionItem} onPress={() => updateIntelligenceLevel(level)}>
+          <MaterialCommunityIcons name="brain" color={theme.colors.button} size={28} />
+          <Text style={[
+            styles.optionText,
+            { color: theme.colors.text, fontWeight: level === currentIntelligenceLevel ? '900' : 'normal' }
+          ]}>
+            {description}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </ScrollView>
   );
 };
+
 
 const getStyles = (theme) => StyleSheet.create({
   container: {
