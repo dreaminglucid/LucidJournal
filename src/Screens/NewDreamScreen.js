@@ -38,6 +38,31 @@ const NewDreamScreen = () => {
   const navigation = useNavigation();
   const scrollViewRef = useRef();
   const inputAccessoryViewID = 'doneButton';
+  const [symbolsArray, setSymbolsArray] = useState([]);
+  const [charactersArray, setCharactersArray] = useState([]);
+  const [emotionsArray, setEmotionsArray] = useState([]);
+
+  // New functions for adding tags
+  const handleAddSymbol = () => {
+    if (symbols.trim() !== "") {
+      setSymbolsArray([...symbolsArray, symbols]);
+      setSymbols("");
+    }
+  };
+
+  const handleAddCharacter = () => {
+    if (characters.trim() !== "") {
+      setCharactersArray([...charactersArray, characters]);
+      setCharacters("");
+    }
+  };
+
+  const handleAddEmotion = () => {
+    if (emotions.trim() !== "") {
+      setEmotionsArray([...emotionsArray, emotions]);
+      setEmotions("");
+    }
+  };
 
   const validateForm = () => {
     if (title.trim() === "") {
@@ -61,7 +86,7 @@ const NewDreamScreen = () => {
     }
     const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     setLoading(true);
-
+  
     try {
       const response = await fetch(`${API_URL}/api/dreams`, {
         method: "POST",
@@ -73,14 +98,14 @@ const NewDreamScreen = () => {
           title,
           date: formattedDate,
           entry,
-          symbols,
-          characters,
-          emotions,
+          symbols: JSON.stringify(symbolsArray), // Updated
+          characters: JSON.stringify(charactersArray), // Updated
+          emotions: JSON.stringify(emotionsArray), // Updated
           lucidity,
           id_token: user.id_token
         }),
       });
-
+  
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
         navigation.goBack();
@@ -90,6 +115,9 @@ const NewDreamScreen = () => {
         setSymbols("");
         setCharacters("");
         setEmotions("");
+        setSymbolsArray([]); // Clear array
+        setCharactersArray([]); // Clear array
+        setEmotionsArray([]); // Clear array
         setLucidity(1);
       } else {
         Alert.alert("Error", "Failed to save dream.");
@@ -100,7 +128,7 @@ const NewDreamScreen = () => {
     } finally {
       setLoading(false);
     }
-  };
+  };  
 
   const handleEntryFocus = () => {
     setTimeout(() => {
@@ -160,6 +188,104 @@ const NewDreamScreen = () => {
           placeholder="Enter dream title"
           placeholderTextColor={theme.colors.text}
         />
+
+        <Text style={styles.label}>Symbols</Text>
+        <View style={styles.tagInputContainer}>
+          <TextInput
+            style={styles.input}
+            value={symbols}
+            onChangeText={setSymbols}
+            placeholder="Enter symbol"
+            placeholderTextColor={theme.colors.text}
+          />
+          <TouchableOpacity onPress={handleAddSymbol}>
+            <Text style={styles.tagAddButton}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tagContainer}>
+          {symbolsArray.map((sym, index) => (
+            <View key={index} style={styles.tag}>
+              <Text>{sym}</Text>
+              <TouchableOpacity onPress={() => setSymbolsArray(symbolsArray.filter(item => item !== sym))}>
+                <Text style={styles.tagDeleteButton}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.label}>Characters</Text>
+        <View style={styles.tagInputContainer}>
+          <TextInput
+            style={styles.input}
+            value={characters}
+            onChangeText={setCharacters}
+            placeholder="Enter character"
+            placeholderTextColor={theme.colors.text}
+          />
+          <TouchableOpacity onPress={handleAddCharacter}>
+            <Text style={styles.tagAddButton}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tagContainer}>
+          {charactersArray.map((char, index) => (
+            <View key={index} style={styles.tag}>
+              <Text>{char}</Text>
+              <TouchableOpacity onPress={() => setCharactersArray(charactersArray.filter(item => item !== char))}>
+                <Text style={styles.tagDeleteButton}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.label}>Emotions</Text>
+        <View style={styles.tagInputContainer}>
+          <TextInput
+            style={styles.input}
+            value={emotions}
+            onChangeText={setEmotions}
+            placeholder="Enter emotion"
+            placeholderTextColor={theme.colors.text}
+          />
+          <TouchableOpacity onPress={handleAddEmotion}>
+            <Text style={styles.tagAddButton}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={styles.tagContainer}>
+          {emotionsArray.map((emo, index) => (
+            <View key={index} style={styles.tag}>
+              <Text>{emo}</Text>
+              <TouchableOpacity onPress={() => setEmotionsArray(emotionsArray.filter(item => item !== emo))}>
+                <Text style={styles.tagDeleteButton}>X</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </View>
+
+        <Text style={styles.label}>Lucidity Level</Text>
+        <View style={styles.lucidityContainer}>
+          <Slider
+            style={styles.luciditySlider}
+            minimumValue={1}
+            maximumValue={5}
+            step={1}
+            value={lucidity}
+            onValueChange={(value) => setLucidity(value)}
+          />
+          <View style={styles.lucidityCounter}>
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Text
+                key={n}
+                style={[
+                  styles.lucidityLabel,
+                  { color: n <= lucidity ? theme.colors.button : theme.colors.text }
+                ]}
+              >
+                {n}
+              </Text>
+            ))}
+          </View>
+        </View>
+
         <Text style={styles.label}>Dream Entry</Text>
         <TextInput
           style={[styles.input, styles.tallerInput]}
@@ -172,43 +298,6 @@ const NewDreamScreen = () => {
           onFocus={handleEntryFocus}
           inputAccessoryViewID={inputAccessoryViewID}
         />
-        <Text style={styles.label}>Symbols</Text>
-        <TextInput
-          style={styles.input}
-          value={symbols}
-          onChangeText={setSymbols}
-          placeholder="Enter dream symbols"
-          placeholderTextColor={theme.colors.text}
-        />
-
-        <Text style={styles.label}>Characters</Text>
-        <TextInput
-          style={styles.input}
-          value={characters}
-          onChangeText={setCharacters}
-          placeholder="Enter dream characters"
-          placeholderTextColor={theme.colors.text}
-        />
-
-        <Text style={styles.label}>Emotions</Text>
-        <TextInput
-          style={styles.input}
-          value={emotions}
-          onChangeText={setEmotions}
-          placeholder="Enter dream emotions"
-          placeholderTextColor={theme.colors.text}
-        />
-
-        <Text style={styles.label}>Lucidity Level</Text>
-        <Slider
-          style={{width: 300, height: 40}}
-          minimumValue={1}
-          maximumValue={5}
-          step={1}
-          value={lucidity}
-          onValueChange={(value) => setLucidity(value)}
-        />
-        <Text>Level: {lucidity}</Text>
         <InputAccessoryView nativeID={inputAccessoryViewID}>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <Button title="Done" onPress={() => setEntry(entry + '\n')} />
@@ -341,6 +430,51 @@ const getStyles = (theme) => StyleSheet.create({
   messageTextStyle: {
     color: "#FFFFFF",
     fontSize: 18,
+  },
+  lucidityContainer: {
+    flexDirection: 'column',
+    alignItems: 'stretch',
+    marginBottom: 20,
+  },
+  luciditySlider: {
+    width: '100%',
+    height: 40,
+  },
+  lucidityCounter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    marginTop: 8,
+  },
+  lucidityLabel: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  tagInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  tagAddButton: {
+    marginLeft: 10,
+    fontSize: 24,
+    color: theme.colors.button,
+  },
+  tagContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  tag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#eee',
+    borderRadius: 20,
+    margin: 5,
+    padding: 8,
+  },
+  tagDeleteButton: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: 'red',
   },
 });
 
