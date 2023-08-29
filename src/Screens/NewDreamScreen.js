@@ -11,8 +11,9 @@ import {
   Platform,
   Button,
   InputAccessoryView,
-  View
+  View,
 } from "react-native";
+import Slider from '@react-native-community/slider';
 import { Button as PaperButton } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -28,6 +29,10 @@ const NewDreamScreen = () => {
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [entry, setEntry] = useState("");
+  const [symbols, setSymbols] = useState("");
+  const [characters, setCharacters] = useState("");
+  const [emotions, setEmotions] = useState("");
+  const [lucidity, setLucidity] = useState(1);
   const [loading, setLoading] = useState(false);
   const { user } = useContext(AppleAuthContext);
   const navigation = useNavigation();
@@ -54,10 +59,7 @@ const NewDreamScreen = () => {
     if (!validateForm()) {
       return;
     }
-
-    const formattedDate = `${date.getMonth() + 1
-      }/${date.getDate()}/${date.getFullYear()}`;
-
+    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     setLoading(true);
 
     try {
@@ -65,17 +67,30 @@ const NewDreamScreen = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${user.id_token}`, // Add this line
+          "Authorization": `Bearer ${user.id_token}`,
         },
-        body: JSON.stringify({ title, date: formattedDate, entry, id_token: user.id_token }),
-      });      
+        body: JSON.stringify({
+          title,
+          date: formattedDate,
+          entry,
+          symbols,
+          characters,
+          emotions,
+          lucidity,
+          id_token: user.id_token
+        }),
+      });
 
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
-        navigation.goBack(); // Navigate back to the previous screen
+        navigation.goBack();
         setTitle("");
         setDate(new Date());
         setEntry("");
+        setSymbols("");
+        setCharacters("");
+        setEmotions("");
+        setLucidity(1);
       } else {
         Alert.alert("Error", "Failed to save dream.");
       }
@@ -157,6 +172,43 @@ const NewDreamScreen = () => {
           onFocus={handleEntryFocus}
           inputAccessoryViewID={inputAccessoryViewID}
         />
+        <Text style={styles.label}>Symbols</Text>
+        <TextInput
+          style={styles.input}
+          value={symbols}
+          onChangeText={setSymbols}
+          placeholder="Enter dream symbols"
+          placeholderTextColor={theme.colors.text}
+        />
+
+        <Text style={styles.label}>Characters</Text>
+        <TextInput
+          style={styles.input}
+          value={characters}
+          onChangeText={setCharacters}
+          placeholder="Enter dream characters"
+          placeholderTextColor={theme.colors.text}
+        />
+
+        <Text style={styles.label}>Emotions</Text>
+        <TextInput
+          style={styles.input}
+          value={emotions}
+          onChangeText={setEmotions}
+          placeholder="Enter dream emotions"
+          placeholderTextColor={theme.colors.text}
+        />
+
+        <Text style={styles.label}>Lucidity Level</Text>
+        <Slider
+          style={{width: 300, height: 40}}
+          minimumValue={1}
+          maximumValue={5}
+          step={1}
+          value={lucidity}
+          onValueChange={(value) => setLucidity(value)}
+        />
+        <Text>Level: {lucidity}</Text>
         <InputAccessoryView nativeID={inputAccessoryViewID}>
           <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
             <Button title="Done" onPress={() => setEntry(entry + '\n')} />
