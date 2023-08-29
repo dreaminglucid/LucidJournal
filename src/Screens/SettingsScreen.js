@@ -83,18 +83,21 @@ const SettingsScreen = () => {
     setShowThemeOptions(prev => !prev);
     setShowImageStyleOptions(false);
     setShowImageQualityOptions(false);
+    setShowIntelligenceLevelOptions(false);
   };
 
   const toggleImageStyleOptions = () => {
     setShowImageStyleOptions(prev => !prev);
     setShowThemeOptions(false);
     setShowImageQualityOptions(false);
+    setShowIntelligenceLevelOptions(false);
   };
 
   const toggleImageQualityOptions = () => {
     setShowImageQualityOptions(prev => !prev);
     setShowThemeOptions(false);
     setShowImageStyleOptions(false);
+    setShowIntelligenceLevelOptions(false);
   };
 
   const toggleIntelligenceLevelOptions = () => {
@@ -319,15 +322,8 @@ const SettingsScreen = () => {
         </TouchableOpacity>
       ))}
 
-      {/* Export Options */}
-      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Export Options</Text>
-      <TouchableOpacity onPress={exportDreamsToPDF} style={styles.listItem}>
-        <MaterialCommunityIcons name="file" color={theme.colors.text} size={24} style={styles.icon} />
-        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Export Dreams to PDF</Text>
-      </TouchableOpacity>
-
       {/* Intelligence Level */}
-      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Intelligence Level</Text>
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Personality Settings</Text>
       <TouchableOpacity onPress={toggleIntelligenceLevelOptions} style={styles.listItem}>
         <MaterialCommunityIcons name="brain" color={theme.colors.text} size={24} style={styles.icon} />
         <Text style={[styles.listItemText, { color: theme.colors.text }]}>Intelligence Level</Text>
@@ -344,6 +340,13 @@ const SettingsScreen = () => {
           </Text>
         </TouchableOpacity>
       ))}
+      
+      {/* Export Options */}
+      <Text style={[styles.subHeader, { color: theme.colors.text, marginTop: 30 }]}>Export Options</Text>
+      <TouchableOpacity onPress={exportDreamsToPDF} style={styles.listItem}>
+        <MaterialCommunityIcons name="file" color={theme.colors.text} size={24} style={styles.icon} />
+        <Text style={[styles.listItemText, { color: theme.colors.text }]}>Export Dreams to PDF</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
