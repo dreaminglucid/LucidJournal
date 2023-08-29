@@ -41,6 +41,7 @@ const NewDreamScreen = () => {
   const [symbolsArray, setSymbolsArray] = useState([]);
   const [charactersArray, setCharactersArray] = useState([]);
   const [emotionsArray, setEmotionsArray] = useState([]);
+  const [showDetails, setShowDetails] = useState(false);
 
   // New functions for adding tags
   const handleAddSymbol = () => {
@@ -154,8 +155,7 @@ const NewDreamScreen = () => {
         >
           <TextInput
             style={[styles.dateText, { flex: 1 }]}
-            value={`${date.getMonth() + 1
-              }/${date.getDate()}/${date.getFullYear()}`}
+            value={`${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`}
             editable={false}
           />
           <MaterialCommunityIcons
@@ -165,20 +165,18 @@ const NewDreamScreen = () => {
           />
         </TouchableOpacity>
         {showDatePicker && (
-          <View style={styles.datePickerContainer}>
-            <DateTimePicker
-              testID="dateTimePicker"
-              value={date}
-              mode="date"
-              display="default"
-              onChange={(event, selectedDate) => {
-                setShowDatePicker(false);
-                if (selectedDate) {
-                  setDate(selectedDate);
-                }
-              }}
-            />
-          </View>
+          <DateTimePicker
+            testID="dateTimePicker"
+            value={date}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) {
+                setDate(selectedDate);
+              }
+            }}
+          />
         )}
         <Text style={styles.label}>Dream Title</Text>
         <TextInput
@@ -188,104 +186,120 @@ const NewDreamScreen = () => {
           placeholder="Enter dream title"
           placeholderTextColor={theme.colors.text}
         />
-
-        <Text style={styles.label}>Symbols</Text>
-        <View style={styles.tagInputContainer}>
-          <TextInput
-            style={styles.input}
-            value={symbols}
-            onChangeText={setSymbols}
-            placeholder="Enter symbol"
-            placeholderTextColor={theme.colors.text}
-          />
-          <TouchableOpacity onPress={handleAddSymbol}>
-            <Text style={styles.tagAddButton}>+</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.tagContainer}>
-          {symbolsArray.map((sym, index) => (
-            <View key={index} style={styles.tag}>
-              <Text>{sym}</Text>
-              <TouchableOpacity onPress={() => setSymbolsArray(symbolsArray.filter(item => item !== sym))}>
-                <Text style={styles.tagDeleteButton}>X</Text>
+  
+        {/* Button to toggle additional details */}
+        <TouchableOpacity onPress={() => setShowDetails(!showDetails)}>
+          <Text style={styles.detailsButton}>
+            {showDetails ? "Hide Optional Details" : "Show Optional Details"}
+          </Text>
+        </TouchableOpacity>
+  
+        {/* Conditional rendering for additional details */}
+        {showDetails && (
+          <>
+            {/* Symbols */}
+            <Text style={styles.label}>Symbols</Text>
+            <View style={styles.tagInputContainer}>
+              <TextInput
+                style={styles.input}
+                value={symbols}
+                onChangeText={setSymbols}
+                placeholder="Enter symbol"
+                placeholderTextColor={theme.colors.text}
+              />
+              <TouchableOpacity onPress={handleAddSymbol}>
+                <Text style={styles.tagAddButton}>+</Text>
               </TouchableOpacity>
             </View>
-          ))}
-        </View>
-
-        <Text style={styles.label}>Characters</Text>
-        <View style={styles.tagInputContainer}>
-          <TextInput
-            style={styles.input}
-            value={characters}
-            onChangeText={setCharacters}
-            placeholder="Enter character"
-            placeholderTextColor={theme.colors.text}
-          />
-          <TouchableOpacity onPress={handleAddCharacter}>
-            <Text style={styles.tagAddButton}>+</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.tagContainer}>
-          {charactersArray.map((char, index) => (
-            <View key={index} style={styles.tag}>
-              <Text>{char}</Text>
-              <TouchableOpacity onPress={() => setCharactersArray(charactersArray.filter(item => item !== char))}>
-                <Text style={styles.tagDeleteButton}>X</Text>
+            <View style={styles.tagContainer}>
+              {symbolsArray.map((sym, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text>{sym}</Text>
+                  <TouchableOpacity onPress={() => setSymbolsArray(symbolsArray.filter(item => item !== sym))}>
+                    <Text style={styles.tagDeleteButton}>X</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+  
+            {/* Characters */}
+            <Text style={styles.label}>Characters</Text>
+            <View style={styles.tagInputContainer}>
+              <TextInput
+                style={styles.input}
+                value={characters}
+                onChangeText={setCharacters}
+                placeholder="Enter character"
+                placeholderTextColor={theme.colors.text}
+              />
+              <TouchableOpacity onPress={handleAddCharacter}>
+                <Text style={styles.tagAddButton}>+</Text>
               </TouchableOpacity>
             </View>
-          ))}
-        </View>
-
-        <Text style={styles.label}>Emotions</Text>
-        <View style={styles.tagInputContainer}>
-          <TextInput
-            style={styles.input}
-            value={emotions}
-            onChangeText={setEmotions}
-            placeholder="Enter emotion"
-            placeholderTextColor={theme.colors.text}
-          />
-          <TouchableOpacity onPress={handleAddEmotion}>
-            <Text style={styles.tagAddButton}>+</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={styles.tagContainer}>
-          {emotionsArray.map((emo, index) => (
-            <View key={index} style={styles.tag}>
-              <Text>{emo}</Text>
-              <TouchableOpacity onPress={() => setEmotionsArray(emotionsArray.filter(item => item !== emo))}>
-                <Text style={styles.tagDeleteButton}>X</Text>
+            <View style={styles.tagContainer}>
+              {charactersArray.map((char, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text>{char}</Text>
+                  <TouchableOpacity onPress={() => setCharactersArray(charactersArray.filter(item => item !== char))}>
+                    <Text style={styles.tagDeleteButton}>X</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+  
+            {/* Emotions */}
+            <Text style={styles.label}>Emotions</Text>
+            <View style={styles.tagInputContainer}>
+              <TextInput
+                style={styles.input}
+                value={emotions}
+                onChangeText={setEmotions}
+                placeholder="Enter emotion"
+                placeholderTextColor={theme.colors.text}
+              />
+              <TouchableOpacity onPress={handleAddEmotion}>
+                <Text style={styles.tagAddButton}>+</Text>
               </TouchableOpacity>
             </View>
-          ))}
-        </View>
-
-        <Text style={styles.label}>Lucidity Level</Text>
-        <View style={styles.lucidityContainer}>
-          <Slider
-            style={styles.luciditySlider}
-            minimumValue={1}
-            maximumValue={5}
-            step={1}
-            value={lucidity}
-            onValueChange={(value) => setLucidity(value)}
-          />
-          <View style={styles.lucidityCounter}>
-            {[1, 2, 3, 4, 5].map((n) => (
-              <Text
-                key={n}
-                style={[
-                  styles.lucidityLabel,
-                  { color: n <= lucidity ? theme.colors.button : theme.colors.text }
-                ]}
-              >
-                {n}
-              </Text>
-            ))}
-          </View>
-        </View>
-
+            <View style={styles.tagContainer}>
+              {emotionsArray.map((emo, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text>{emo}</Text>
+                  <TouchableOpacity onPress={() => setEmotionsArray(emotionsArray.filter(item => item !== emo))}>
+                    <Text style={styles.tagDeleteButton}>X</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+  
+            {/* Lucidity Level */}
+            <Text style={styles.label}>Lucidity Level</Text>
+            <View style={styles.lucidityContainer}>
+              <Slider
+                style={styles.luciditySlider}
+                minimumValue={1}
+                maximumValue={5}
+                step={1}
+                value={lucidity}
+                onValueChange={(value) => setLucidity(value)}
+              />
+              <View style={styles.lucidityCounter}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Text
+                    key={n}
+                    style={[
+                      styles.lucidityLabel,
+                      { color: n <= lucidity ? theme.colors.button : theme.colors.text }
+                    ]}
+                  >
+                    {n}
+                  </Text>
+                ))}
+              </View>
+            </View>
+          </>
+        )}
+  
         <Text style={styles.label}>Dream Entry</Text>
         <TextInput
           style={[styles.input, styles.tallerInput]}
@@ -317,7 +331,7 @@ const NewDreamScreen = () => {
         )}
       </ScrollView>
     </KeyboardAvoidingView>
-  );
+  );  
 };
 
 const getStyles = (theme) => StyleSheet.create({
@@ -475,6 +489,12 @@ const getStyles = (theme) => StyleSheet.create({
     marginLeft: 8,
     fontSize: 16,
     color: 'red',
+  },
+  detailsButton: {
+    fontSize: 18,
+    color: theme.colors.button,
+    textAlign: 'center',
+    marginVertical: 10,
   },
 });
 
