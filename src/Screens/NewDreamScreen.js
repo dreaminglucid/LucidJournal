@@ -42,6 +42,8 @@ const NewDreamScreen = () => {
   const [charactersArray, setCharactersArray] = useState([]);
   const [emotionsArray, setEmotionsArray] = useState([]);
   const [showDetails, setShowDetails] = useState(false);
+  const [setting, setSetting] = useState("");
+  const [settingsArray, setSettingsArray] = useState([]);
 
   // New functions for adding tags
   const handleAddSymbol = () => {
@@ -62,6 +64,13 @@ const NewDreamScreen = () => {
     if (emotions.trim() !== "") {
       setEmotionsArray([...emotionsArray, emotions]);
       setEmotions("");
+    }
+  };
+
+  const handleAddSetting = () => {
+    if (setting.trim() !== "") {
+      setSettingsArray([...settingsArray, setting]);
+      setSetting("");
     }
   };
 
@@ -87,7 +96,7 @@ const NewDreamScreen = () => {
     }
     const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     setLoading(true);
-  
+
     try {
       const response = await fetch(`${API_URL}/api/dreams`, {
         method: "POST",
@@ -99,14 +108,15 @@ const NewDreamScreen = () => {
           title,
           date: formattedDate,
           entry,
-          symbols: JSON.stringify(symbolsArray), // Updated
-          characters: JSON.stringify(charactersArray), // Updated
-          emotions: JSON.stringify(emotionsArray), // Updated
+          symbols: JSON.stringify(symbolsArray),
+          characters: JSON.stringify(charactersArray),
+          emotions: JSON.stringify(emotionsArray),
+          setting: JSON.stringify(settingsArray),
           lucidity,
           id_token: user.id_token
         }),
       });
-  
+
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
         navigation.goBack();
@@ -116,9 +126,11 @@ const NewDreamScreen = () => {
         setSymbols("");
         setCharacters("");
         setEmotions("");
-        setSymbolsArray([]); // Clear array
-        setCharactersArray([]); // Clear array
-        setEmotionsArray([]); // Clear array
+        setSetting("");
+        setSymbolsArray([]);
+        setCharactersArray([]);
+        setEmotionsArray([]);
+        setSetting([]);
         setLucidity(1);
       } else {
         Alert.alert("Error", "Failed to save dream.");
@@ -129,7 +141,7 @@ const NewDreamScreen = () => {
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   const handleEntryFocus = () => {
     setTimeout(() => {
@@ -186,14 +198,14 @@ const NewDreamScreen = () => {
           placeholder="Enter dream title"
           placeholderTextColor={theme.colors.text}
         />
-  
+
         {/* Button to toggle additional details */}
         <TouchableOpacity onPress={() => setShowDetails(!showDetails)}>
           <Text style={styles.detailsButton}>
             {showDetails ? "Hide Optional Details" : "Show Optional Details"}
           </Text>
         </TouchableOpacity>
-  
+
         {/* Conditional rendering for additional details */}
         {showDetails && (
           <>
@@ -221,7 +233,7 @@ const NewDreamScreen = () => {
                 </View>
               ))}
             </View>
-  
+
             {/* Characters */}
             <Text style={styles.label}>Characters</Text>
             <View style={styles.tagInputContainer}>
@@ -246,7 +258,7 @@ const NewDreamScreen = () => {
                 </View>
               ))}
             </View>
-  
+
             {/* Emotions */}
             <Text style={styles.label}>Emotions</Text>
             <View style={styles.tagInputContainer}>
@@ -271,7 +283,32 @@ const NewDreamScreen = () => {
                 </View>
               ))}
             </View>
-  
+
+            {/* Setting */}
+            <Text style={styles.label}>Setting</Text>
+            <View style={styles.tagInputContainer}>
+              <TextInput
+                style={styles.input}
+                value={setting}
+                onChangeText={setSetting}
+                placeholder="Enter setting"
+                placeholderTextColor={theme.colors.text}
+              />
+              <TouchableOpacity onPress={handleAddSetting}>
+                <Text style={styles.tagAddButton}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.tagContainer}>
+              {settingsArray.map((set, index) => (
+                <View key={index} style={styles.tag}>
+                  <Text>{set}</Text>
+                  <TouchableOpacity onPress={() => setSettingsArray(settingsArray.filter(item => item !== set))}>
+                    <Text style={styles.tagDeleteButton}>X</Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </View>
+
             {/* Lucidity Level */}
             <Text style={styles.label}>Lucidity Level</Text>
             <View style={styles.lucidityContainer}>
@@ -299,7 +336,7 @@ const NewDreamScreen = () => {
             </View>
           </>
         )}
-  
+
         <Text style={styles.label}>Dream Entry</Text>
         <TextInput
           style={[styles.input, styles.tallerInput]}
@@ -331,7 +368,7 @@ const NewDreamScreen = () => {
         )}
       </ScrollView>
     </KeyboardAvoidingView>
-  );  
+  );
 };
 
 const getStyles = (theme) => StyleSheet.create({
