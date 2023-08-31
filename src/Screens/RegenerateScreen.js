@@ -352,7 +352,7 @@ const RegenerateScreen = ({ route, navigation }) => {
                   image: newImageURI, // The new URI now contains the new image
                 });
                 // Go back to DetailsScreen after successful save
-                navigation.navigate("Details", { dreamId, dreamUpdated: true });
+                navigation.navigate("Details", { dreamId, dreamUpdated: true, isSaved: true });
               } else {
                 Alert.alert("Error", "Failed to overwrite analysis and image.");
               }

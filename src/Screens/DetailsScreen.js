@@ -54,8 +54,11 @@ const DetailsScreen = ({ route, navigation }) => {
 
     useEffect(() => {
         const unsubscribe = navigation.addListener("beforeRemove", (e) => {
-            if (!hasUnsavedGeneratedDataRef.current()) {
-                // If there are no unsaved changes, then we don't need to do anything
+            // Get the isSaved parameter from the route params. Default to false if not available.
+            const isSaved = route.params?.isSaved || false;
+
+            // If there are no unsaved changes, or the dream has been saved, then no need to show the warning.
+            if (!hasUnsavedGeneratedDataRef.current() || isSaved) {
                 return;
             }
 
@@ -77,8 +80,9 @@ const DetailsScreen = ({ route, navigation }) => {
             );
         });
 
+        // Clean up the event listener when the component is unmounted
         return unsubscribe;
-    }, [navigation]);
+    }, [navigation, route.params?.isSaved]); // Added dependency on route.params?.isSaved    
 
     // Prefetch the image for caching
     useEffect(() => {
@@ -147,6 +151,14 @@ const DetailsScreen = ({ route, navigation }) => {
         if (route.params && route.params.dreamData) {
             let dreamData = route.params.dreamData;
             setDream(dreamData);
+
+            // If the dream has been saved or overwritten, reset the isSaved flag
+            if (route.params.isSaved) {
+                hasUnsavedGeneratedDataRef.current = () => false;
+                // Reset isSaved flag after using it
+                navigation.setParams({ isSaved: false });
+            }
+
             if ("analysis" in dreamData && dreamData.analysis !== null) {
                 let analysisText = dreamData.analysis;
                 try {
@@ -314,7 +326,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 },
                 body: JSON.stringify({ analysis: analysisResult, image: imageData }),
             });
-    
+
             if (response.ok) {
                 Alert.alert("Success", "Analysis and image saved successfully!");
                 setDream({
@@ -322,10 +334,10 @@ const DetailsScreen = ({ route, navigation }) => {
                     analysis: analysisResult,
                     image: imageData,
                 });
-    
+
                 // Now, save the image to the "Dreams" album in the device's media library
                 saveImageToLibrary(imageData);
-    
+
                 setIsSaved(true); // Set isSaved to true to indicate that the data has been saved
             } else {
                 Alert.alert("Error", "Failed to save analysis and image.");
@@ -336,7 +348,7 @@ const DetailsScreen = ({ route, navigation }) => {
             Alert.alert("Error", "An unexpected error occurred.");
             setIsSaved(false); // Optionally, you can set isSaved to false to indicate the data hasn't been saved
         }
-    };    
+    };
 
     const saveImageToLibrary = async (imageURI) => {
         try {
