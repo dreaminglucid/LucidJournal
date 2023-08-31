@@ -1,5 +1,5 @@
 // React and React Native Libraries
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
     StyleSheet,
     View,
@@ -37,8 +37,48 @@ const DetailsScreen = ({ route, navigation }) => {
     const [isImageModalVisible, setImageModalVisible] = useState(false);
     const [isDeleteModalVisible, setDeleteModalVisible] = useState(false);
     const animation = new Animated.Value(0);
-    // Local state for the local image URI
     const [localImageURI, setLocalImageURI] = useState(null);
+    const [isSaved, setIsSaved] = useState(false);
+
+    const hasUnsavedGeneratedDataRef = useRef(() => {
+        return (
+            generationStatus === "success" && !isSaved // Now also checks if data has not been saved
+        );
+    });
+
+    useEffect(() => {
+        hasUnsavedGeneratedDataRef.current = () => {
+            return generationStatus === "success" && !isSaved; // Update the ref function
+        };
+    }, [generationStatus, isSaved]);
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener("beforeRemove", (e) => {
+            if (!hasUnsavedGeneratedDataRef.current()) {
+                // If there are no unsaved changes, then we don't need to do anything
+                return;
+            }
+
+            // Prevent default behavior of leaving the screen
+            e.preventDefault();
+
+            // Prompt the user before leaving the screen
+            Alert.alert(
+                "Discard changes?",
+                "You have unsaved generated data. Are you sure to discard them and leave the screen?",
+                [
+                    { text: "Don't leave", style: "cancel", onPress: () => { } },
+                    {
+                        text: "Discard",
+                        style: "destructive",
+                        onPress: () => navigation.dispatch(e.data.action),
+                    },
+                ]
+            );
+        });
+
+        return unsubscribe;
+    }, [navigation]);
 
     // Prefetch the image for caching
     useEffect(() => {
@@ -274,7 +314,7 @@ const DetailsScreen = ({ route, navigation }) => {
                 },
                 body: JSON.stringify({ analysis: analysisResult, image: imageData }),
             });
-
+    
             if (response.ok) {
                 Alert.alert("Success", "Analysis and image saved successfully!");
                 setDream({
@@ -282,17 +322,21 @@ const DetailsScreen = ({ route, navigation }) => {
                     analysis: analysisResult,
                     image: imageData,
                 });
-
+    
                 // Now, save the image to the "Dreams" album in the device's media library
                 saveImageToLibrary(imageData);
+    
+                setIsSaved(true); // Set isSaved to true to indicate that the data has been saved
             } else {
                 Alert.alert("Error", "Failed to save analysis and image.");
+                setIsSaved(false); // Optionally, you can set isSaved to false to indicate the data hasn't been saved
             }
         } catch (error) {
             console.error("Error:", error);
             Alert.alert("Error", "An unexpected error occurred.");
+            setIsSaved(false); // Optionally, you can set isSaved to false to indicate the data hasn't been saved
         }
-    };
+    };    
 
     const saveImageToLibrary = async (imageURI) => {
         try {
