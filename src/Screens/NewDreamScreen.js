@@ -1,4 +1,4 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -148,6 +148,51 @@ const NewDreamScreen = () => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
     }, 100);
   };
+
+  // Function to check for unsaved changes
+  const hasUnsavedChanges = () => {
+    return Boolean(
+      title ||
+      entry ||
+      symbols ||
+      characters ||
+      emotions ||
+      setting ||
+      symbolsArray.length > 0 ||
+      charactersArray.length > 0 ||
+      emotionsArray.length > 0 ||
+      settingsArray.length > 0
+    );
+  };
+
+  // Adding useEffect to watch for navigation events
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!hasUnsavedChanges()) {
+        // If there are no unsaved changes, then we don't need to do anything
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Prompt the user before leaving the screen
+      Alert.alert(
+        'Discard changes?',
+        'You have unsaved changes. Are you sure to discard them and leave the screen?',
+        [
+          { text: "Don't leave", style: 'cancel', onPress: () => { } },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, hasUnsavedChanges]);
 
   return (
     <KeyboardAvoidingView
