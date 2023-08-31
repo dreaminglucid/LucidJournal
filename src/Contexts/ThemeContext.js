@@ -1,7 +1,108 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { Animated, View, Easing } from 'react-native';
 import { DefaultTheme } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import { Gyroscope } from 'expo-sensors';
 
 export const ThemeContext = createContext(null);
+
+const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
+const AnimatedLinearGradient = Animated.createAnimatedComponent(LinearGradient);
+
+const GlassBackground = ({ children }) => {
+  const { theme } = useContext(ThemeContext);
+  const animatedValue = new Animated.Value(0);
+  const [gyroData, setGyroData] = useState({ x: 0, y: 0, z: 0 });
+
+  useEffect(() => {
+    const gyroscopeSubscription = Gyroscope.addListener(data => {
+      setGyroData(data);
+    });
+    Gyroscope.setUpdateInterval(500);
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(animatedValue, {
+          toValue: 1,
+          duration: 5000,
+          easing: Easing.inOut(Easing.exp),
+          useNativeDriver: false,
+        }),
+        Animated.timing(animatedValue, {
+          toValue: 0,
+          duration: 5000,
+          easing: Easing.inOut(Easing.exp),
+          useNativeDriver: false,
+        }),
+      ])
+    ).start();
+
+    return () => {
+      gyroscopeSubscription && gyroscopeSubscription.remove();
+    };
+  }, []);
+
+  const dynamicColors = animatedValue.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: [
+      theme.colors.primary,
+      theme.colors.button,
+      theme.colors.primary,
+    ],
+  });
+
+  const blurIntensity = animatedValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: [50, 100],
+  });
+
+  const modifiedColors = [
+    `rgba(${Math.abs(gyroData.x * 255)}, ${Math.abs(gyroData.y * 255)}, ${Math.abs(gyroData.z * 255)}, 0.2)`,
+    dynamicColors,
+    `rgba(${Math.abs(gyroData.z * 255)}, ${Math.abs(gyroData.x * 255)}, ${Math.abs(gyroData.y * 255)}, 0.2)`
+  ];
+
+  return (
+    <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
+      <AnimatedLinearGradient
+        colors={modifiedColors}
+        start={{ x: gyroData.x, y: gyroData.y }}
+        end={{ x: gyroData.z, y: gyroData.x }}
+        locations={[0, 0.5, 1]}
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+        }}
+      />
+      <LinearGradient
+        colors={['rgba(255, 255, 255, 0.1)', 'rgba(255, 255, 255, 0.4)', 'rgba(255, 255, 255, 0.1)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{
+          flex: 1,
+          borderRadius: 20,
+          overflow: 'hidden',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 12 },
+          shadowOpacity: 0.5,
+          shadowRadius: 16,
+        }}
+      >
+        <AnimatedBlurView
+          intensity={blurIntensity}
+          tint="light"
+          style={{ flex: 1 }}
+        >
+          {children}
+        </AnimatedBlurView>
+      </LinearGradient>
+    </View>
+  );
+};
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(darkTheme);
@@ -20,13 +121,13 @@ export const ThemeProvider = ({ children }) => {
       case 'woodland':
         setTheme(woodlandTheme);
         break;
-        case 'royal':
-          setTheme(royalTheme);
-          break;
-          case 'cipherProxy':
-            setTheme(cipherProxyTheme);
-            break;
-      default:  // default is 'dark'
+      case 'royal':
+        setTheme(royalTheme);
+        break;
+      case 'cipherProxy':
+        setTheme(cipherProxyTheme);
+        break;
+      default:
         setTheme(darkTheme);
         break;
     }
@@ -34,7 +135,9 @@ export const ThemeProvider = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ theme, changeTheme }}>
-      {children}
+      <GlassBackground>
+        {children}
+      </GlassBackground>
     </ThemeContext.Provider>
   );
 };
