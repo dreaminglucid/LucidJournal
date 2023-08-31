@@ -368,6 +368,7 @@ const DetailsScreen = ({ route, navigation }) => {
         const userJson = await SecureStore.getItemAsync('appleUser');
         const user = JSON.parse(userJson);
         try {
+            // Start by deleting the dream from the server
             const response = await fetch(`${API_URL}/api/dreams/${dreamId}`, {
                 method: "DELETE",
                 headers: {
@@ -376,12 +377,39 @@ const DetailsScreen = ({ route, navigation }) => {
             });
 
             if (response.ok) {
-                Alert.alert("Success", "Dream deleted successfully.");
+                // If the server deletion is successful, proceed to delete the local file.
+                const fileUri = FileSystem.documentDirectory + `image_${dreamId}.jpg`;
+                const fileInfo = await FileSystem.getInfoAsync(fileUri);
+
+                if (fileInfo.exists) {
+                    await FileSystem.deleteAsync(fileUri);
+                }
+
+                // Prompt the user to delete the image from the photo library
+                Alert.alert(
+                    "Delete Image from Photos?",
+                    "Would you like to delete this image from your Photos as well?",
+                    [
+                        { text: "No", style: "cancel" },
+                        {
+                            text: "Yes",
+                            onPress: async () => {
+                                const deleted = await MediaLibrary.deleteAssetsAsync([dreamId]); // Using dreamId as asset ID
+                                if (deleted) {
+                                    Alert.alert("Success", "Image also deleted from photo library.");
+                                }
+                            }
+                        },
+                    ]
+                );
+
+                Alert.alert("Success", "Dream and associated image deleted successfully.");
                 navigation.goBack(); // Navigate back after deletion
             } else {
                 Alert.alert("Error", "Failed to delete the dream.");
             }
         } catch (error) {
+            console.error("Error:", error);
             Alert.alert("Error", "Failed to delete the dream.");
         }
     };
