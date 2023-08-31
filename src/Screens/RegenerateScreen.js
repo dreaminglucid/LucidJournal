@@ -1,5 +1,5 @@
 // React and React Native Libraries
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -36,6 +36,7 @@ const RegenerateScreen = ({ route, navigation }) => {
   const [canSave, setCanSave] = useState(false);
   const [loadingStatus, setLoadingStatus] = useState("");
   const [animation, setAnimation] = useState(new Animated.Value(0));
+  const [isOverwritingSave, setIsOverwritingSave] = useState(false);
 
   useEffect(() => {
     if (route.params && route.params.dreamData) {
@@ -106,6 +107,34 @@ const RegenerateScreen = ({ route, navigation }) => {
       animation.stopAnimation();
     }
   }, [isLoading]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (!hasUnsavedGeneratedDataRef.current() || isOverwritingSave) {
+        // If there are no unsaved changes or an overwrite save is in progress, then we don't need to do anything
+        return;
+      }
+
+      // Prevent default behavior of leaving the screen
+      e.preventDefault();
+
+      // Prompt the user before leaving the screen
+      Alert.alert(
+        'Discard changes?',
+        'You have unsaved generated data. Are you sure to discard them and leave the screen?',
+        [
+          { text: "Don't leave", style: 'cancel', onPress: () => { } },
+          {
+            text: 'Discard',
+            style: 'destructive',
+            onPress: () => navigation.dispatch(e.data.action),
+          },
+        ]
+      );
+    });
+
+    return unsubscribe;
+  }, [navigation, isOverwritingSave]);  // Dependency array updated to include isOverwritingSave  
 
   const fetchDream = async () => {
     try {
@@ -286,10 +315,18 @@ const RegenerateScreen = ({ route, navigation }) => {
       "Overwrite Confirmation",
       "Are you sure you want to overwrite the save? Old images will not be lost.",
       [
-        { text: "Cancel", onPress: () => { }, style: "cancel" },
+        {
+          text: "Cancel",
+          onPress: () => {
+            setIsOverwritingSave(false);  // Reset the flag when cancel is pressed
+          },
+          style: "cancel"
+        },
         {
           text: "Yes",
           onPress: async () => {
+            setIsOverwritingSave(true);  // Set the flag indicating overwrite save is in progress
+
             try {
               // Overwrite the image with the new image data
               const newImageURI = await overwriteSaveImage(dreamId, imageData);
@@ -323,12 +360,32 @@ const RegenerateScreen = ({ route, navigation }) => {
               console.error("Error:", error);
               Alert.alert("Error", "An unexpected error occurred.");
             }
+
+            setIsOverwritingSave(false);  // Reset the flag after the operation is complete
           },
         },
       ],
       { cancelable: false }
     );
   };
+
+  const hasUnsavedGeneratedDataRef = useRef(() => {
+    return Boolean(
+      shouldRegenerateAnalysis || // Check if the analysis should be regenerated
+      shouldRegenerateImage ||    // Check if the image should be regenerated
+      canSave                     // Check if there's a flag indicating data can be saved
+    );
+  });
+
+  useEffect(() => {
+    hasUnsavedGeneratedDataRef.current = () => {
+      return Boolean(
+        shouldRegenerateAnalysis ||
+        shouldRegenerateImage ||
+        canSave
+      );
+    };
+  }, [shouldRegenerateAnalysis, shouldRegenerateImage, canSave]);
 
   const fetchLocalImageURI = async (dreamId) => {
     try {

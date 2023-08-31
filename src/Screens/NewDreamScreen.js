@@ -44,6 +44,7 @@ const NewDreamScreen = () => {
   const [showDetails, setShowDetails] = useState(false);
   const [setting, setSetting] = useState("");
   const [settingsArray, setSettingsArray] = useState([]);
+  const [isFormSaved, setIsFormSaved] = useState(false);
 
   // New functions for adding tags
   const handleAddSymbol = () => {
@@ -94,6 +95,7 @@ const NewDreamScreen = () => {
     if (!validateForm()) {
       return;
     }
+
     const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     setLoading(true);
 
@@ -113,13 +115,14 @@ const NewDreamScreen = () => {
           emotions: JSON.stringify(emotionsArray),
           setting: JSON.stringify(settingsArray),
           lucidity,
-          id_token: user.id_token
+          id_token: user.id_token,
         }),
       });
 
       if (response.ok) {
         Alert.alert("Success", "Dream saved successfully!");
-        navigation.goBack();
+
+        // Reset all the state variables related to the form.
         setTitle("");
         setDate(new Date());
         setEntry("");
@@ -130,8 +133,13 @@ const NewDreamScreen = () => {
         setSymbolsArray([]);
         setCharactersArray([]);
         setEmotionsArray([]);
-        setSetting([]);
+        setSettingsArray([]);
         setLucidity(1);
+
+        // Set the form saved flag to true to prevent warning on navigation
+        setIsFormSaved(true);
+
+        navigation.goBack();
       } else {
         Alert.alert("Error", "Failed to save dream.");
       }
@@ -149,8 +157,9 @@ const NewDreamScreen = () => {
     }, 100);
   };
 
-  // Function to check for unsaved changes
   const hasUnsavedChanges = () => {
+    if (isFormSaved) return false; // Skip the check if the form has been saved
+
     return Boolean(
       title ||
       entry ||
@@ -169,7 +178,8 @@ const NewDreamScreen = () => {
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       if (!hasUnsavedChanges()) {
-        // If there are no unsaved changes, then we don't need to do anything
+        // If there are no unsaved changes or the form has been saved,
+        // then we don't need to do anything.
         return;
       }
 
@@ -181,18 +191,27 @@ const NewDreamScreen = () => {
         'Discard changes?',
         'You have unsaved changes. Are you sure to discard them and leave the screen?',
         [
-          { text: "Don't leave", style: 'cancel', onPress: () => { } },
+          {
+            text: "Don't leave", style: 'cancel', onPress: () => {
+              // Reset the saved flag if the user decides not to leave
+              setIsFormSaved(false);
+            }
+          },
           {
             text: 'Discard',
             style: 'destructive',
-            onPress: () => navigation.dispatch(e.data.action),
+            onPress: () => {
+              navigation.dispatch(e.data.action);
+              // Reset the saved flag if the user decides to discard changes and leave
+              setIsFormSaved(false);
+            }
           },
         ]
       );
     });
 
     return unsubscribe;
-  }, [navigation, hasUnsavedChanges]);
+  }, [navigation, hasUnsavedChanges, setIsFormSaved]);
 
   return (
     <KeyboardAvoidingView
