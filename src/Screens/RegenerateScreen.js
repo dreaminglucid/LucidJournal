@@ -197,20 +197,24 @@ const RegenerateScreen = ({ route, navigation }) => {
   const handleRegenerateImage = () => {
     setIsLoading(true);
     setLoadingStatus("Regenerating Image");
+
     generateDreamImage()
       .then((newImageData) => {
-        // Just set the new image data without overwriting the existing one
-        setImageData(newImageData);
-        setShouldRegenerateImage(false);
-        setCanSave(true);
-        setIsLoading(false);
-        setLoadingStatus("");
+        // Wait for 10 seconds before displaying the image
+        setTimeout(() => {
+          // Just set the new image data without overwriting the existing one
+          setImageData(newImageData);
+          setShouldRegenerateImage(false);
+          setCanSave(true);
+          setIsLoading(false);
+          setLoadingStatus("");
+        }, 5000); // 10 seconds delay
       })
       .catch((error) => {
         console.error("Error during image regeneration:", error);
         Alert.alert(
           "Error",
-          "An unexpected error occurred during image regeneration.",
+          "An unexpected error occurred during image regeneration."
         );
         setCanSave(false);
         setIsLoading(false);
@@ -300,14 +304,44 @@ const RegenerateScreen = ({ route, navigation }) => {
 
     const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`, {
       headers: {
-        "Authorization": `Bearer ${user.id_token}`,  // Add this line
+        "Authorization": `Bearer ${user.id_token}`,
       },
     });
+
     if (!response.ok) {
       throw new Error("Failed to generate dream image.");
     }
-    const imageData = await response.json();
-    return imageData.image;
+
+    const contentType = response.headers.get("content-type");
+
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+      const imageData = await response.json();
+      return imageData.image;
+    } else if (contentType && contentType.indexOf("image") !== -1) {
+      const blob = await response.blob();
+
+      const base64data = await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = () => {
+          resolve(reader.result.split(',')[1]);
+        }
+        reader.onerror = reject;
+      });
+
+      const fileUri = FileSystem.documentDirectory + `temp_image_${dreamId}.jpg`;
+      await FileSystem.writeAsStringAsync(fileUri, base64data, { encoding: FileSystem.EncodingType.Base64 });
+
+      // Verify that the file exists
+      const fileInfo = await FileSystem.getInfoAsync(fileUri);
+      if (!fileInfo.exists) {
+        throw new Error("File write failed");
+      }
+
+      return fileUri;
+    } else {
+      throw new Error("Unknown content type returned");
+    }
   };
 
   const handleOverwriteSave = async () => {

@@ -297,16 +297,45 @@ const DetailsScreen = ({ route, navigation }) => {
         try {
             const userJson = await SecureStore.getItemAsync('appleUser');
             const user = JSON.parse(userJson);
-
+    
             const response = await fetch(`${API_URL}/api/dreams/${dreamId}/image`, {
                 headers: {
                     "Authorization": `Bearer ${user.id_token}`,
                 },
             });
-
+    
             if (response.ok) {
-                const imageData = await response.json();
-                return imageData.image;
+                const contentType = response.headers.get("content-type");
+    
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    const imageData = await response.json();
+                    return imageData.image;
+                } else if (contentType && contentType.indexOf("image") !== -1) {
+                    const blob = await response.blob();
+                    
+                    const base64data = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(blob);
+                        reader.onloadend = () => {
+                            resolve(reader.result.split(',')[1]);
+                        };
+                        reader.onerror = reject;
+                    });
+                    
+                    const fileUri = FileSystem.documentDirectory + `image_${dreamId}.jpg`;
+                    await FileSystem.writeAsStringAsync(fileUri, base64data, { encoding: FileSystem.EncodingType.Base64 });
+    
+                    // Verify that the file exists
+                    const fileInfo = await FileSystem.getInfoAsync(fileUri);
+                    if (!fileInfo.exists) {
+                        throw new Error("File write failed");
+                    }
+    
+                    setLocalImageURI(fileUri);  // Update the local image URI
+                    return fileUri;
+                } else {
+                    throw new Error("Unknown content type returned");
+                }
             } else {
                 Alert.alert("Error", "Failed to fetch dream image.");
             }

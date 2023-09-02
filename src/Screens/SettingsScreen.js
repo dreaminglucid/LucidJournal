@@ -31,10 +31,24 @@ const SettingsScreen = () => {
   ];
 
   const imageStyles = [
-    { style: 'renaissance', icon: 'artstation', description: 'Renaissance' },
-    { style: 'abstract', icon: 'shape-outline', description: 'Abstract' },
-    { style: 'modern', icon: 'image-filter-hdr', description: 'Modern' },
-  ];
+    { style: '3d-model', icon: 'cube-outline', description: '3D Model' },
+    { style: 'analog-film', icon: 'film-outline', description: 'Analog Film' },
+    { style: 'anime', icon: 'face-outline', description: 'Anime' },
+    { style: 'cinematic', icon: 'video-outline', description: 'Cinematic' },
+    { style: 'comic-book', icon: 'book-outline', description: 'Comic Book' },
+    { style: 'digital-art', icon: 'brush-outline', description: 'Digital Art' },
+    { style: 'enhance', icon: 'flash-outline', description: 'Enhance' },
+    { style: 'fantasy-art', icon: 'rose-outline', description: 'Fantasy Art' },
+    { style: 'isometric', icon: 'grid-outline', description: 'Isometric' },
+    { style: 'line-art', icon: 'vector-line', description: 'Line Art' },
+    { style: 'low-poly', icon: 'triangle-outline', description: 'Low-Poly' },
+    { style: 'modeling-compound', icon: 'sculpture', description: 'Modeling Compound' },
+    { style: 'neon-punk', icon: 'lightning-bolt-outline', description: 'Neon Punk' },
+    { style: 'origami', icon: 'layers-outline', description: 'Origami' },
+    { style: 'photographic', icon: 'camera-outline', description: 'Photographic' },
+    { style: 'pixel-art', icon: 'pixelate', description: 'Pixel Art' },
+    { style: 'tile-texture', icon: 'view-grid-outline', description: 'Tile Texture' },
+  ];  
 
   const imageQualities = [
     { quality: 'low', resolution: '256x256', description: 'Low', icon: 'blur' },
